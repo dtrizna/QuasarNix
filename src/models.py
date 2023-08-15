@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.nn import BCEWithLogitsLoss
+import torch.nn.functional as F
 import torchmetrics
 import lightning as L
 import math
@@ -127,7 +128,7 @@ class SimpleMLP(nn.Module):
 
 
 class SimpleMLPWithEmbedding(nn.Module):
-    def __init__(self, vocab_size, embedding_dim, output_dim, hidden_dim=[32], use_positional_encoding=False, max_seq_len=500, dropout=None):
+    def __init__(self, vocab_size, embedding_dim, output_dim, hidden_dim=[32], use_positional_encoding=False, max_len=500, dropout=None):
         super(SimpleMLPWithEmbedding, self).__init__()
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.mlp = SimpleMLP(input_dim=embedding_dim, output_dim=output_dim, hidden_dim=hidden_dim, dropout=dropout)
@@ -135,7 +136,7 @@ class SimpleMLPWithEmbedding(nn.Module):
         
         # Positional encoding
         if self.use_positional_encoding:
-            self.positional_encoding = PositionalEncoding(embedding_dim, dropout, max_seq_len)
+            self.positional_encoding = PositionalEncoding(embedding_dim, dropout, max_len)
 
     def forward(self, x):
         x = self.embedding(x)
@@ -146,20 +147,26 @@ class SimpleMLPWithEmbedding(nn.Module):
 
 
 class CNN1DGroupedModel(nn.Module):
-    def __init__(self, vocab_size, embed_dim, num_channels, kernel_sizes, mlp_hidden_dims, output_dim, seq_length, dropout=None):
+    def __init__(self, vocab_size, embed_dim, num_channels, kernel_sizes, mlp_hidden_dims, output_dim, dropout=None):
         super().__init__()
         
         self.embedding = nn.Embedding(vocab_size, embed_dim)
-        self.grouped_convs = nn.ModuleList([nn.Conv1d(embed_dim, num_channels, kernel, padding=kernel//2) for kernel in kernel_sizes])
+        self.grouped_convs = nn.ModuleList([nn.Conv1d(embed_dim, num_channels, kernel) for kernel in kernel_sizes])
         
-        mlp_input_dim = num_channels * len(kernel_sizes) * seq_length
+        mlp_input_dim = num_channels * len(kernel_sizes)
         self.mlp = SimpleMLP(input_dim=mlp_input_dim, output_dim=output_dim, hidden_dim=mlp_hidden_dims, dropout=dropout)
 
+    @staticmethod
+    def conv_and_pool(x, conv):
+        conv_out = conv(x)
+        pooled = F.max_pool1d(conv_out, conv_out.size(2)).squeeze(2)
+        return pooled
+    
     def forward(self, x):
         x = self.embedding(x).transpose(1, 2)
-        conv_outputs = [conv(x) for conv in self.grouped_convs]
+        conv_outputs = [self.conv_and_pool(x, conv) for conv in self.grouped_convs]
+
         x = torch.cat(conv_outputs, dim=1)
-        x = x.view(x.size(0), -1)
         return self.mlp(x)
 
 
@@ -302,7 +309,6 @@ class AttentionPoolingTransformerEncoder(BaseTransformerEncoder):
 
 
 class PositionalEncoding(nn.Module):
-
     def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000):
         super().__init__()
         self.dropout = nn.Dropout(p=dropout)
@@ -323,3 +329,64 @@ class PositionalEncoding(nn.Module):
         # Use broadcasting to add positional encoding
         x = x + self.pe[:, :x.size(1), :]
         return self.dropout(x)
+
+class Attention(nn.Module):
+    def __init__(self, embed_dim, num_heads=1):
+        super(Attention, self).__init__()
+        self.attention = nn.MultiheadAttention(
+            embed_dim=embed_dim, 
+            num_heads=num_heads,
+            batch_first=True
+        )
+
+    def forward(self, x):
+        # x should be (B, L, D)
+        x, _ = self.attention(x, x, x)
+        x = x.reshape(x.shape[0], -1)
+        return x
+    
+
+class NeurLuxModel(nn.Module):
+    def __init__(self,
+                 vocab_size,
+                 embed_dim,
+                 max_len,
+                 conv_channels=100,
+                 lstm_out=32,
+                 hidden_dim=32,
+                 dropout=0.25,
+                 output_dim=1):
+        super(NeurLuxModel, self).__init__()
+        self.__name__ = "NeurLux"
+        self.embedding = nn.Embedding(vocab_size, embed_dim)
+        self.conv = nn.Conv1d(in_channels=embed_dim, out_channels=conv_channels,
+                              kernel_size=4, padding=1)
+        self.lstm = nn.LSTM(conv_channels, lstm_out, bidirectional=True,
+                            batch_first=True)
+        self.attention = Attention(embed_dim=lstm_out*2) # *2 since bidirectional
+        attention_out = lstm_out*2*int((max_len-1)/4)
+        self.fc1 = nn.Linear(attention_out, hidden_dim)
+        self.dropout = nn.Dropout(dropout)
+        self.fc2 = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x):
+        x = self.embedding(x)
+        x = x.permute(0, 2, 1)
+        x = self.conv(x)
+        x = F.relu(x)
+        # (B, L, MAX_LEN-1)
+        x = F.max_pool1d(x, 4)
+        # (B, L, (MAX_LEN-1)/4)
+        # when MAX_LEN = 2048, (MAX_LEN-1)/4 = 511
+        # when MAX_LEN = 87000, (MAX_LEN-1)/4 = 21749
+        x = x.permute(0, 2, 1)
+        x, _ = self.lstm(x)
+        # (B, L, D)
+        # where D == H_out (32) * 2 (bidirectional)
+        x = self.attention(x)
+        # (B, L*D)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.dropout(x)
+        x = self.fc2(x)
+        return x

@@ -53,8 +53,33 @@ def get_tpr_at_fpr(predicted_logits, true_labels, fprNeeded=1e-4):
         return tpr_at_fpr#, threshold_at_fpr
 
 
+def training_tabular(model, name, X_train_minhash, X_test_minhash, y_train, y_test, logs_folder):
+    print(f"[*] Training {name} model...")
+    model.fit(X_train_minhash, y_train)
+
+    # save trained model to LOGS_FOLDER/name
+    os.makedirs(f"{logs_folder}/{name}", exist_ok=True)
+    with open(f"{logs_folder}/{name}/model.pkl", "wb") as f:
+        pickle.dump(model, f)
+    
+    y_test_preds = model.predict_proba(X_test_minhash)[:,1]
+    tpr = get_tpr_at_fpr(y_test_preds, y_test)
+    f1 = f1_score(y_test, y_test_preds.round())
+    acc = accuracy_score(y_test, y_test_preds.round())
+    auc = roc_auc_score(y_test, y_test_preds)
+    print(f"[!] {name} model scores: tpr={tpr:.4f}, f1={f1:.4f}, acc={acc:.4f}, auc={auc:.4f}")
+
+
 def training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epochs=10):
     lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=1e-3)
+    
+    # print(f"[*] Compiling {name} model...")
+    # now = time.time()
+    # compiled_model = torch.compile(lightning_model)
+    # print(f"[!] Compilation time: {time.time() - now:.2f} seconds")
+
+    # NOTE: compilation -- not yet supported on Windows
+    # RuntimeError: Windows not yet supported for torch.compile
 
     # ensure folders for logging exist
     os.makedirs(f"{log_folder}/{name}_csv", exist_ok=True)
@@ -98,19 +123,33 @@ BATCH_SIZE = 1024
 DROPOUT = 0.5
 
 # TEST
-EPOCHS = 2
+EPOCHS = 1
 LIT_SANITY_STEPS = 0
 LIMIT = 15000
 DATALOADER_WORKERS = 1
-LOGS_FOLDER = "logs_models_TEST"
+LOGS_FOLDER = "logs_models_TEST_SIZES"
 
 # PROD
-# EPOCHS = 10
+# EPOCHS = 20
 # LIT_SANITY_STEPS = 1
 # LIMIT = None
 # DATALOADER_WORKERS = 4
 # LOGS_FOLDER = "logs_models"
 
+RUNS = [
+    # "neurlux",
+    # "mlp_seq",
+    # "cnn",
+    # "lstm",
+    # "cnn_lstm",
+    # "mean_transformer",
+    # "cls_transformer",
+    # "attpool_transformer",
+    # "_tabular_rf",
+    "_tabular_mlp",
+    # "_tabular_xgb",
+    # "_tabular_log_reg",
+]
 
 if __name__ == "__main__":
     # ===========================================
@@ -192,34 +231,39 @@ if __name__ == "__main__":
     # =============================================
 
     # sequential models
-    mlp_seq_model = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_seq_len=MAX_LEN, dropout=DROPOUT) # 297 345 params
-    cnn_model = CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[3, 5, 7], mlp_hidden_dims=[64, 32], output_dim=1, seq_length=MAX_LEN, dropout=DROPOUT) # 299 328 params
-    lstm_model = BiLSTMModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, hidden_dim=32, mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 334 656 params
-    cnn_lstm_model = CNN1D_BiLSTM_Model(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_size=3, lstm_hidden_dim=32, mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 324 416 params
-    flat_transformer_model = FlatTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # ? params
-    mean_transformer_model = MeanTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # ? params
-    cls_transformer_model = CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # ? params
-    attpool_transformer_model = AttentionPoolingTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # ? params
+
+    # excluding this since it is significantly larger model w/o significant architecture changes
+    #flat_transformer_model = FlatTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 855 K params
+
+    mlp_seq_model = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_len=MAX_LEN, dropout=DROPOUT) # 297 K params
+    cnn_model = CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[2, 3, 4, 5], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 301 K params
+    lstm_model = BiLSTMModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, hidden_dim=32, mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 318 K params
+    cnn_lstm_model = CNN1D_BiLSTM_Model(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_size=3, lstm_hidden_dim=32, mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 316 K params
+    mean_transformer_model = MeanTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
+    cls_transformer_model = CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) #  335 K params
+    attpool_transformer_model = AttentionPoolingTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) #  335 K params
+    neurlux = NeurLuxModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, max_len=MAX_LEN, hidden_dim=32, output_dim=1, dropout=DROPOUT) # 402 K params
 
     # tabular models
     rf_model = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=SEED)
     xgb_model = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
     log_reg = LogisticRegression(random_state=SEED)
-    mlp_tab_model = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_seq_len=MAX_LEN, dropout=DROPOUT) # 297 345 params
+    mlp_tab_model = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
 
     models = {
+        #"flat_transformer": flat_transformer_model,
+        "neurlux": neurlux,
         "attpool_transformer": attpool_transformer_model,
         "cls_transformer": cls_transformer_model,
         "mean_transformer": mean_transformer_model,
-        "flat_transformer": flat_transformer_model,
         "mlp_seq": mlp_seq_model,
         "cnn": cnn_model,
         "lstm": lstm_model,
         "cnn_lstm": cnn_lstm_model,
-        "mlp_tab": mlp_tab_model,
-        "rf": rf_model,
-        "xgb": xgb_model,
-        "log_reg": log_reg,
+        "_tabular_mlp": mlp_tab_model,
+        "_tabular_rf": rf_model,
+        "_tabular_xgb": xgb_model,
+        "_tabular_log_reg": log_reg,
     }
 
     # =============================================
@@ -227,26 +271,21 @@ if __name__ == "__main__":
     # =============================================
 
     for name, model in models.items():
-        if name in ["rf", "xgb", "log_reg"]:
-            print(f"[*] Training {name} model...")
-            model.fit(X_train_minhash, y_train)
-
-            # save trained model to LOGS_FOLDER/name
-            os.makedirs(f"{LOGS_FOLDER}/{name}", exist_ok=True)
-            with open(f"{LOGS_FOLDER}/{name}/model.pkl", "wb") as f:
-                pickle.dump(model, f)
-            
-            y_test_preds = model.predict_proba(X_test_minhash)[:,1]
-            tpr = get_tpr_at_fpr(y_test_preds, y_test)
-            f1 = f1_score(y_test, y_test_preds.round())
-            acc = accuracy_score(y_test, y_test_preds.round())
-            auc = roc_auc_score(y_test, y_test_preds)
-            print(f"[!] {name} model scores: tpr={tpr:.4f}, f1={f1:.4f}, acc={acc:.4f}, auc={auc:.4f}")
+        if name not in RUNS:
+            continue
         
-        elif name == "mlp_tab":
+        now = time.time()
+        print(f"[!] Training of {name} started: ", time.ctime())
+        
+        if name in ["rf", "xgb", "log_reg"]:
+            training_tabular(model, name, X_train_minhash, X_test_minhash, y_train, y_test, logs_folder=LOGS_FOLDER)
+        
+        elif name == "_tabular_mlp":
             training(model, X_train_loader_minhash, X_test_loader_minhash, name, log_folder=LOGS_FOLDER, epochs=EPOCHS)
-
+        
         else:
             training(model, X_train_loader, X_test_loader, name, log_folder=LOGS_FOLDER, epochs=EPOCHS)
+        
+        print(f"[!] Training of {name} ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")
 
     print(f"[!] Script end time: {time.ctime()}")

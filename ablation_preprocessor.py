@@ -41,7 +41,7 @@ def embedding_training(X_train_loader, X_test_loader, name, positional, epochs=1
         output_dim=1,
         hidden_dim=HIDDEN,
         use_positional_encoding=positional,
-        max_seq_len=MAX_LEN
+        max_len=MAX_LEN
     )
     training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epochs=epochs)
 

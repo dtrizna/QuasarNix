@@ -1,0 +1,204 @@
+C:\Users\dtrizna\Code\Synapse\Linux>python3 ablation_preprocessor_no_val.py
+Python implementation: CPython
+Python version       : 3.9.13
+IPython version      : 8.11.0
+
+torch    : 2.0.1+cu117
+lightning: 1.8.6
+sklearn  : 0.0.post1
+
+[!] Script start time: Mon Aug 14 19:58:16 2023
+Global seed set to 33
+Sizes of train and test sets: 533014, 470129
+[*] Fitting one-hot encoder...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training onehot model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type              | Params
+-------------------------------------------------
+0  | model     | SimpleMLP         | 32.8 K
+1  | loss      | BCEWithLogitsLoss | 0
+2  | train_acc | BinaryAccuracy    | 0
+3  | train_f1  | BinaryF1Score     | 0
+4  | train_auc | BinaryAUROC       | 0
+5  | val_acc   | BinaryAccuracy    | 0
+6  | val_f1    | BinaryF1Score     | 0
+7  | val_auc   | BinaryAUROC       | 0
+8  | test_acc  | BinaryAccuracy    | 0
+9  | test_f1   | BinaryF1Score     | 0
+10 | test_auc  | BinaryAUROC       | 0
+-------------------------------------------------
+32.8 K    Trainable params
+0         Non-trainable params
+32.8 K    Total params
+0.131     Total estimated model params size (MB)
+Epoch 0: 100%|█| 706/706 [01:59<00:00,  5.93it/s, loss=0.0388, v_num=0, train_loss=0.0328, val_acc=0.999, val_f1=0.999, val_auc=1.000, val_tpr=0.990, train_a
+Epoch 1: 100%|█| 706/706 [01:17<00:00,  9.11it/s, loss=0.0072, v_num=0, train_loss=0.00646, val_acc=1.000, val_f1=1.000, val_auc=1.000, val_tpr=0.994, train_
+Epoch 2: 100%|█| 706/706 [01:15<00:00,  9.32it/s, loss=0.00304, v_num=0, train_loss=0.00271, val_acc=0.999, val_f1=0.999, val_auc=1.000, val_tpr=0.995, train
+Epoch 3: 100%|█| 706/706 [01:14<00:00,  9.44it/s, loss=0.0017, v_num=0, train_loss=0.00149, val_acc=0.999, val_f1=0.999, val_auc=1.000, val_tpr=0.995, train_
+Epoch 4: 100%|█| 706/706 [01:15<00:00,  9.39it/s, loss=0.00109, v_num=0, train_loss=0.000942, val_acc=0.999, val_f1=0.999, val_auc=1.000, val_tpr=0.996, trai
+Epoch 5: 100%|█| 706/706 [01:15<00:00,  9.38it/s, loss=0.000767, v_num=0, train_loss=0.000648, val_acc=0.999, val_f1=0.999, val_auc=1.000, val_tpr=0.996, tra
+Epoch 6: 100%|█| 706/706 [01:15<00:00,  9.40it/s, loss=0.000569, v_num=0, train_loss=0.000472, val_acc=0.999, val_f1=0.999, val_auc=1.000, val_tpr=0.996, tra
+Epoch 7: 100%|█| 706/706 [01:15<00:00,  9.33it/s, loss=0.00044, v_num=0, train_loss=0.000358, val_acc=0.999, val_f1=0.999, val_auc=1.000, val_tpr=0.996, trai
+Epoch 8: 100%|█| 706/706 [01:18<00:00,  9.00it/s, loss=0.000351, v_num=0, train_loss=0.00028, val_acc=0.999, val_f1=0.999, val_auc=1.000, val_tpr=0.996, trai
+Epoch 9: 100%|█| 706/706 [01:30<00:00,  7.81it/s, loss=0.000286, v_num=0, train_loss=0.000225, val_acc=0.998, val_f1=0.998, val_auc=1.000, val_tpr=0.996, tra
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█| 706/706 [01:30<00:00,  7.81it/s, loss=0.000286, v_num=0, train_loss=0.000225, val_acc=0.998, val_f1=0.998, val_auc=1.000, val_tpr=0.996, tra 
+[*] Fitting TF-IDF encoder...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training tfidf model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type              | Params
+-------------------------------------------------
+0  | model     | SimpleMLP         | 32.8 K
+1  | loss      | BCEWithLogitsLoss | 0
+2  | train_acc | BinaryAccuracy    | 0
+3  | train_f1  | BinaryF1Score     | 0
+4  | train_auc | BinaryAUROC       | 0
+5  | val_acc   | BinaryAccuracy    | 0
+6  | val_f1    | BinaryF1Score     | 0
+7  | val_auc   | BinaryAUROC       | 0
+8  | test_acc  | BinaryAccuracy    | 0
+9  | test_f1   | BinaryF1Score     | 0
+10 | test_auc  | BinaryAUROC       | 0
+-------------------------------------------------
+32.8 K    Trainable params
+0         Non-trainable params
+32.8 K    Total params
+0.131     Total estimated model params size (MB)
+Epoch 0: 100%|█| 706/706 [02:33<00:00,  4.59it/s, loss=0.146, v_num=0, train_loss=0.123, val_acc=1.000, val_f1=1.000, val_auc=1.000, val_tpr=0.975, train_acc
+Epoch 1: 100%|█| 706/706 [01:20<00:00,  8.74it/s, loss=0.0266, v_num=0, train_loss=0.0239, val_acc=0.999, val_f1=0.999, val_auc=1.000, val_tpr=0.976, train_a
+Epoch 2: 100%|█| 706/706 [01:20<00:00,  8.79it/s, loss=0.0106, v_num=0, train_loss=0.00972, val_acc=0.999, val_f1=0.999, val_auc=1.000, val_tpr=0.975, train_
+Epoch 3: 100%|█| 706/706 [01:18<00:00,  9.04it/s, loss=0.00575, v_num=0, train_loss=0.00526, val_acc=0.998, val_f1=0.998, val_auc=1.000, val_tpr=0.975, train
+Epoch 4: 100%|█| 706/706 [01:34<00:00,  7.48it/s, loss=0.00362, v_num=0, train_loss=0.00329, val_acc=0.998, val_f1=0.998, val_auc=1.000, val_tpr=0.975, train
+Epoch 5: 100%|█| 706/706 [01:27<00:00,  8.06it/s, loss=0.0025, v_num=0, train_loss=0.00225, val_acc=0.998, val_f1=0.998, val_auc=1.000, val_tpr=0.975, train_
+Epoch 6: 100%|█| 706/706 [01:23<00:00,  8.47it/s, loss=0.00183, v_num=0, train_loss=0.00164, val_acc=0.997, val_f1=0.997, val_auc=1.000, val_tpr=0.975, train
+Epoch 7: 100%|█| 706/706 [01:14<00:00,  9.48it/s, loss=0.00139, v_num=0, train_loss=0.00124, val_acc=0.997, val_f1=0.997, val_auc=1.000, val_tpr=0.975, train
+Epoch 8: 100%|█| 706/706 [01:14<00:00,  9.46it/s, loss=0.0011, v_num=0, train_loss=0.000967, val_acc=0.997, val_f1=0.997, val_auc=1.000, val_tpr=0.975, train
+Epoch 9: 100%|█| 706/706 [01:14<00:00,  9.41it/s, loss=0.000883, v_num=0, train_loss=0.000774, val_acc=0.996, val_f1=0.996, val_auc=1.000, val_tpr=0.975, tra
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█| 706/706 [01:14<00:00,  9.41it/s, loss=0.000883, v_num=0, train_loss=0.000774, val_acc=0.996, val_f1=0.996, val_auc=1.000, val_tpr=0.975, tra 
+[*] Fitting MinHash encoder...
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\sklearn\feature_extraction\text.py:524: UserWarning: The parameter 'token_pattern' will not be used since 'tokenizer' is not None'
+  warnings.warn(
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training minhash model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type              | Params
+-------------------------------------------------
+0  | model     | SimpleMLP         | 32.8 K
+1  | loss      | BCEWithLogitsLoss | 0
+2  | train_acc | BinaryAccuracy    | 0
+3  | train_f1  | BinaryF1Score     | 0
+4  | train_auc | BinaryAUROC       | 0
+5  | val_acc   | BinaryAccuracy    | 0
+6  | val_f1    | BinaryF1Score     | 0
+7  | val_auc   | BinaryAUROC       | 0
+8  | test_acc  | BinaryAccuracy    | 0
+9  | test_f1   | BinaryF1Score     | 0
+10 | test_auc  | BinaryAUROC       | 0
+-------------------------------------------------
+32.8 K    Trainable params
+0         Non-trainable params
+32.8 K    Total params
+0.131     Total estimated model params size (MB)
+Epoch 0: 100%|█| 706/706 [01:56<00:00,  6.07it/s, loss=0.188, v_num=0, train_loss=0.160, val_acc=0.992, val_f1=0.992, val_auc=0.999, val_tpr=0.796, train_acc
+Epoch 1: 100%|█| 706/706 [01:17<00:00,  9.17it/s, loss=0.0378, v_num=0, train_loss=0.0326, val_acc=0.995, val_f1=0.995, val_auc=1.000, val_tpr=0.867, train_a
+Epoch 2: 100%|█| 706/706 [01:17<00:00,  9.10it/s, loss=0.0157, v_num=0, train_loss=0.0133, val_acc=0.997, val_f1=0.997, val_auc=1.000, val_tpr=0.899, train_a
+Epoch 3: 100%|█| 706/706 [01:17<00:00,  9.07it/s, loss=0.00868, v_num=0, train_loss=0.00726, val_acc=0.997, val_f1=0.997, val_auc=1.000, val_tpr=0.913, train
+Epoch 4: 100%|█| 706/706 [01:23<00:00,  8.45it/s, loss=0.00554, v_num=0, train_loss=0.00457, val_acc=0.997, val_f1=0.997, val_auc=1.000, val_tpr=0.921, train
+Epoch 5: 100%|█| 706/706 [01:29<00:00,  7.92it/s, loss=0.00385, v_num=0, train_loss=0.00314, val_acc=0.997, val_f1=0.997, val_auc=1.000, val_tpr=0.927, train
+Epoch 6: 100%|█| 706/706 [01:20<00:00,  8.77it/s, loss=0.00284, v_num=0, train_loss=0.00229, val_acc=0.996, val_f1=0.996, val_auc=1.000, val_tpr=0.932, train
+Epoch 7: 100%|█| 706/706 [01:17<00:00,  9.08it/s, loss=0.00217, v_num=0, train_loss=0.00174, val_acc=0.996, val_f1=0.996, val_auc=1.000, val_tpr=0.935, train
+Epoch 8: 100%|█| 706/706 [01:18<00:00,  9.03it/s, loss=0.00172, v_num=0, train_loss=0.00137, val_acc=0.995, val_f1=0.995, val_auc=1.000, val_tpr=0.938, train
+Epoch 9: 100%|█| 706/706 [01:18<00:00,  9.03it/s, loss=0.00139, v_num=0, train_loss=0.0011, val_acc=0.995, val_f1=0.995, val_auc=1.000, val_tpr=0.941, train_
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█| 706/706 [01:18<00:00,  9.03it/s, loss=0.00139, v_num=0, train_loss=0.0011, val_acc=0.995, val_f1=0.995, val_auc=1.000, val_tpr=0.941, train_ 
+[*] Building vocab and encoding...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 67.6 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+67.6 K    Trainable params
+0         Non-trainable params
+67.6 K    Total params
+0.271     Total estimated model params size (MB)
+Epoch 0: 100%|█| 706/706 [00:26<00:00, 26.89it/s, loss=0.287, v_num=0, train_loss=0.241, val_acc=0.959, val_f1=0.958, val_auc=0.994, val_tpr=0.255, train_acc
+Epoch 1: 100%|█| 706/706 [00:14<00:00, 48.87it/s, loss=0.0442, v_num=0, train_loss=0.0354, val_acc=0.959, val_f1=0.958, val_auc=0.996, val_tpr=0.549, train_a
+Epoch 2: 100%|█| 706/706 [00:13<00:00, 50.74it/s, loss=0.0173, v_num=0, train_loss=0.012, val_acc=0.954, val_f1=0.953, val_auc=0.998, val_tpr=0.632, train_ac
+Epoch 3: 100%|█| 706/706 [00:14<00:00, 48.95it/s, loss=0.00918, v_num=0, train_loss=0.00592, val_acc=0.953, val_f1=0.951, val_auc=0.998, val_tpr=0.748, train
+Epoch 4: 100%|█| 706/706 [00:16<00:00, 43.24it/s, loss=0.00541, v_num=0, train_loss=0.00351, val_acc=0.952, val_f1=0.950, val_auc=0.999, val_tpr=0.784, train
+Epoch 5: 100%|█| 706/706 [00:15<00:00, 44.87it/s, loss=0.00342, v_num=0, train_loss=0.00223, val_acc=0.952, val_f1=0.950, val_auc=0.999, val_tpr=0.806, train
+Epoch 6: 100%|█| 706/706 [00:15<00:00, 44.64it/s, loss=0.00231, v_num=0, train_loss=0.0015, val_acc=0.950, val_f1=0.947, val_auc=0.999, val_tpr=0.819, train_
+Epoch 7: 100%|█| 706/706 [00:15<00:00, 44.39it/s, loss=0.00165, v_num=0, train_loss=0.00108, val_acc=0.946, val_f1=0.943, val_auc=0.999, val_tpr=0.828, train
+Epoch 8: 100%|█| 706/706 [00:15<00:00, 44.72it/s, loss=0.00123, v_num=0, train_loss=0.000803, val_acc=0.943, val_f1=0.939, val_auc=0.999, val_tpr=0.835, trai
+Epoch 9: 100%|█| 706/706 [00:16<00:00, 42.10it/s, loss=0.000953, v_num=0, train_loss=0.000617, val_acc=0.940, val_f1=0.936, val_auc=0.999, val_tpr=0.840, tra
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█| 706/706 [00:16<00:00, 42.07it/s, loss=0.000953, v_num=0, train_loss=0.000617, val_acc=0.940, val_f1=0.936, val_auc=0.999, val_tpr=0.840, tra 
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_positional model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 67.6 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+67.6 K    Trainable params
+0         Non-trainable params
+67.6 K    Total params
+0.271     Total estimated model params size (MB)
+Epoch 0: 100%|█| 706/706 [00:30<00:00, 23.28it/s, loss=0.274, v_num=0, train_loss=0.236, val_acc=0.942, val_f1=0.939, val_auc=0.997, val_tpr=0.507, train_acc
+Epoch 1: 100%|█| 706/706 [00:16<00:00, 42.61it/s, loss=0.0422, v_num=0, train_loss=0.0347, val_acc=0.980, val_f1=0.980, val_auc=0.998, val_tpr=0.698, train_a
+Epoch 2: 100%|█| 706/706 [00:16<00:00, 43.87it/s, loss=0.0146, v_num=0, train_loss=0.0108, val_acc=0.979, val_f1=0.978, val_auc=0.999, val_tpr=0.826, train_a
+Epoch 3: 100%|█| 706/706 [00:16<00:00, 43.44it/s, loss=0.0072, v_num=0, train_loss=0.00495, val_acc=0.977, val_f1=0.976, val_auc=0.999, val_tpr=0.860, train_
+Epoch 4: 100%|█| 706/706 [00:17<00:00, 41.43it/s, loss=0.00412, v_num=0, train_loss=0.0028, val_acc=0.974, val_f1=0.974, val_auc=1.000, val_tpr=0.879, train_
+Epoch 5: 100%|█| 706/706 [00:16<00:00, 43.01it/s, loss=0.0026, v_num=0, train_loss=0.00176, val_acc=0.969, val_f1=0.968, val_auc=1.000, val_tpr=0.889, train_
+Epoch 6: 100%|█| 706/706 [00:16<00:00, 42.86it/s, loss=0.00177, v_num=0, train_loss=0.00119, val_acc=0.965, val_f1=0.964, val_auc=1.000, val_tpr=0.895, train
+Epoch 7: 100%|█| 706/706 [00:16<00:00, 43.43it/s, loss=0.00127, v_num=0, train_loss=0.000848, val_acc=0.962, val_f1=0.961, val_auc=1.000, val_tpr=0.899, trai
+Epoch 8: 100%|█| 706/706 [00:16<00:00, 43.11it/s, loss=0.000953, v_num=0, train_loss=0.000632, val_acc=0.959, val_f1=0.957, val_auc=1.000, val_tpr=0.903, tra
+Epoch 9: 100%|█| 706/706 [00:16<00:00, 41.64it/s, loss=0.000738, v_num=0, train_loss=0.000485, val_acc=0.956, val_f1=0.954, val_auc=1.000, val_tpr=0.906, tra
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█| 706/706 [00:16<00:00, 41.63it/s, loss=0.000738, v_num=0, train_loss=0.000485, val_acc=0.956, val_f1=0.954, val_auc=1.000, val_tpr=0.906, tra 
+[!] Script end time: Mon Aug 14 20:54:03 2023

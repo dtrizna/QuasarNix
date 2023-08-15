@@ -1,0 +1,94 @@
+# Skipping data
+data/*
+
+# Model checkpoints
+*.ckpt
+
+# Compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+*.env
+
+# Logs and other generated files
+*.log
+logs/
+
+# Build and distribution directories
+build/
+dist/
+*.egg-info/
+*.egg
+*.egg-info/
+
+# Temporary files
+*.bak
+*.swp
+*.~*
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Jupyter Notebook specific files
+.ipynb_checkpoints/
+
+# Database files
+*.db
+*.sqlite3
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Compiled files
+*.class
+*.jar
+
+# macOS specific files
+.DS_Store
+
+# Compiled LaTeX files
+*.pdf
+*.dvi
+*.aux
+*.log
+*.synctex.gz
+*.out
+*.toc
+
+# Compiled Java files
+*.class
+
+# Compiled Ruby files
+*.class
+
+# Compiled Perl files
+*.plc
+*.plx
+*.perl
+
+# Compiled Lua files
+*.luac
+
+# Compiled C/C++ files
+*.out
+
+# Compiled Swift files
+*.swiftmodule
+*.swiftdoc
+*.swiftsourceinfo
+
+# Compiled Kotlin files
+*.kotlin_module
+
+# Compiled Visual Basic files
+*.vb
+
+# Compiled TypeScript files
+*.tsbuildinfo

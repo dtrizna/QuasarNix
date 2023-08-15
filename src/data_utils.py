@@ -18,7 +18,7 @@ class CSRTensorDataset(Dataset):
     def __getitem__(self, index):
         row = self.csr_data[index].toarray().squeeze()  # Convert the sparse row to a dense numpy array
         label = self.labels[index]
-        return torch.tensor(row, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        return torch.tensor(row, dtype=torch.long), torch.tensor(label, dtype=torch.float32)
 
 
 def create_dataloader(X, y, batch_size, shuffle=False, workers=4):

@@ -8,69 +8,14 @@ import math
 
 from sklearn.metrics import roc_curve
 
-class SimpleMLP(nn.Module):
-    def __init__(self, input_dim, output_dim, hidden_dim=[32], dropout=None):
-        if isinstance(hidden_dim, int):
-            hidden_dim = [hidden_dim]
-        
-        super().__init__()
-        layers = []
-        prev_dim = input_dim
-        
-        # Dynamically create hidden layers based on hidden_dim
-        for h_dim in hidden_dim:
-            layers.append(nn.Linear(prev_dim, h_dim))
-            layers.append(nn.ReLU())
-            if dropout:
-                layers.append(nn.Dropout(dropout))
-            prev_dim = h_dim
-        
-        layers.append(nn.Linear(prev_dim, output_dim))
-        self.model = nn.Sequential(*layers)
-    
-    def forward(self, x):
-        return self.model(x)
 
-
-class SimpleMLPWithEmbedding(nn.Module):
-    def __init__(self, vocab_size, embedding_dim, output_dim, hidden_dim=[32], use_positional_encoding=False, max_seq_len=500, device=None, dropout=None):
-        super(SimpleMLPWithEmbedding, self).__init__()
-        self.embedding = nn.Embedding(vocab_size, embedding_dim)
-        self.mlp = SimpleMLP(input_dim=embedding_dim, output_dim=output_dim, hidden_dim=hidden_dim, dropout=dropout)
-        self.use_positional_encoding = use_positional_encoding
-        
-        # Positional encoding
-        if self.use_positional_encoding:
-            self.positional_encoding = self.init_positional_encoding(embedding_dim, max_seq_len)
-        
-        if device is None:
-            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = device
-
-    def init_positional_encoding(self, d_model, max_seq_len):
-        pe = torch.zeros(max_seq_len, d_model)
-        position = torch.arange(0, max_seq_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        return pe.unsqueeze(0)
-
-    def forward(self, x):
-        x = self.embedding(x)
-        if self.use_positional_encoding:
-            x = x + self.positional_encoding[:, :x.size(1), :].to(self.device)
-        x = x.mean(dim=1)
-        return self.mlp(x)
-
-
-class MLP_LightningModel(L.LightningModule):
-    def __init__(self, model, learning_rate):
+class PyTorchLightningModel(L.LightningModule):
+    def __init__(self, model, learning_rate, fpr=1e-4):
         super().__init__()
 
         self.model = model
         self.learning_rate = learning_rate
-        self.fpr = 1e-4
+        self.fpr = fpr
 
         self.loss = BCEWithLogitsLoss()
 
@@ -157,21 +102,64 @@ class MLP_LightningModel(L.LightningModule):
         return loss
 
 
+class SimpleMLP(nn.Module):
+    def __init__(self, input_dim, output_dim, hidden_dim=[32], dropout=None):
+        if isinstance(hidden_dim, int):
+            hidden_dim = [hidden_dim]
+        
+        super().__init__()
+        layers = []
+        prev_dim = input_dim
+        
+        # Dynamically create hidden layers based on hidden_dim
+        for h_dim in hidden_dim:
+            layers.append(nn.Linear(prev_dim, h_dim))
+            layers.append(nn.ReLU())
+            if dropout:
+                layers.append(nn.Dropout(dropout))
+            prev_dim = h_dim
+        
+        layers.append(nn.Linear(prev_dim, output_dim))
+        self.model = nn.Sequential(*layers)
+    
+    def forward(self, x):
+        return self.model(x)
+
+
+class SimpleMLPWithEmbedding(nn.Module):
+    def __init__(self, vocab_size, embedding_dim, output_dim, hidden_dim=[32], use_positional_encoding=False, max_seq_len=500, dropout=None):
+        super(SimpleMLPWithEmbedding, self).__init__()
+        self.embedding = nn.Embedding(vocab_size, embedding_dim)
+        self.mlp = SimpleMLP(input_dim=embedding_dim, output_dim=output_dim, hidden_dim=hidden_dim, dropout=dropout)
+        self.use_positional_encoding = use_positional_encoding
+        
+        # Positional encoding
+        if self.use_positional_encoding:
+            self.positional_encoding = PositionalEncoding(embedding_dim, dropout, max_seq_len)
+
+    def forward(self, x):
+        x = self.embedding(x)
+        if self.use_positional_encoding:
+            x = self.positional_encoding(x)
+        x = x.mean(dim=1)
+        return self.mlp(x)
+
+
 class CNN1DGroupedModel(nn.Module):
-    def __init__(self, vocab_size, embed_dim, num_channels, kernel_sizes, mlp_hidden_dims, output_dim, dropout=None):
+    def __init__(self, vocab_size, embed_dim, num_channels, kernel_sizes, mlp_hidden_dims, output_dim, seq_length, dropout=None):
         super().__init__()
         
         self.embedding = nn.Embedding(vocab_size, embed_dim)
-        self.grouped_convs = nn.ModuleList([nn.Conv1d(embed_dim, num_channels, kernel) for kernel in kernel_sizes])
+        self.grouped_convs = nn.ModuleList([nn.Conv1d(embed_dim, num_channels, kernel, padding=kernel//2) for kernel in kernel_sizes])
         
-        mlp_input_dim = num_channels * len(kernel_sizes)
+        mlp_input_dim = num_channels * len(kernel_sizes) * seq_length
         self.mlp = SimpleMLP(input_dim=mlp_input_dim, output_dim=output_dim, hidden_dim=mlp_hidden_dims, dropout=dropout)
 
     def forward(self, x):
         x = self.embedding(x).transpose(1, 2)
         conv_outputs = [conv(x) for conv in self.grouped_convs]
         x = torch.cat(conv_outputs, dim=1)
-        x = x.view(x.size(0), -1)  # Flatten
+        x = x.view(x.size(0), -1)
         return self.mlp(x)
 
 
@@ -211,31 +199,127 @@ class CNN1D_BiLSTM_Model(nn.Module):
         return self.mlp(x)
 
 
-class TransformerEncoder(nn.Module):
-    def __init__(self, vocab_size, d_model, nhead, num_layers, dim_feedforward, mlp_hidden_dims, max_len, dropout=None, device=None, output_dim=1):
-        super(TransformerEncoder, self).__init__()
+# class TransformerEncoder(nn.Module):
+#     def __init__(self, vocab_size, d_model, nhead, num_layers, dim_feedforward, mlp_hidden_dims, max_len, dropout=None, output_dim=1):
+#         super(TransformerEncoder, self).__init__()
         
+#         assert d_model % nhead == 0, "nheads must divide evenly into d_model"
+#         self.embedding = nn.Embedding(vocab_size, d_model)
+#         self.pos_encoder = PositionalEncoding(d_model, dropout, max_len=max_len)
+#         encoder_layer = nn.TransformerEncoderLayer(d_model, nhead, dim_feedforward, dropout, norm_first=True, batch_first=True)
+#         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers)
+#         self.decoder = SimpleMLP(input_dim=d_model, output_dim=output_dim, hidden_dim=mlp_hidden_dims, dropout=dropout)
+
+#     def forward(self, src, src_mask=None, src_key_padding_mask=None):
+#         src = self.embedding(src) * math.sqrt(self.embedding.embedding_dim)
+#         src = self.pos_encoder(src)
+#         output = self.transformer_encoder(src, mask=src_mask, src_key_padding_mask=src_key_padding_mask)
+#         return self.decoder(output)
+
+
+class BaseTransformerEncoder(nn.Module):
+    def __init__(self, vocab_size, d_model, nhead, num_layers, dim_feedforward, max_len, dropout=None):
+        super(BaseTransformerEncoder, self).__init__()
+        
+        assert d_model % nhead == 0, "nheads must divide evenly into d_model"
         self.embedding = nn.Embedding(vocab_size, d_model)
-        self.pos_encoder = self.init_positional_encoding(d_model, max_len)
-        encoder_layer = nn.TransformerEncoderLayer(d_model, nhead, dim_feedforward, dropout, norm_first=True)
+        self.pos_encoder = PositionalEncoding(d_model, dropout, max_len=max_len)
+        encoder_layer = nn.TransformerEncoderLayer(d_model, nhead, dim_feedforward, dropout, norm_first=True, batch_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers)
-        self.decoder = SimpleMLP(input_dim=d_model, output_dim=output_dim, hidden_dim=mlp_hidden_dims, dropout=dropout)
-        
-        if device is None:
-            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = device
-        
-    def init_positional_encoding(self, d_model, max_seq_len):
-        pe = torch.zeros(max_seq_len, d_model)
-        position = torch.arange(0, max_seq_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        return pe.unsqueeze(0)
+
+    def encode(self, src, src_mask=None, src_key_padding_mask=None):
+        src = self.embedding(src) * math.sqrt(self.embedding.embedding_dim)
+        src = self.pos_encoder(src)
+        return self.transformer_encoder(src, mask=src_mask, src_key_padding_mask=src_key_padding_mask)
+
+
+class FlatTransformerEncoder(BaseTransformerEncoder):
+    def __init__(self, mlp_hidden_dims, output_dim, *args, **kwargs):
+        super(FlatTransformerEncoder, self).__init__(*args, **kwargs)
+        self.decoder = SimpleMLP(input_dim=self.embedding.embedding_dim * kwargs.get("max_len"), output_dim=output_dim, hidden_dim=mlp_hidden_dims, dropout=kwargs.get("dropout"))
 
     def forward(self, src, src_mask=None, src_key_padding_mask=None):
-        src = self.embedding(src) * math.sqrt(self.embedding.embedding_dim)
-        src = src + self.pos_encoder(src).to(self.device)
-        output = self.transformer_encoder(src, mask=src_mask, src_key_padding_mask=src_key_padding_mask)
+        output = self.encode(src, src_mask, src_key_padding_mask)
+        output = output.flatten(start_dim=1)
         return self.decoder(output)
+
+
+class MeanTransformerEncoder(BaseTransformerEncoder):
+    def __init__(self, mlp_hidden_dims, output_dim, *args, **kwargs):
+        super(MeanTransformerEncoder, self).__init__(*args, **kwargs)
+        self.decoder = SimpleMLP(input_dim=self.embedding.embedding_dim, output_dim=output_dim, hidden_dim=mlp_hidden_dims, dropout=kwargs.get("dropout"))
+
+    def forward(self, src, src_mask=None, src_key_padding_mask=None):
+        output = self.encode(src, src_mask, src_key_padding_mask)
+        output = output.mean(dim=1)
+        return self.decoder(output)
+
+
+class CLSTransformerEncoder(BaseTransformerEncoder):
+    def __init__(self, mlp_hidden_dims, output_dim, *args, **kwargs):
+        kwargs["max_len"] += 1 # to account for CLS token
+        super(CLSTransformerEncoder, self).__init__(*args, **kwargs)
+        self.cls_token = nn.Parameter(torch.randn(1, 1, self.embedding.embedding_dim))
+        self.decoder = SimpleMLP(input_dim=self.embedding.embedding_dim, output_dim=output_dim, hidden_dim=mlp_hidden_dims, dropout=kwargs.get("dropout"))
+
+    def forward(self, src, src_mask=None, src_key_padding_mask=None):
+        # Embed the src token indices
+        src = self.embedding(src) * math.sqrt(self.embedding.embedding_dim)
+        
+        # Repeat the cls_token for every item in the batch and concatenate it to src
+        cls_tokens = self.cls_token.repeat(src.size(0), 1, 1)
+        src = torch.cat([cls_tokens, src], dim=1)
+        
+        # Add positional encoding
+        src = self.pos_encoder(src)
+        
+        # Pass through transformer encoder
+        output = self.transformer_encoder(src, mask=src_mask, src_key_padding_mask=src_key_padding_mask)
+        
+        # Extract the encoding corresponding to the cls_token
+        output = output[:, 0, :]  # [B, E]
+        
+        return self.decoder(output)
+
+
+class AttentionPoolingTransformerEncoder(BaseTransformerEncoder):
+    def __init__(self, mlp_hidden_dims, output_dim, *args, **kwargs):
+        super(AttentionPoolingTransformerEncoder, self).__init__(*args, **kwargs)
+        self.attention_weight = nn.Linear(self.embedding.embedding_dim, 1)
+        self.decoder = SimpleMLP(input_dim=self.embedding.embedding_dim, output_dim=output_dim, hidden_dim=mlp_hidden_dims, dropout=kwargs.get("dropout"))
+
+    def forward(self, src, src_mask=None, src_key_padding_mask=None):
+        output = self.encode(src, src_mask, src_key_padding_mask)
+        
+        # Calculate attention scores. This will give a weight to each token in the sequence
+        att_scores = self.attention_weight(output).squeeze(-1)
+        att_probs = torch.softmax(att_scores, dim=1).unsqueeze(-1)
+        
+        # Weighted sum of the encoder outputs
+        pooled_output = (output * att_probs).sum(dim=1)
+        
+        return self.decoder(pooled_output)
+
+
+class PositionalEncoding(nn.Module):
+
+    def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000):
+        super().__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        # Initialize pe with shape [1, max_len, d_model] for broadcasting
+        pe = torch.zeros(1, max_len, d_model)
+        position = torch.arange(max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
+        pe[0, :, 0::2] = torch.sin(position * div_term)
+        pe[0, :, 1::2] = torch.cos(position * div_term)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        """
+        Args:
+            x: Tensor, shape [batch_size, seq_len, embedding_dim]
+        """
+        # Use broadcasting to add positional encoding
+        x = x + self.pe[:, :x.size(1), :]
+        return self.dropout(x)

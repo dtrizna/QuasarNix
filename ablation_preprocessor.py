@@ -20,7 +20,7 @@ from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 from lightning.lite.utilities.seed import seed_everything
 
 sys.path.append("Linux/")
-from src.models import SimpleMLP, SimpleMLPWithEmbedding, MLP_LightningModel
+from src.models import SimpleMLP, SimpleMLPWithEmbedding, PyTorchLightningModel
 from src.lit_utils import LitProgressBar
 from src.preprocessors import OneHotCustomVectorizer, CommandTokenizer
 from src.data_utils import create_dataloader
@@ -47,7 +47,7 @@ def embedding_training(X_train_loader, X_test_loader, name, positional, epochs=1
 
 
 def training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epochs=10):
-    lightning_model = MLP_LightningModel(model=pytorch_model, learning_rate=1e-3)
+    lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=1e-3)
 
     # ensure folders for logging exist
     os.makedirs(f"{log_folder}/{name}_csv", exist_ok=True)

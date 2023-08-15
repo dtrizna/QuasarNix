@@ -21,8 +21,9 @@ from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
 from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 from lightning.lite.utilities.seed import seed_everything
 
-# import random forest and xgboost
+# import random forest, xgboost, and logistic regression
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 
 sys.path.append("Linux/")
@@ -31,10 +32,18 @@ from src.lit_utils import LitProgressBar
 from src.preprocessors import CommandTokenizer
 from src.data_utils import create_dataloader
 
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
 
 def get_tpr_at_fpr(predicted_logits, true_labels, fprNeeded=1e-4):
-    predicted_probs = torch.sigmoid(predicted_logits).cpu().detach().numpy()
-    true_labels = true_labels.cpu().detach().numpy()
+    if isinstance(predicted_logits, torch.Tensor):
+        predicted_probs = torch.sigmoid(predicted_logits).cpu().detach().numpy()
+    else:
+        predicted_probs = sigmoid(predicted_logits)
+    
+    if isinstance(true_labels, torch.Tensor):
+        true_labels = true_labels.cpu().detach().numpy()
+    
     fpr, tpr, thresholds = roc_curve(true_labels, predicted_probs)
     if all(np.isnan(fpr)):
         return np.nan#, np.nan
@@ -45,7 +54,7 @@ def get_tpr_at_fpr(predicted_logits, true_labels, fprNeeded=1e-4):
 
 
 def training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epochs=10):
-    lightning_model = MLP_LightningModel(model=pytorch_model, learning_rate=1e-3)
+    lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=1e-3)
 
     # ensure folders for logging exist
     os.makedirs(f"{log_folder}/{name}_csv", exist_ok=True)
@@ -85,7 +94,7 @@ SEED = 33
 VOCAB_SIZE = 4096
 EMBEDDED_DIM = 64
 MAX_LEN = 128
-BATCH_SIZE = 2048
+BATCH_SIZE = 1024
 DROPOUT = 0.5
 
 # TEST
@@ -170,7 +179,7 @@ if __name__ == "__main__":
     X_test_loader = create_dataloader(X_test_padded, y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
 
     # MIN-HASH TABULAR ENCODING
-    minhash = HashingVectorizer(n_features=VOCAB_SIZE, tokenizer=TOKENIZER)
+    minhash = HashingVectorizer(n_features=VOCAB_SIZE, tokenizer=TOKENIZER, token_pattern=None)
     print("[*] Fitting MinHash encoder...")
     X_train_minhash = minhash.fit_transform(X_train_cmds)
     X_test_minhash = minhash.transform(X_test_cmds)
@@ -183,26 +192,34 @@ if __name__ == "__main__":
     # =============================================
 
     # sequential models
-    cnn_model = CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[3, 5, 7], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 299 328 params
+    mlp_seq_model = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_seq_len=MAX_LEN, dropout=DROPOUT) # 297 345 params
+    cnn_model = CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[3, 5, 7], mlp_hidden_dims=[64, 32], output_dim=1, seq_length=MAX_LEN, dropout=DROPOUT) # 299 328 params
     lstm_model = BiLSTMModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, hidden_dim=32, mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 334 656 params
     cnn_lstm_model = CNN1D_BiLSTM_Model(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_size=3, lstm_hidden_dim=32, mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 324 416 params
-    mlp_seq_model = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_seq_len=MAX_LEN, dropout=DROPOUT) # 297 345 params
-    transformer_encoder_model = TransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, mlp_hidden_dims=[64,32], max_len=MAX_LEN, dropout=DROPOUT) # 333 953 params
-    
+    flat_transformer_model = FlatTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # ? params
+    mean_transformer_model = MeanTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # ? params
+    cls_transformer_model = CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # ? params
+    attpool_transformer_model = AttentionPoolingTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # ? params
+
     # tabular models
     rf_model = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=SEED)
     xgb_model = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
+    log_reg = LogisticRegression(random_state=SEED)
     mlp_tab_model = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_seq_len=MAX_LEN, dropout=DROPOUT) # 297 345 params
 
     models = {
+        "attpool_transformer": attpool_transformer_model,
+        "cls_transformer": cls_transformer_model,
+        "mean_transformer": mean_transformer_model,
+        "flat_transformer": flat_transformer_model,
+        "mlp_seq": mlp_seq_model,
         "cnn": cnn_model,
         "lstm": lstm_model,
         "cnn_lstm": cnn_lstm_model,
-        "mlp_seq": mlp_seq_model,
-        "transformer": transformer_encoder_model,
         "mlp_tab": mlp_tab_model,
         "rf": rf_model,
         "xgb": xgb_model,
+        "log_reg": log_reg,
     }
 
     # =============================================
@@ -210,7 +227,7 @@ if __name__ == "__main__":
     # =============================================
 
     for name, model in models.items():
-        if name in ["rf", "xgb"]:
+        if name in ["rf", "xgb", "log_reg"]:
             print(f"[*] Training {name} model...")
             model.fit(X_train_minhash, y_train)
 

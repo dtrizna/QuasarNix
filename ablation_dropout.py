@@ -20,24 +20,16 @@ from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 from lightning.lite.utilities.seed import seed_everything
 
 sys.path.append("Linux/")
-from src.models import SimpleMLP, SimpleMLPWithEmbedding, MLP_LightningModel
+from src.models import SimpleMLPWithEmbedding, MLP_LightningModel
 from src.lit_utils import LitProgressBar
-from src.preprocessors import OneHotCustomVectorizer, CommandTokenizer
+from src.preprocessors import CommandTokenizer
 from src.data_utils import create_dataloader
 
 
-def csr_training(X_train, y_train, X_test, y_test, name, vocab_size, epochs=10, workers=4, log_folder="logs/"):
-    X_train_loader = create_dataloader(X_train, y_train, batch_size=BATCH_SIZE, workers=workers)
-    X_test_loader = create_dataloader(X_test, y_test, batch_size=BATCH_SIZE, workers=workers)
-
-    pytorch_model = SimpleMLP(input_dim=vocab_size, hidden_dim=HIDDEN, output_dim=1)
-    training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epochs=epochs)
-
-
-def embedding_training(X_train_loader, X_test_loader, name, positional, epochs=10, log_folder="logs/"):
+def embedding_training(X_train_loader, X_test_loader, name, embedding_dim, positional=False, epochs=10, log_folder="logs/"):
     pytorch_model = SimpleMLPWithEmbedding(
         vocab_size=VOCAB_SIZE,
-        embedding_dim=EMBEDDING_DIM,
+        embedding_dim=embedding_dim,
         output_dim=1,
         hidden_dim=HIDDEN,
         use_positional_encoding=positional,
@@ -84,30 +76,27 @@ def training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epo
 
 SEED = 33
 
-VOCAB_SIZE = 1024
+VOCAB_SIZE = 4096
 MAX_LEN = 128
 HIDDEN = 32
-BATCH_SIZE = 1024
-
-EMBEDDING_DIM = 64
+BATCH_SIZE = 2048
 EPOCHS = 10
 
 # TEST
 # LIT_SANITY_STEPS = 0
 # LIMIT = 15000
 # DATALOADER_WORKERS = 1
-# LOGS_FOLDER = "logs_preprocessor_TEST"
+# LOGS_FOLDER = "logs_dropout_TEST"
 
 # PROD
 LIT_SANITY_STEPS = 1
 LIMIT = None
 DATALOADER_WORKERS = 4
-LOGS_FOLDER = "logs_preprocessor"
+LOGS_FOLDER = "logs_dropout"
 
-RUNS = ['onehot', 'tfidf', 'minhash', 'embedded', 'embedded_positional']
-
-# these fail with cuda errors -- might be default vocabs are too high, e.g. tf-idf gets 332893 features
-# RUNS = ['tfidf_default', 'minhash_default']
+EMBEDDING_DIM = 64
+#DROPOUTS = [0, 0.1, 0.3, 0.5, 0.7]
+DROPOUTS = [0.7]
 
 if __name__ == "__main__":
     # ===========================================
@@ -152,68 +141,6 @@ if __name__ == "__main__":
 
     print(f"Sizes of train and test sets: {len(X_train_cmds)}, {len(X_test_cmds)}")
 
-    # ===========================================
-    # ONE HOT
-    # ===========================================
-    if 'onehot' in RUNS:
-        oh = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
-
-        print("[*] Fitting one-hot encoder...")
-        X_train_onehot = oh.fit_transform(X_train_cmds)
-        X_test_onehot = oh.transform(X_test_cmds)
-
-        csr_training(X_train_onehot, y_train, X_test_onehot, y_test, name="onehot", vocab_size=VOCAB_SIZE, epochs=EPOCHS, workers=DATALOADER_WORKERS, log_folder=LOGS_FOLDER)
-
-    # ===========================================
-    # TF-IDF
-    # ===========================================
-    if 'tfidf' in RUNS:
-        tfidf = TfidfVectorizer(max_features=VOCAB_SIZE, tokenizer=TOKENIZER)
-
-        print("[*] Fitting TF-IDF encoder...")
-        X_train_tfidf = tfidf.fit_transform(X_train_cmds)
-        X_test_tfidf = tfidf.transform(X_test_cmds)
-
-        csr_training(X_train_tfidf, y_train, X_test_tfidf, y_test, name="tfidf", vocab_size=VOCAB_SIZE, epochs=EPOCHS, workers=DATALOADER_WORKERS, log_folder=LOGS_FOLDER)
-
-    if 'tfidf_default' in RUNS:
-        tfidf = TfidfVectorizer(tokenizer=TOKENIZER)
-
-        print("[*] Fitting TF-IDF encoder...")
-        X_train_tfidf_novocab = tfidf.fit_transform(X_train_cmds)
-        X_test_tfidf_novocab = tfidf.transform(X_test_cmds)
-
-        # get tfidf default vocab size
-        vocab_size_tfidf = len(tfidf.get_feature_names())
-        print(f"[!] Default TF-IDF vocab size: ", vocab_size_tfidf)
-
-        csr_training(X_train_tfidf_novocab, y_train, X_test_tfidf_novocab, y_test, name="tfidf_default", vocab_size=vocab_size_tfidf, epochs=EPOCHS, workers=DATALOADER_WORKERS, log_folder=LOGS_FOLDER)
-
-    # ===========================================
-    # MIN HASH
-    # ===========================================
-    if 'minhash' in RUNS:
-        minhash = HashingVectorizer(n_features=VOCAB_SIZE, tokenizer=TOKENIZER)
-
-        print("[*] Fitting MinHash encoder...")
-        X_train_minhash = minhash.fit_transform(X_train_cmds)
-        X_test_minhash = minhash.transform(X_test_cmds)
-
-        csr_training(X_train_minhash, y_train, X_test_minhash, y_test, name="minhash", vocab_size=VOCAB_SIZE, epochs=EPOCHS, workers=DATALOADER_WORKERS, log_folder=LOGS_FOLDER)
-
-    if 'minhash_default' in RUNS:
-        minhash = HashingVectorizer(tokenizer=TOKENIZER)
-
-        print("[*] Fitting MinHash encoder...")
-        X_train_minhash_novocab = minhash.fit_transform(X_train_cmds)
-        X_test_minhash_novocab = minhash.transform(X_test_cmds)
-
-        # get minhash default vocab size
-        vocab_size_minhash = len(minhash.get_feature_names())
-        print(f"[!] Default MinHash vocab size: ", vocab_size_minhash)
-
-        csr_training(X_train_minhash_novocab, y_train, X_test_minhash_novocab, y_test, name="minhash_default", vocab_size=vocab_size_minhash, epochs=EPOCHS, workers=DATALOADER_WORKERS, log_folder=LOGS_FOLDER)
-
     # =============================================
     # PREPING DATA FOR EMBEDDING ANALYSIS
     # =============================================
@@ -240,13 +167,7 @@ if __name__ == "__main__":
     # ===========================================
     # EMBEDDED
     # ===========================================
-    if 'embedded' in RUNS:
-        embedding_training(X_train_loader, X_test_loader, name="embedded", positional=False, log_folder=LOGS_FOLDER, epochs=EPOCHS)
-
-    # ===========================================
-    # EMBEDDED + POSITIONAL ENCODINGS
-    # ===========================================
-    if 'embedded_positional' in RUNS:
-        embedding_training(X_train_loader, X_test_loader, name="embedded_positional", positional=True, log_folder=LOGS_FOLDER, epochs=EPOCHS)
+    for dropout in DROPOUTS:
+        embedding_training(X_train_loader, X_test_loader, name=f"embedded_{dropout}", embedding_dim=EMBEDDING_DIM, positional=False, log_folder=LOGS_FOLDER, epochs=EPOCHS)
 
     print(f"[!] Script end time: {time.ctime()}")

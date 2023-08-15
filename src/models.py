@@ -9,29 +9,31 @@ import math
 from sklearn.metrics import roc_curve
 
 class SimpleMLP(nn.Module):
-    def __init__(self, input_dim, output_dim, hidden_dim=32, dropout=None):
+    def __init__(self, input_dim, output_dim, hidden_dim=[32], dropout=None):
+        if isinstance(hidden_dim, int):
+            hidden_dim = [hidden_dim]
+        
         super().__init__()
+        layers = []
+        prev_dim = input_dim
         
-        self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, output_dim)
+        # Dynamically create hidden layers based on hidden_dim
+        for h_dim in hidden_dim:
+            layers.append(nn.Linear(prev_dim, h_dim))
+            layers.append(nn.ReLU())
+            if dropout:
+                layers.append(nn.Dropout(dropout))
+            prev_dim = h_dim
         
-        # Add dropout layer if dropout probability is provided
-        self.dropout = nn.Dropout(dropout) if dropout is not None else None
-
+        layers.append(nn.Linear(prev_dim, output_dim))
+        self.model = nn.Sequential(*layers)
+    
     def forward(self, x):
-        x = self.fc1(x)
-        x = torch.relu(x)
-        
-        # Apply dropout if the layer is available
-        if self.dropout:
-            x = self.dropout(x)
-        
-        x = self.fc2(x)
-        return x
+        return self.model(x)
 
 
 class SimpleMLPWithEmbedding(nn.Module):
-    def __init__(self, vocab_size, embedding_dim, output_dim, hidden_dim=32, use_positional_encoding=False, max_seq_len=500, device=None, dropout=None):
+    def __init__(self, vocab_size, embedding_dim, output_dim, hidden_dim=[32], use_positional_encoding=False, max_seq_len=500, device=None, dropout=None):
         super(SimpleMLPWithEmbedding, self).__init__()
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.mlp = SimpleMLP(input_dim=embedding_dim, output_dim=output_dim, hidden_dim=hidden_dim, dropout=dropout)
@@ -153,3 +155,87 @@ class MLP_LightningModel(L.LightningModule):
         test_tpr = self.test_tpr(logits, y, fprNeeded=self.fpr)
         self.log('test_tpr', test_tpr, on_step=False, on_epoch=True, prog_bar=True)
         return loss
+
+
+class CNN1DGroupedModel(nn.Module):
+    def __init__(self, vocab_size, embed_dim, num_channels, kernel_sizes, mlp_hidden_dims, output_dim, dropout=None):
+        super().__init__()
+        
+        self.embedding = nn.Embedding(vocab_size, embed_dim)
+        self.grouped_convs = nn.ModuleList([nn.Conv1d(embed_dim, num_channels, kernel) for kernel in kernel_sizes])
+        
+        mlp_input_dim = num_channels * len(kernel_sizes)
+        self.mlp = SimpleMLP(input_dim=mlp_input_dim, output_dim=output_dim, hidden_dim=mlp_hidden_dims, dropout=dropout)
+
+    def forward(self, x):
+        x = self.embedding(x).transpose(1, 2)
+        conv_outputs = [conv(x) for conv in self.grouped_convs]
+        x = torch.cat(conv_outputs, dim=1)
+        x = x.view(x.size(0), -1)  # Flatten
+        return self.mlp(x)
+
+
+class BiLSTMModel(nn.Module):
+    def __init__(self, vocab_size, embed_dim, hidden_dim, mlp_hidden_dims, output_dim, lstm_layers=2, dropout=None):
+        super().__init__()
+        
+        self.embedding = nn.Embedding(vocab_size, embed_dim)
+        self.lstm = nn.LSTM(embed_dim, hidden_dim, num_layers=lstm_layers, bidirectional=True, batch_first=True, dropout=(dropout if dropout else 0))
+        
+        mlp_input_dim = 2 * hidden_dim  # bidirectional -> concatenate forward & backward
+        self.mlp = SimpleMLP(input_dim=mlp_input_dim, output_dim=output_dim, hidden_dim=mlp_hidden_dims, dropout=dropout)
+
+    def forward(self, x):
+        x = self.embedding(x)
+        _, (hn, _) = self.lstm(x)
+        x = torch.cat((hn[0], hn[1]), dim=1)  # Concatenate the final forward and backward hidden layers
+        return self.mlp(x)
+
+
+class CNN1D_BiLSTM_Model(nn.Module):
+    def __init__(self, vocab_size, embed_dim, num_channels, kernel_size, lstm_hidden_dim, mlp_hidden_dims, output_dim, lstm_layers=2, dropout=None):
+        super().__init__()
+        
+        self.embedding = nn.Embedding(vocab_size, embed_dim)
+        self.conv1d = nn.Conv1d(embed_dim, num_channels, kernel_size)
+        self.lstm = nn.LSTM(num_channels, lstm_hidden_dim, num_layers=lstm_layers, bidirectional=True, batch_first=True, dropout=(dropout if dropout else 0))
+        
+        mlp_input_dim = 2 * lstm_hidden_dim  # bidirectional -> concatenate forward & backward
+        self.mlp = SimpleMLP(input_dim=mlp_input_dim, output_dim=output_dim, hidden_dim=mlp_hidden_dims, dropout=dropout)
+
+    def forward(self, x):
+        x = self.embedding(x).transpose(1, 2)
+        x = self.conv1d(x).transpose(1, 2)
+        _, (hn, _) = self.lstm(x)
+        x = torch.cat((hn[0], hn[1]), dim=1)  # Concatenate the final forward and backward hidden layers
+        return self.mlp(x)
+
+
+class TransformerEncoder(nn.Module):
+    def __init__(self, vocab_size, d_model, nhead, num_layers, dim_feedforward, mlp_hidden_dims, max_len, dropout=None, device=None, output_dim=1):
+        super(TransformerEncoder, self).__init__()
+        
+        self.embedding = nn.Embedding(vocab_size, d_model)
+        self.pos_encoder = self.init_positional_encoding(d_model, max_len)
+        encoder_layer = nn.TransformerEncoderLayer(d_model, nhead, dim_feedforward, dropout, norm_first=True)
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers)
+        self.decoder = SimpleMLP(input_dim=d_model, output_dim=output_dim, hidden_dim=mlp_hidden_dims, dropout=dropout)
+        
+        if device is None:
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        else:
+            self.device = device
+        
+    def init_positional_encoding(self, d_model, max_seq_len):
+        pe = torch.zeros(max_seq_len, d_model)
+        position = torch.arange(0, max_seq_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        return pe.unsqueeze(0)
+
+    def forward(self, src, src_mask=None, src_key_padding_mask=None):
+        src = self.embedding(src) * math.sqrt(self.embedding.embedding_dim)
+        src = src + self.pos_encoder(src).to(self.device)
+        output = self.transformer_encoder(src, mask=src_mask, src_key_padding_mask=src_key_padding_mask)
+        return self.decoder(output)

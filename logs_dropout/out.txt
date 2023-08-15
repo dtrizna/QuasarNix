@@ -1,0 +1,218 @@
+C:\Users\dtrizna\Code\Synapse\Linux>python3 ablation_embedding_dropout.py
+Python implementation: CPython
+Python version       : 3.9.13
+IPython version      : 8.11.0
+
+torch    : 2.0.1+cu117
+lightning: 1.8.6
+sklearn  : 0.0.post1
+
+[!] Script start time: Tue Aug 15 11:51:12 2023
+Global seed set to 33
+Sizes of train and test sets: 533014, 470129
+[*] Building vocab and encoding...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_0 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 264 K 
+1  | loss      | BCEWithLogitsLoss      | 0     
+2  | train_acc | BinaryAccuracy         | 0     
+3  | train_f1  | BinaryF1Score          | 0     
+4  | train_auc | BinaryAUROC            | 0     
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+264 K     Trainable params
+0         Non-trainable params
+264 K     Total params
+1.057     Total estimated model params size (MB)
+Epoch 0: 100%|██████████████████████████████████████████████████████████████| 1411/1411 [00:54<00:00, 25.87it/s, loss=0.0408, v_num=0, train_loss=0.0332, val_acc=0.993, val_f1=0.993, val_auc=0.999, val_tpr=0.757, train_acc=0.863, train_f1=0.842, train_auc=0.988, train_tpr=0.534]
+Epoch 1: 100%|█████████████████████████████████████████████████████████████| 1411/1411 [00:36<00:00, 38.93it/s, loss=0.00755, v_num=0, train_loss=0.0049, val_acc=0.992, val_f1=0.992, val_auc=1.000, val_tpr=0.896, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.971]
+Epoch 2: 100%|████████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.68it/s, loss=0.00247, v_num=0, train_loss=0.00133, val_acc=0.993, val_f1=0.993, val_auc=1.000, val_tpr=0.923, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.989]
+Epoch 3: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:36<00:00, 38.49it/s, loss=0.00114, v_num=0, train_loss=0.000555, val_acc=0.991, val_f1=0.990, val_auc=1.000, val_tpr=0.936, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.993]
+Epoch 4: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 37.08it/s, loss=0.000628, v_num=0, train_loss=0.000301, val_acc=0.988, val_f1=0.987, val_auc=1.000, val_tpr=0.943, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.995]
+Epoch 5: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:36<00:00, 38.26it/s, loss=0.000387, v_num=0, train_loss=0.000184, val_acc=0.985, val_f1=0.984, val_auc=1.000, val_tpr=0.947, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.996]
+Epoch 6: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:35<00:00, 40.03it/s, loss=0.000257, v_num=0, train_loss=0.000123, val_acc=0.981, val_f1=0.981, val_auc=1.000, val_tpr=0.948, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.996]
+Epoch 7: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.74it/s, loss=0.000181, v_num=0, train_loss=8.67e-5, val_acc=0.978, val_f1=0.978, val_auc=1.000, val_tpr=0.949, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997]
+Epoch 8: 100%|████████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.59it/s, loss=0.000132, v_num=0, train_loss=6.4e-5, val_acc=0.975, val_f1=0.975, val_auc=1.000, val_tpr=0.949, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997]
+Epoch 9: 100%|█████████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.39it/s, loss=0.0001, v_num=0, train_loss=4.89e-5, val_acc=0.971, val_f1=0.971, val_auc=1.000, val_tpr=0.949, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█████████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.37it/s, loss=0.0001, v_num=0, train_loss=4.89e-5, val_acc=0.971, val_f1=0.971, val_auc=1.000, val_tpr=0.949, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997] 
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_0.1 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 264 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+264 K     Trainable params
+0         Non-trainable params
+264 K     Total params
+1.057     Total estimated model params size (MB)
+Epoch 0: 100%|██████████████████████████████████████████████████████████████| 1411/1411 [00:54<00:00, 25.86it/s, loss=0.0422, v_num=0, train_loss=0.0349, val_acc=0.962, val_f1=0.961, val_auc=0.998, val_tpr=0.772, train_acc=0.873, train_f1=0.856, train_auc=0.990, train_tpr=0.655]
+Epoch 1: 100%|████████████████████████████████████████████████████████████| 1411/1411 [00:39<00:00, 36.02it/s, loss=0.00745, v_num=0, train_loss=0.00495, val_acc=0.961, val_f1=0.960, val_auc=0.999, val_tpr=0.866, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.984]
+Epoch 2: 100%|████████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.56it/s, loss=0.00284, v_num=0, train_loss=0.00171, val_acc=0.963, val_f1=0.962, val_auc=1.000, val_tpr=0.888, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.993]
+Epoch 3: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:40<00:00, 35.27it/s, loss=0.00146, v_num=0, train_loss=0.000831, val_acc=0.963, val_f1=0.962, val_auc=1.000, val_tpr=0.901, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.995]
+Epoch 4: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:39<00:00, 35.49it/s, loss=0.000871, v_num=0, train_loss=0.000482, val_acc=0.962, val_f1=0.961, val_auc=1.000, val_tpr=0.909, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.996]
+Epoch 5: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:37<00:00, 37.74it/s, loss=0.000569, v_num=0, train_loss=0.000308, val_acc=0.962, val_f1=0.960, val_auc=1.000, val_tpr=0.915, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.996]
+Epoch 6: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.51it/s, loss=0.000394, v_num=0, train_loss=0.000211, val_acc=0.961, val_f1=0.959, val_auc=1.000, val_tpr=0.919, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997]
+Epoch 7: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.70it/s, loss=0.000284, v_num=0, train_loss=0.000151, val_acc=0.960, val_f1=0.958, val_auc=1.000, val_tpr=0.922, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997]
+Epoch 8: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:39<00:00, 35.85it/s, loss=0.000212, v_num=0, train_loss=0.000111, val_acc=0.958, val_f1=0.957, val_auc=1.000, val_tpr=0.924, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.998]
+Epoch 9: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.46it/s, loss=0.000161, v_num=0, train_loss=8.45e-5, val_acc=0.957, val_f1=0.955, val_auc=1.000, val_tpr=0.926, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.999]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.45it/s, loss=0.000161, v_num=0, train_loss=8.45e-5, val_acc=0.957, val_f1=0.955, val_auc=1.000, val_tpr=0.926, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.999] 
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_0.3 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 264 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+264 K     Trainable params
+0         Non-trainable params
+264 K     Total params
+1.057     Total estimated model params size (MB)
+Epoch 0: 100%|██████████████████████████████████████████████████████████████| 1411/1411 [00:57<00:00, 24.34it/s, loss=0.0397, v_num=0, train_loss=0.0315, val_acc=0.981, val_f1=0.981, val_auc=0.997, val_tpr=0.663, train_acc=0.882, train_f1=0.867, train_auc=0.994, train_tpr=0.614]
+Epoch 1: 100%|████████████████████████████████████████████████████████████| 1411/1411 [00:36<00:00, 38.71it/s, loss=0.00693, v_num=0, train_loss=0.00378, val_acc=0.972, val_f1=0.972, val_auc=0.999, val_tpr=0.843, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.961]
+Epoch 2: 100%|████████████████████████████████████████████████████████████| 1411/1411 [00:40<00:00, 34.86it/s, loss=0.00241, v_num=0, train_loss=0.00123, val_acc=0.978, val_f1=0.978, val_auc=1.000, val_tpr=0.899, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.992]
+Epoch 3: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:41<00:00, 33.65it/s, loss=0.00114, v_num=0, train_loss=0.000579, val_acc=0.978, val_f1=0.978, val_auc=1.000, val_tpr=0.923, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.994]
+Epoch 4: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.63it/s, loss=0.00064, v_num=0, train_loss=0.000324, val_acc=0.977, val_f1=0.977, val_auc=1.000, val_tpr=0.934, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.995]
+Epoch 5: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:36<00:00, 38.23it/s, loss=0.000398, v_num=0, train_loss=0.000204, val_acc=0.976, val_f1=0.976, val_auc=1.000, val_tpr=0.939, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.995]
+Epoch 6: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:35<00:00, 39.27it/s, loss=0.000267, v_num=0, train_loss=0.000137, val_acc=0.975, val_f1=0.974, val_auc=1.000, val_tpr=0.942, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.996]
+Epoch 7: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:40<00:00, 35.18it/s, loss=0.000189, v_num=0, train_loss=9.75e-5, val_acc=0.973, val_f1=0.973, val_auc=1.000, val_tpr=0.944, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.996]
+Epoch 8: 100%|████████████████████████████████████████████████████████████| 1411/1411 [00:42<00:00, 32.96it/s, loss=0.000139, v_num=0, train_loss=7.2e-5, val_acc=0.972, val_f1=0.971, val_auc=1.000, val_tpr=0.945, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997]
+Epoch 9: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:36<00:00, 38.36it/s, loss=0.000105, v_num=0, train_loss=5.49e-5, val_acc=0.970, val_f1=0.969, val_auc=1.000, val_tpr=0.946, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:36<00:00, 38.34it/s, loss=0.000105, v_num=0, train_loss=5.49e-5, val_acc=0.970, val_f1=0.969, val_auc=1.000, val_tpr=0.946, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997] 
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_0.5 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 264 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+264 K     Trainable params
+0         Non-trainable params
+264 K     Total params
+1.057     Total estimated model params size (MB)
+Epoch 0: 100%|██████████████████████████████████████████████████████████████| 1411/1411 [00:54<00:00, 25.90it/s, loss=0.0472, v_num=0, train_loss=0.0396, val_acc=0.992, val_f1=0.992, val_auc=0.999, val_tpr=0.787, train_acc=0.863, train_f1=0.842, train_auc=0.988, train_tpr=0.578]
+Epoch 1: 100%|████████████████████████████████████████████████████████████| 1411/1411 [00:41<00:00, 34.38it/s, loss=0.00691, v_num=0, train_loss=0.00448, val_acc=0.994, val_f1=0.994, val_auc=1.000, val_tpr=0.924, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.971]
+Epoch 2: 100%|████████████████████████████████████████████████████████████| 1411/1411 [00:39<00:00, 35.40it/s, loss=0.00246, v_num=0, train_loss=0.00147, val_acc=0.997, val_f1=0.997, val_auc=1.000, val_tpr=0.946, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.992]
+Epoch 3: 100%|████████████████████████████████████████████████████████████| 1411/1411 [00:36<00:00, 38.43it/s, loss=0.00122, v_num=0, train_loss=0.00071, val_acc=0.996, val_f1=0.996, val_auc=1.000, val_tpr=0.953, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.994]
+Epoch 4: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.61it/s, loss=0.000707, v_num=0, train_loss=0.000407, val_acc=0.994, val_f1=0.994, val_auc=1.000, val_tpr=0.956, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.996]
+Epoch 5: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:40<00:00, 34.50it/s, loss=0.000453, v_num=0, train_loss=0.000258, val_acc=0.992, val_f1=0.992, val_auc=1.000, val_tpr=0.957, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.996]
+Epoch 6: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:39<00:00, 35.68it/s, loss=0.00031, v_num=0, train_loss=0.000175, val_acc=0.989, val_f1=0.989, val_auc=1.000, val_tpr=0.958, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997]
+Epoch 7: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.99it/s, loss=0.000223, v_num=0, train_loss=0.000124, val_acc=0.987, val_f1=0.987, val_auc=1.000, val_tpr=0.958, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997]
+Epoch 8: 100%|████████████████████████████████████████████████████████████| 1411/1411 [00:39<00:00, 35.61it/s, loss=0.000166, v_num=0, train_loss=9.2e-5, val_acc=0.986, val_f1=0.985, val_auc=1.000, val_tpr=0.959, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.998]
+Epoch 9: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.41it/s, loss=0.000127, v_num=0, train_loss=7.01e-5, val_acc=0.984, val_f1=0.983, val_auc=1.000, val_tpr=0.959, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.998]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.40it/s, loss=0.000127, v_num=0, train_loss=7.01e-5, val_acc=0.984, val_f1=0.983, val_auc=1.000, val_tpr=0.959, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.998] 
+[!] Script end time: Tue Aug 15 12:21:23 2023
+
+
+
+
+
+C:\Users\dtrizna\Code\Synapse\Linux>python3 ablation_dropout.py
+Python implementation: CPython
+Python version       : 3.9.13
+IPython version      : 8.11.0
+
+torch    : 2.0.1+cu117
+lightning: 1.8.6
+sklearn  : 0.0.post1
+
+[!] Script start time: Tue Aug 15 12:44:17 2023
+Global seed set to 33
+Sizes of train and test sets: 533014, 470129
+[*] Building vocab and encoding...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_0.7 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 264 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+264 K     Trainable params
+0         Non-trainable params
+264 K     Total params
+1.057     Total estimated model params size (MB)
+Epoch 0: 100%|██████████████████████████████████████████████████████████████| 1411/1411 [00:47<00:00, 29.88it/s, loss=0.0408, v_num=0, train_loss=0.0332, val_acc=0.993, val_f1=0.993, val_auc=0.999, val_tpr=0.757, train_acc=0.863, train_f1=0.842, train_auc=0.988, train_tpr=0.534]
+Epoch 1: 100%|█████████████████████████████████████████████████████████████| 1411/1411 [00:29<00:00, 47.05it/s, loss=0.00755, v_num=0, train_loss=0.0049, val_acc=0.992, val_f1=0.992, val_auc=1.000, val_tpr=0.896, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.971]
+Epoch 2: 100%|████████████████████████████████████████████████████████████| 1411/1411 [00:34<00:00, 40.47it/s, loss=0.00247, v_num=0, train_loss=0.00133, val_acc=0.993, val_f1=0.993, val_auc=1.000, val_tpr=0.923, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.989]
+Epoch 3: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:36<00:00, 39.15it/s, loss=0.00114, v_num=0, train_loss=0.000555, val_acc=0.991, val_f1=0.990, val_auc=1.000, val_tpr=0.936, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.993]
+Epoch 4: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:35<00:00, 39.54it/s, loss=0.000628, v_num=0, train_loss=0.000301, val_acc=0.988, val_f1=0.987, val_auc=1.000, val_tpr=0.943, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.995]
+Epoch 5: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.59it/s, loss=0.000387, v_num=0, train_loss=0.000184, val_acc=0.985, val_f1=0.984, val_auc=1.000, val_tpr=0.947, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.996]
+Epoch 6: 100%|██████████████████████████████████████████████████████████| 1411/1411 [00:37<00:00, 37.89it/s, loss=0.000257, v_num=0, train_loss=0.000123, val_acc=0.981, val_f1=0.981, val_auc=1.000, val_tpr=0.948, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.996]
+Epoch 7: 100%|███████████████████████████████████████████████████████████| 1411/1411 [00:36<00:00, 38.78it/s, loss=0.000181, v_num=0, train_loss=8.67e-5, val_acc=0.978, val_f1=0.978, val_auc=1.000, val_tpr=0.949, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997]
+Epoch 8: 100%|████████████████████████████████████████████████████████████| 1411/1411 [00:39<00:00, 35.42it/s, loss=0.000132, v_num=0, train_loss=6.4e-5, val_acc=0.975, val_f1=0.975, val_auc=1.000, val_tpr=0.949, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997]
+Epoch 9: 100%|█████████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.41it/s, loss=0.0001, v_num=0, train_loss=4.89e-5, val_acc=0.971, val_f1=0.971, val_auc=1.000, val_tpr=0.949, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█████████████████████████████████████████████████████████████| 1411/1411 [00:38<00:00, 36.38it/s, loss=0.0001, v_num=0, train_loss=4.89e-5, val_acc=0.971, val_f1=0.971, val_auc=1.000, val_tpr=0.949, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997] 
+[!] Script end time: Tue Aug 15 12:51:31 2023

@@ -1,13 +1,15 @@
 import os
 import sys
 import time
+import pickle
 import pandas as pd
 import numpy as np
 from sklearn.utils import shuffle
+from sklearn.metrics import roc_curve, f1_score, accuracy_score, roc_auc_score
 from watermark import watermark
 
 # encoders
-from sklearn.feature_extraction.text import TfidfVectorizer, HashingVectorizer
+from sklearn.feature_extraction.text import HashingVectorizer
 
 # tokenizers
 from nltk.tokenize import wordpunct_tokenize, WhitespaceTokenizer
@@ -19,23 +21,27 @@ from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
 from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 from lightning.lite.utilities.seed import seed_everything
 
+# import random forest and xgboost
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+
 sys.path.append("Linux/")
-from src.models import SimpleMLPWithEmbedding, MLP_LightningModel
+from src.models import *
 from src.lit_utils import LitProgressBar
 from src.preprocessors import CommandTokenizer
 from src.data_utils import create_dataloader
 
 
-def embedding_training(X_train_loader, X_test_loader, name, embedding_dim, positional=False, epochs=10, log_folder="logs/"):
-    pytorch_model = SimpleMLPWithEmbedding(
-        vocab_size=VOCAB_SIZE,
-        embedding_dim=embedding_dim,
-        output_dim=1,
-        hidden_dim=HIDDEN,
-        use_positional_encoding=positional,
-        max_seq_len=MAX_LEN
-    )
-    training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epochs=epochs)
+def get_tpr_at_fpr(predicted_logits, true_labels, fprNeeded=1e-4):
+    predicted_probs = torch.sigmoid(predicted_logits).cpu().detach().numpy()
+    true_labels = true_labels.cpu().detach().numpy()
+    fpr, tpr, thresholds = roc_curve(true_labels, predicted_probs)
+    if all(np.isnan(fpr)):
+        return np.nan#, np.nan
+    else:
+        tpr_at_fpr = tpr[fpr <= fprNeeded][-1]
+        #threshold_at_fpr = thresholds[fpr <= fprNeeded][-1]
+        return tpr_at_fpr#, threshold_at_fpr
 
 
 def training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epochs=10):
@@ -77,25 +83,25 @@ def training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epo
 SEED = 33
 
 VOCAB_SIZE = 4096
+EMBEDDED_DIM = 64
 MAX_LEN = 128
-HIDDEN = 32
 BATCH_SIZE = 2048
-EPOCHS = 10
+DROPOUT = 0.5
 
 # TEST
-# LIT_SANITY_STEPS = 0
-# LIMIT = 15000
-# DATALOADER_WORKERS = 1
-# LOGS_FOLDER = "logs_embedding_dropout_TEST"
+EPOCHS = 2
+LIT_SANITY_STEPS = 0
+LIMIT = 15000
+DATALOADER_WORKERS = 1
+LOGS_FOLDER = "logs_models_TEST"
 
 # PROD
-LIT_SANITY_STEPS = 1
-LIMIT = None
-DATALOADER_WORKERS = 4
-LOGS_FOLDER = "logs_embedding_dropout"
+# EPOCHS = 10
+# LIT_SANITY_STEPS = 1
+# LIMIT = None
+# DATALOADER_WORKERS = 4
+# LOGS_FOLDER = "logs_models"
 
-EMBEDDING_DIM = 64
-DROPOUTS = [0, 0.1, 0.3, 0.5]
 
 if __name__ == "__main__":
     # ===========================================
@@ -141,7 +147,7 @@ if __name__ == "__main__":
     print(f"Sizes of train and test sets: {len(X_train_cmds)}, {len(X_test_cmds)}")
 
     # =============================================
-    # PREPING DATA FOR EMBEDDING ANALYSIS
+    # PREPING DATA
     # =============================================
     tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE)
 
@@ -163,10 +169,67 @@ if __name__ == "__main__":
     X_train_loader = create_dataloader(X_train_padded, y_train, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
     X_test_loader = create_dataloader(X_test_padded, y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
 
-    # ===========================================
-    # EMBEDDED
-    # ===========================================
-    for dropout in DROPOUTS:
-        embedding_training(X_train_loader, X_test_loader, name=f"embedded_{dropout}", embedding_dim=EMBEDDING_DIM, positional=False, log_folder=LOGS_FOLDER, epochs=EPOCHS)
+    # MIN-HASH TABULAR ENCODING
+    minhash = HashingVectorizer(n_features=VOCAB_SIZE, tokenizer=TOKENIZER)
+    print("[*] Fitting MinHash encoder...")
+    X_train_minhash = minhash.fit_transform(X_train_cmds)
+    X_test_minhash = minhash.transform(X_test_cmds)
+
+    X_train_loader_minhash = create_dataloader(X_train_minhash, y_train, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+    X_test_loader_minhash = create_dataloader(X_test_minhash, y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+
+    # =============================================
+    # DEFINING MODELS
+    # =============================================
+
+    # sequential models
+    cnn_model = CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[3, 5, 7], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 299 328 params
+    lstm_model = BiLSTMModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, hidden_dim=32, mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 334 656 params
+    cnn_lstm_model = CNN1D_BiLSTM_Model(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_size=3, lstm_hidden_dim=32, mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 324 416 params
+    mlp_seq_model = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_seq_len=MAX_LEN, dropout=DROPOUT) # 297 345 params
+    transformer_encoder_model = TransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, mlp_hidden_dims=[64,32], max_len=MAX_LEN, dropout=DROPOUT) # 333 953 params
+    
+    # tabular models
+    rf_model = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=SEED)
+    xgb_model = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
+    mlp_tab_model = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_seq_len=MAX_LEN, dropout=DROPOUT) # 297 345 params
+
+    models = {
+        "cnn": cnn_model,
+        "lstm": lstm_model,
+        "cnn_lstm": cnn_lstm_model,
+        "mlp_seq": mlp_seq_model,
+        "transformer": transformer_encoder_model,
+        "mlp_tab": mlp_tab_model,
+        "rf": rf_model,
+        "xgb": xgb_model,
+    }
+
+    # =============================================
+    # TRAINING MODELS
+    # =============================================
+
+    for name, model in models.items():
+        if name in ["rf", "xgb"]:
+            print(f"[*] Training {name} model...")
+            model.fit(X_train_minhash, y_train)
+
+            # save trained model to LOGS_FOLDER/name
+            os.makedirs(f"{LOGS_FOLDER}/{name}", exist_ok=True)
+            with open(f"{LOGS_FOLDER}/{name}/model.pkl", "wb") as f:
+                pickle.dump(model, f)
+            
+            y_test_preds = model.predict_proba(X_test_minhash)[:,1]
+            tpr = get_tpr_at_fpr(y_test_preds, y_test)
+            f1 = f1_score(y_test, y_test_preds.round())
+            acc = accuracy_score(y_test, y_test_preds.round())
+            auc = roc_auc_score(y_test, y_test_preds)
+            print(f"[!] {name} model scores: tpr={tpr:.4f}, f1={f1:.4f}, acc={acc:.4f}, auc={auc:.4f}")
+        
+        elif name == "mlp_tab":
+            training(model, X_train_loader_minhash, X_test_loader_minhash, name, log_folder=LOGS_FOLDER, epochs=EPOCHS)
+
+        else:
+            training(model, X_train_loader, X_test_loader, name, log_folder=LOGS_FOLDER, epochs=EPOCHS)
 
     print(f"[!] Script end time: {time.ctime()}")

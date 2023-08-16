@@ -18,7 +18,7 @@ whitespace_tokenize = WhitespaceTokenizer().tokenize
 # modeling
 import lightning as L
 from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
-from lightning.pytorch.callbacks.early_stopping import EarlyStopping
+from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 from lightning.lite.utilities.seed import seed_everything
 
 from src.models import *
@@ -78,15 +78,30 @@ def configure_trainer(name, log_folder, epochs):
         mode="max"
     )
 
+    model_checkpoint = ModelCheckpoint(
+        monitor="val_tpr",
+        mode="max",
+        save_top_k=1,
+        save_last=True,
+        filename="ep{epoch:02d}-tpr{val_tpr:.4f}-f1{val_f1:.4f}"
+    )
+
     trainer = L.Trainer(
         num_sanity_val_steps=LIT_SANITY_STEPS,
         max_epochs=epochs,
         accelerator=DEVICE,
         devices=1,
-        callbacks=[LitProgressBar(), early_stop],
+        callbacks=[
+            LitProgressBar(),
+            #early_stop,
+            model_checkpoint
+        ],
         val_check_interval=0.2,
         log_every_n_steps=10,
-        logger=[CSVLogger(save_dir=log_folder, name=f"{name}_csv"), TensorBoardLogger(save_dir=log_folder, name=f"{name}_tb")]
+        logger=[
+            CSVLogger(save_dir=log_folder, name=f"{name}_csv"),
+            TensorBoardLogger(save_dir=log_folder, name=f"{name}_tb")
+        ]
     )
 
     # Ensure folders for logging exist
@@ -154,7 +169,7 @@ MODEL_PARAMS = {
     "300K": [256, 64, 32],
     "500k": [512, 256, 128, 64],
 }
-LEARNING_RATES = ["onecycle_Tmax_0.001", 1e-4, 5e-4, 1e-3, 5e-3]
+LEARNING_RATES = ["onecycle_Tmax_0.001", "onecycle_Tmax_0.0005", "onecycle_Tmax_0.0001", 1e-4, 5e-4, 1e-3, 5e-3]
 
 SEED = 33
 
@@ -167,18 +182,18 @@ DROPOUT = 0.5
 DEVICE = "gpu"
 
 # TEST
-EPOCHS = 1
-LIT_SANITY_STEPS = 0
-LIMIT = 15000
-DATALOADER_WORKERS = 1
-LOGS_FOLDER = "logs_scaling_laws_and_lr_TEST"
+# EPOCHS = 1
+# LIT_SANITY_STEPS = 0
+# LIMIT = 5000
+# DATALOADER_WORKERS = 1
+# LOGS_FOLDER = "logs_scaling_laws_and_lr_TEST"
 
 # PROD
-# EPOCHS = 20
-# LIT_SANITY_STEPS = 1
-# LIMIT = None
-# DATALOADER_WORKERS = 4
-# LOGS_FOLDER = "logs_scaling_laws_and_lr"
+EPOCHS = 10
+LIT_SANITY_STEPS = 1
+LIMIT = None
+DATALOADER_WORKERS = 4
+LOGS_FOLDER = "logs_scaling_laws_and_lr"
 
 
 if __name__ == "__main__":
@@ -229,7 +244,12 @@ if __name__ == "__main__":
     for model_size, params in MODEL_PARAMS.items():
         for learning_rate in LEARNING_RATES:
             now = time.time()
-            name = f"MLP_{model_size}"
+            name = f"MLP_size_{model_size}_lr_{learning_rate}"
+
+            if os.path.exists(os.path.join(LOGS_FOLDER, f"{name}_csv", "version_0", "checkpoints")):
+                print(f"[!] Training of {name} with lr {learning_rate} already done, skipping...")
+                continue
+
             print(f"[!] Training of {name} with lr {learning_rate} started: ", time.ctime())
             
             model = SimpleMLPWithEmbedding(
@@ -242,10 +262,10 @@ if __name__ == "__main__":
                 dropout=DROPOUT
             )
             
-            if learning_rate == "onecycle_Tmax_0.001":
+            if isinstance(learning_rate, str) and learning_rate.startswith("onecycle"):
                 scheduler = "onecycle"
                 scheduler_budget = EPOCHS * len(X_train_loader)
-                lr = 1e-3
+                lr = float(learning_rate.split("_")[-1])
             else:
                 scheduler = None
                 scheduler_budget = None

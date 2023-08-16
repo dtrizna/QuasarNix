@@ -106,6 +106,8 @@ class PyTorchLightningModel(L.LightningModule):
         self.log('train_auc', self.train_auc, on_step=False, on_epoch=True, prog_bar=True)
         train_tpr = self.train_tpr(logits, y, fprNeeded=self.fpr)
         self.log('train_tpr', train_tpr, on_step=False, on_epoch=True, prog_bar=True)
+        learning_rate = self.optimizers().param_groups[0]['lr']
+        self.log('learning_rate', learning_rate, on_step=False, on_epoch=True, prog_bar=False)
         return loss
     
     def validation_step(self, batch, batch_idx):

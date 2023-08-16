@@ -18,8 +18,7 @@ whitespace_tokenize = WhitespaceTokenizer().tokenize
 # modeling
 import lightning as L
 from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
-from lightning.pytorch.callbacks.early_stopping import EarlyStopping
-from pytorch_lightning.callbacks import ModelCheckpoint
+from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 from lightning.lite.utilities.seed import seed_everything
 
 # import random forest, xgboost, and logistic regression
@@ -84,15 +83,31 @@ def configure_trainer(name, log_folder, epochs):
         mode="max"
     )
 
+    model_checkpoint = ModelCheckpoint(
+        monitor="val_tpr",
+        save_top_k=1,
+        mode="max",
+        verbose=True,
+        save_last=True,
+        filename="{epoch}-tpr{val_tpr:.4f}-f1{val_f1:.4f}"
+    )
+
     trainer = L.Trainer(
         num_sanity_val_steps=LIT_SANITY_STEPS,
         max_epochs=epochs,
         accelerator=DEVICE,
         devices=1,
-        callbacks=[LitProgressBar(), early_stop],
+        callbacks=[
+            LitProgressBar(),
+            #early_stop,
+            model_checkpoint
+        ],
         val_check_interval=0.2,
         log_every_n_steps=10,
-        logger=[CSVLogger(save_dir=log_folder, name=f"{name}_csv"), TensorBoardLogger(save_dir=log_folder, name=f"{name}_tb")]
+        logger=[
+            CSVLogger(save_dir=log_folder, name=f"{name}_csv"),
+            TensorBoardLogger(save_dir=log_folder, name=f"{name}_tb")
+        ]
     )
 
     # Ensure folders for logging exist
@@ -102,8 +117,8 @@ def configure_trainer(name, log_folder, epochs):
     return trainer
 
 
-def train_lit_model(X_train_loader, X_test_loader, pytorch_model, name, log_folder, epochs=10, learning_rate=1e-3):
-    lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=learning_rate)
+def train_lit_model(X_train_loader, X_test_loader, pytorch_model, name, log_folder, epochs=10, learning_rate=1e-3, scheduler=None, scheduler_budget=None):
+    lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=learning_rate, scheduler=scheduler, scheduler_step_budget=scheduler_budget)
     trainer = configure_trainer(name, log_folder, epochs)
 
     print(f"[*] Training {name} model...")
@@ -164,25 +179,28 @@ MAX_LEN = 128
 BATCH_SIZE = 1024
 DROPOUT = 0.5
 
-DEVICE = "gpu"
-LEARNING_RATE = 1e-3
-
 # TEST
-EPOCHS = 1
-LIT_SANITY_STEPS = 0
-LIMIT = 15000
-DATALOADER_WORKERS = 1
-LOGS_FOLDER = "logs_models_TEST"
+# DEVICE = "cpu"
+# EPOCHS = 1
+# LIT_SANITY_STEPS = 0
+# LIMIT = 15000
+# DATALOADER_WORKERS = 1
+# LOGS_FOLDER = "logs_models_TEST"
 
 # PROD
-# EPOCHS = 20
-# LIT_SANITY_STEPS = 1
-# LIMIT = None
-# DATALOADER_WORKERS = 4
-# LOGS_FOLDER = "logs_models_v2"
+DEVICE = "gpu"
+EPOCHS = 15
+LIT_SANITY_STEPS = 1
+LIMIT = None
+DATALOADER_WORKERS = 4
+LOGS_FOLDER = "logs_models"
+
+LEARNING_RATE = 5e-4
+SCHEDULER = None
+SCHEDULER_BUDGET = None
 
 RUNS = [
-    '_tabular_rf', # DOESN'T WORK
+    '_tabular_rf',
     '_tabular_xgb',
     '_tabular_log_reg'
     '_tabular_mlp',
@@ -258,6 +276,10 @@ if __name__ == "__main__":
     mlp_tab_model = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
 
     models = {
+        "_tabular_mlp": mlp_tab_model,
+        "_tabular_rf": rf_model,
+        "_tabular_xgb": xgb_model,
+        "_tabular_log_reg": log_reg,
         "mlp_seq": mlp_seq_model,
         "attpool_transformer": attpool_transformer_model,
         "cls_transformer": cls_transformer_model,
@@ -266,10 +288,6 @@ if __name__ == "__main__":
         "cnn": cnn_model,
         "lstm": lstm_model,
         "cnn_lstm": cnn_lstm_model,
-        "_tabular_mlp": mlp_tab_model,
-        "_tabular_rf": rf_model,
-        "_tabular_xgb": xgb_model,
-        "_tabular_log_reg": log_reg,
     }
 
     # =============================================
@@ -280,15 +298,47 @@ if __name__ == "__main__":
         if name not in RUNS:
             continue
         
+        if os.path.exists(os.path.join(LOGS_FOLDER, f"{name}_csv", "version_0", "checkpoints")):
+            print(f"[!] Training of {name} already done, skipping...")
+            continue
+
         now = time.time()
         print(f"[!] Training of {name} started: ", time.ctime())
         
-        if name in ["rf", "xgb", "log_reg"]:
-            training_tabular(model, name, X_train_minhash, X_test_minhash, y_train, y_test, logs_folder=LOGS_FOLDER)        
+        if name in ["_tabular_rf", "_tabular_xgb", "_tabular_log_reg"]:
+            training_tabular(
+                model,
+                name,
+                X_train_minhash,
+                X_test_minhash,
+                y_train,
+                y_test,
+                logs_folder=LOGS_FOLDER
+            )        
         elif name == "_tabular_mlp":
-            train_lit_model(X_train_loader_minhash, X_test_loader_minhash, model, name, log_folder=LOGS_FOLDER, epochs=EPOCHS, learning_rate=LEARNING_RATE)
+            _ = train_lit_model(
+                X_train_loader,
+                X_test_loader,
+                model,
+                name,
+                log_folder=LOGS_FOLDER,
+                epochs=EPOCHS,
+                learning_rate=LEARNING_RATE,
+                scheduler=SCHEDULER,
+                scheduler_budget=SCHEDULER_BUDGET
+            )
         else:
-            train_lit_model(X_train_loader, X_test_loader, model, name, log_folder=LOGS_FOLDER, epochs=EPOCHS, learning_rate=LEARNING_RATE)
+            _ = train_lit_model(
+                X_train_loader,
+                X_test_loader,
+                model,
+                name,
+                log_folder=LOGS_FOLDER,
+                epochs=EPOCHS,
+                learning_rate=LEARNING_RATE,
+                scheduler=SCHEDULER,
+                scheduler_budget=SCHEDULER_BUDGET
+            )
         
         print(f"[!] Training of {name} ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")
 

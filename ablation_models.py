@@ -19,6 +19,7 @@ whitespace_tokenize = WhitespaceTokenizer().tokenize
 import lightning as L
 from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
 from lightning.pytorch.callbacks.early_stopping import EarlyStopping
+from pytorch_lightning.callbacks import ModelCheckpoint
 from lightning.lite.utilities.seed import seed_everything
 
 # import random forest, xgboost, and logistic regression
@@ -26,11 +27,13 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 
-sys.path.append("Linux/")
 from src.models import *
 from src.lit_utils import LitProgressBar
 from src.preprocessors import CommandTokenizer
 from src.data_utils import create_dataloader
+
+from typing import List
+from torch.utils.data import DataLoader
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
@@ -70,25 +73,13 @@ def training_tabular(model, name, X_train_minhash, X_test_minhash, y_train, y_te
     print(f"[!] {name} model scores: tpr={tpr:.4f}, f1={f1:.4f}, acc={acc:.4f}, auc={auc:.4f}")
 
 
-def training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epochs=10):
-    lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=1e-3)
-    
-    # print(f"[*] Compiling {name} model...")
-    # now = time.time()
-    # compiled_model = torch.compile(lightning_model)
-    # print(f"[!] Compilation time: {time.time() - now:.2f} seconds")
-
-    # NOTE: compilation -- not yet supported on Windows
-    # RuntimeError: Windows not yet supported for torch.compile
-
-    # ensure folders for logging exist
-    os.makedirs(f"{log_folder}/{name}_csv", exist_ok=True)
-    os.makedirs(f"{log_folder}/{name}_tb", exist_ok=True)
+def configure_trainer(name, log_folder, epochs):
+    """Configure the PyTorch Lightning Trainer."""
 
     early_stop = EarlyStopping(
-        monitor="val_f1",
-        patience=3,
-        min_delta=0.001,
+        monitor="val_tpr",
+        patience=10,
+        min_delta=0.0001,
         verbose=True,
         mode="max"
     )
@@ -96,74 +87,44 @@ def training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epo
     trainer = L.Trainer(
         num_sanity_val_steps=LIT_SANITY_STEPS,
         max_epochs=epochs,
-        accelerator="gpu",
+        accelerator=DEVICE,
         devices=1,
-        callbacks=[
-            LitProgressBar(),
-            #early_stop,
-        ],
-        val_check_interval=0.2, # log validation scores five times per epoch
+        callbacks=[LitProgressBar(), early_stop],
+        val_check_interval=0.2,
         log_every_n_steps=10,
-        logger=[
-            CSVLogger(save_dir=log_folder, name=f"{name}_csv"),
-            TensorBoardLogger(save_dir=log_folder, name=f"{name}_tb"),
-        ]
+        logger=[CSVLogger(save_dir=log_folder, name=f"{name}_csv"), TensorBoardLogger(save_dir=log_folder, name=f"{name}_tb")]
     )
+
+    # Ensure folders for logging exist
+    os.makedirs(os.path.join(log_folder, f"{name}_tb"), exist_ok=True)
+    os.makedirs(os.path.join(log_folder, f"{name}_csv"), exist_ok=True)
+
+    return trainer
+
+
+def train_lit_model(X_train_loader, X_test_loader, pytorch_model, name, log_folder, epochs=10, learning_rate=1e-3):
+    lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=learning_rate)
+    trainer = configure_trainer(name, log_folder, epochs)
 
     print(f"[*] Training {name} model...")
     trainer.fit(lightning_model, X_train_loader, X_test_loader)
-    # trainer.test(lightning_model, X_test_loader)
 
-SEED = 33
+    return trainer, lightning_model
 
-VOCAB_SIZE = 4096
-EMBEDDED_DIM = 64
-MAX_LEN = 128
-BATCH_SIZE = 1024
-DROPOUT = 0.5
 
-# TEST
-EPOCHS = 1
-LIT_SANITY_STEPS = 0
-LIMIT = 15000
-DATALOADER_WORKERS = 1
-LOGS_FOLDER = "logs_models_TEST_SIZES"
+def commands_to_loader(cmd: List[str], tokenizer: CommandTokenizer, y: np.ndarray = None) -> DataLoader:
+    """Convert a list of commands to a DataLoader."""
+    tokens = tokenizer.tokenize(cmd)
+    ints = tokenizer.encode(tokens)
+    padded = tokenizer.pad(ints, MAX_LEN)
+    if y is None:
+        loader = create_dataloader(padded, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+    else:
+        loader = create_dataloader(padded, y, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+    return loader
 
-# PROD
-# EPOCHS = 20
-# LIT_SANITY_STEPS = 1
-# LIMIT = None
-# DATALOADER_WORKERS = 4
-# LOGS_FOLDER = "logs_models"
 
-RUNS = [
-    # "neurlux",
-    # "mlp_seq",
-    # "cnn",
-    # "lstm",
-    # "cnn_lstm",
-    # "mean_transformer",
-    # "cls_transformer",
-    # "attpool_transformer",
-    # "_tabular_rf",
-    "_tabular_mlp",
-    # "_tabular_xgb",
-    # "_tabular_log_reg",
-]
-
-if __name__ == "__main__":
-    # ===========================================
-    print(watermark(packages="torch,lightning,sklearn", python=True))
-    print(f"[!] Script start time: {time.ctime()}")
-
-    TOKENIZER = wordpunct_tokenize
-    seed_everything(SEED)
-
-    # ===========================================
-    # LOADING DATA
-    # ===========================================
-    ROOT = os.path.dirname(os.path.abspath(__file__))
-
+def load_data():
     train_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_baseline.parquet/')) if x.endswith('.parquet')][0]
     test_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_baseline.parquet/')) if x.endswith('.parquet')][0]
     train_rvrs_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_rvrs.parquet/')) if x.endswith('.parquet')][0]
@@ -192,6 +153,63 @@ if __name__ == "__main__":
     X_test_cmds = X_test_cmds[:LIMIT]
     y_test = y_test[:LIMIT]
 
+    return X_train_cmds, y_train, X_test_cmds, y_test
+
+
+SEED = 33
+
+VOCAB_SIZE = 4096
+EMBEDDED_DIM = 64
+MAX_LEN = 128
+BATCH_SIZE = 1024
+DROPOUT = 0.5
+
+DEVICE = "gpu"
+LEARNING_RATE = 1e-3
+
+# TEST
+EPOCHS = 1
+LIT_SANITY_STEPS = 0
+LIMIT = 15000
+DATALOADER_WORKERS = 1
+LOGS_FOLDER = "logs_models_TEST"
+
+# PROD
+# EPOCHS = 20
+# LIT_SANITY_STEPS = 1
+# LIMIT = None
+# DATALOADER_WORKERS = 4
+# LOGS_FOLDER = "logs_models_v2"
+
+RUNS = [
+    '_tabular_rf', # DOESN'T WORK
+    '_tabular_xgb',
+    '_tabular_log_reg'
+    '_tabular_mlp',
+    'mlp_seq',
+    'attpool_transformer',
+    'cls_transformer',
+    'mean_transformer',
+    'neurlux',
+    'cnn',
+    'lstm',
+    'cnn_lstm',
+]
+
+
+if __name__ == "__main__":
+    # ===========================================
+    print(watermark(packages="torch,lightning,sklearn", python=True))
+    print(f"[!] Script start time: {time.ctime()}")
+
+    TOKENIZER = wordpunct_tokenize
+    seed_everything(SEED)
+
+    # ===========================================
+    # LOADING DATA
+    # ===========================================
+    ROOT = os.path.dirname(os.path.abspath(__file__))
+    X_train_cmds, y_train, X_test_cmds, y_test = load_data()
     print(f"Sizes of train and test sets: {len(X_train_cmds)}, {len(X_test_cmds)}")
 
     # =============================================
@@ -199,25 +217,19 @@ if __name__ == "__main__":
     # =============================================
     tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE)
 
-    # Tokenize
-    X_train_tokens = tokenizer.tokenize(X_train_cmds)
-    X_test_tokens = tokenizer.tokenize(X_test_cmds)
-
-    # Build vocab and encode
+    # ========== EMBEDDING ==========
     print("[*] Building vocab and encoding...")
+    X_train_tokens = tokenizer.tokenize(X_train_cmds)
     tokenizer.build_vocab(X_train_tokens)
-    X_train_ints = tokenizer.encode(X_train_tokens)
-    X_test_ints = tokenizer.encode(X_test_tokens)
 
-    # Pad sequences
-    X_train_padded = tokenizer.pad(X_train_ints, MAX_LEN)
-    X_test_padded = tokenizer.pad(X_test_ints, MAX_LEN)
+    vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}.json")
+    tokenizer.dump_vocab(vocab_file)
 
     # creating dataloaders
-    X_train_loader = create_dataloader(X_train_padded, y_train, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-    X_test_loader = create_dataloader(X_test_padded, y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+    X_train_loader = commands_to_loader(X_train_cmds, tokenizer, y_train)
+    X_test_loader = commands_to_loader(X_test_cmds, tokenizer, y_test)
 
-    # MIN-HASH TABULAR ENCODING
+    # ========== MIN-HASH TABULAR ENCODING ==========
     minhash = HashingVectorizer(n_features=VOCAB_SIZE, tokenizer=TOKENIZER, token_pattern=None)
     print("[*] Fitting MinHash encoder...")
     X_train_minhash = minhash.fit_transform(X_train_cmds)
@@ -229,11 +241,6 @@ if __name__ == "__main__":
     # =============================================
     # DEFINING MODELS
     # =============================================
-
-    # sequential models
-
-    # excluding this since it is significantly larger model w/o significant architecture changes
-    #flat_transformer_model = FlatTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 855 K params
 
     mlp_seq_model = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_len=MAX_LEN, dropout=DROPOUT) # 297 K params
     cnn_model = CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[2, 3, 4, 5], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 301 K params
@@ -251,12 +258,11 @@ if __name__ == "__main__":
     mlp_tab_model = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
 
     models = {
-        #"flat_transformer": flat_transformer_model,
-        "neurlux": neurlux,
+        "mlp_seq": mlp_seq_model,
         "attpool_transformer": attpool_transformer_model,
         "cls_transformer": cls_transformer_model,
         "mean_transformer": mean_transformer_model,
-        "mlp_seq": mlp_seq_model,
+        "neurlux": neurlux,
         "cnn": cnn_model,
         "lstm": lstm_model,
         "cnn_lstm": cnn_lstm_model,
@@ -278,13 +284,11 @@ if __name__ == "__main__":
         print(f"[!] Training of {name} started: ", time.ctime())
         
         if name in ["rf", "xgb", "log_reg"]:
-            training_tabular(model, name, X_train_minhash, X_test_minhash, y_train, y_test, logs_folder=LOGS_FOLDER)
-        
+            training_tabular(model, name, X_train_minhash, X_test_minhash, y_train, y_test, logs_folder=LOGS_FOLDER)        
         elif name == "_tabular_mlp":
-            training(model, X_train_loader_minhash, X_test_loader_minhash, name, log_folder=LOGS_FOLDER, epochs=EPOCHS)
-        
+            train_lit_model(X_train_loader_minhash, X_test_loader_minhash, model, name, log_folder=LOGS_FOLDER, epochs=EPOCHS, learning_rate=LEARNING_RATE)
         else:
-            training(model, X_train_loader, X_test_loader, name, log_folder=LOGS_FOLDER, epochs=EPOCHS)
+            train_lit_model(X_train_loader, X_test_loader, model, name, log_folder=LOGS_FOLDER, epochs=EPOCHS, learning_rate=LEARNING_RATE)
         
         print(f"[!] Training of {name} ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")
 

@@ -7,8 +7,9 @@ from scipy.sparse import csr_matrix
 
 
 class CSRTensorDataset(Dataset):
-    def __init__(self, csr_data, labels):
-        assert csr_data.shape[0] == len(labels)
+    def __init__(self, csr_data, labels=None):
+        if labels is not None:
+            assert csr_data.shape[0] == len(labels)
         self.csr_data = csr_data
         self.labels = labels
 
@@ -17,21 +18,29 @@ class CSRTensorDataset(Dataset):
 
     def __getitem__(self, index):
         row = self.csr_data[index].toarray().squeeze()  # Convert the sparse row to a dense numpy array
-        label = self.labels[index]
-        return torch.tensor(row, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
+        x_data = torch.tensor(row, dtype=torch.float32)
+        
+        if self.labels is not None:
+            y_data = torch.tensor(self.labels[index], dtype=torch.float32)
+            return x_data, y_data
+        else:
+            return x_data,
 
 
-def create_dataloader(X, y, batch_size, shuffle=False, workers=4):
-    if isinstance(X, csr_matrix):
-        dataset = CSRTensorDataset(X, y)    
-    elif isinstance(X, np.ndarray):
+
+def create_dataloader(X, y=None, batch_size=1024, shuffle=False, workers=4):
+    # Convert numpy arrays to torch tensors
+    if isinstance(X, np.ndarray):
         X = torch.from_numpy(X).long()
+    if y is not None and isinstance(y, np.ndarray):
         y = torch.from_numpy(y).float()
-        dataset = TensorDataset(X, y)    
+
+    # Handle csr_matrix case
+    if isinstance(X, csr_matrix):
+        dataset = CSRTensorDataset(X, y)
+    # Handle torch.Tensor case
     elif isinstance(X, torch.Tensor):
-        if not isinstance(y, torch.Tensor):
-            y = torch.from_numpy(y).float()
-        dataset = TensorDataset(X, y)    
+        dataset = TensorDataset(X, y) if y is not None else TensorDataset(X)
     else:
         raise ValueError("Unsupported type for X. Supported types are numpy arrays, torch tensors, and scipy CSR matrices.")
     

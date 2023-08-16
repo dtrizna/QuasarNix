@@ -1,3 +1,4 @@
+from typing import Any
 import numpy as np
 import torch
 import torch.nn as nn
@@ -11,14 +12,21 @@ from sklearn.metrics import roc_curve
 
 
 class PyTorchLightningModel(L.LightningModule):
-    def __init__(self, model, learning_rate, fpr=1e-4):
+    def __init__(self, model, learning_rate, fpr=1e-4, scheduler=None, scheduler_step_budget=None):
+        # NOTE: scheduler_step_budget = epochs * len(train_loader)
         super().__init__()
 
         self.model = model
         self.learning_rate = learning_rate
         self.fpr = fpr
-
         self.loss = BCEWithLogitsLoss()
+
+        assert scheduler in [None, "onecycle", "cosine"], "Scheduler must be onecycle or cosine"
+        if scheduler is not None:
+            assert isinstance(scheduler_step_budget, int), "Scheduler step budget must be provided"
+            print(f"[!] Scheduler: {scheduler} | Scheduler step budget: {scheduler_step_budget}")
+        self.scheduler = scheduler
+        self.scheduler_step_budget = scheduler_step_budget
 
         self.train_acc = torchmetrics.Accuracy(task='binary')
         self.train_f1 = torchmetrics.F1Score(task='binary', average='macro')
@@ -38,7 +46,31 @@ class PyTorchLightningModel(L.LightningModule):
         self.save_hyperparameters(ignore=["model"])
     
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
+        if self.scheduler is None:
+            return optimizer
+
+        if self.scheduler == "onecycle":
+            scheduler = torch.optim.lr_scheduler.OneCycleLR(
+                optimizer,
+                max_lr=self.learning_rate,
+                total_steps=self.scheduler_step_budget
+            )
+        if self.scheduler == "cosine":
+            scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+                optimizer,
+                T_max=self.scheduler_step_budget
+            )
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "monitor": "train_loss",
+                "interval": "step", # default: epoch
+                "frequency": 1
+            }
+        }
+
 
     def get_tpr_at_fpr(self, predicted_logits, true_labels, fprNeeded=1e-4):
         predicted_probs = torch.sigmoid(predicted_logits).cpu().detach().numpy()
@@ -101,6 +133,10 @@ class PyTorchLightningModel(L.LightningModule):
         test_tpr = self.test_tpr(logits, y, fprNeeded=self.fpr)
         self.log('test_tpr', test_tpr, on_step=False, on_epoch=True, prog_bar=True)
         return loss
+
+    def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0) -> Any:
+        return super().predict_step(batch[0], batch_idx, dataloader_idx)
+        
 
 
 class SimpleMLP(nn.Module):

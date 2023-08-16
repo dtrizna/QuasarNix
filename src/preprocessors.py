@@ -2,6 +2,8 @@ from collections import Counter
 from scipy.sparse import lil_matrix
 from nltk.tokenize import wordpunct_tokenize
 from numpy import array
+import json
+import os
 
 class OneHotCustomVectorizer:
     def __init__(self, tokenizer, max_features=1024):
@@ -49,15 +51,26 @@ class CommandTokenizer:
         return [self.tokenizer_fn(cmd) for cmd in commands]
 
     def build_vocab(self, tokens_list):
+        self.token_to_int[self.PAD_TOKEN] = 0 # PAD_TOKEN maps to 0
+        self.token_to_int[self.UNK_TOKEN] = 1 # UNK_TOKEN maps to 1
         vocab = Counter()
         for tokens in tokens_list:
             vocab.update(tokens)
         vocab = dict(vocab.most_common(self.vocab_size - 2))  # -2 for the UNK_TOKEN and PAD_TOKEN
-        self.token_to_int = {token: idx for idx, (token, _) in enumerate(vocab.items(), 2)}
-        self.token_to_int[self.UNK_TOKEN] = 1 # UNK_TOKEN maps to 1
-        self.token_to_int[self.PAD_TOKEN] = 0 # PAD_TOKEN maps to 0
+        self.token_to_int.update({token: idx for idx, (token, _) in enumerate(vocab.items(), 2)})
+    
+    def dump_vocab(self, vocab_file):
+        vocab_file_folder = os.path.dirname(vocab_file)
+        os.makedirs(vocab_file_folder, exist_ok=True)
+        with open(vocab_file, 'w') as f:
+            json.dump(self.token_to_int, f, indent=4)
+    
+    def load_vocab(self, vocab_file):
+        with open(vocab_file, 'r') as f:
+            self.token_to_int = json.load(f)
     
     def encode(self, tokens_list):
+        assert self.token_to_int != {}, "Vocabulary not built yet. Call build_vocab() first."
         return [[self.token_to_int.get(token, self.token_to_int[self.UNK_TOKEN]) for token in tokens] for tokens in tokens_list]
 
     def pad(self, encoded_list, max_len):

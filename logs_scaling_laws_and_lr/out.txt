@@ -1,0 +1,1230 @@
+C:\Users\dtrizna\Code\Synapse\Linux>python3 ablation_scaling_laws_and_lr.py
+Python implementation: CPython
+Python version       : 3.9.13
+IPython version      : 8.11.0
+
+torch    : 2.0.1+cu117
+lightning: 1.8.6
+sklearn  : 0.0.post1
+
+[!] Script start time: Wed Aug 16 17:49:33 2023
+Global seed set to 33
+Sizes of train and test sets: 533014, 470129
+[*] Building vocab and encoding...
+[*] Fitting MinHash encoder...
+[!] Training of MLP_size_1M_lr_onecycle_Tmax_0.001 with lr onecycle_Tmax_0.001 started:  Wed Aug 16 17:50:26 2023
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_1M_lr_onecycle_Tmax_0.001 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 1.0 M
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+1.0 M     Trainable params
+0         Non-trainable params
+1.0 M     Total params
+4.104     Total estimated model params size (MB)
+Epoch 0:  20%|▏| 564/2821 [00:19<01:18, 28.82it/s, loss=0.681, v_num=0, train_loss=0.673, val_acc=0.498, val_f1=0.000, val_auc=0.Metric val_tpr improved. New best score: 0.002
+Epoch 0:  40%|▍| 1128/2821 [00:26<00:40, 42.16it/s, loss=0.532, v_num=0, train_loss=0.489, val_acc=0.867, val_f1=0.878, val_auc=0Metric val_tpr improved by 0.262 >= min_delta = 0.0001. New best score: 0.264
+Epoch 0:  60%|▌| 1692/2821 [00:34<00:22, 49.68it/s, loss=0.0528, v_num=0, train_loss=0.032, val_acc=0.978, val_f1=0.977, val_auc=Metric val_tpr improved by 0.176 >= min_delta = 0.0001. New best score: 0.440
+Epoch 0:  80%|▊| 2256/2821 [00:41<00:10, 54.39it/s, loss=0.0229, v_num=0, train_loss=0.0175, val_acc=0.969, val_f1=0.968, val_aucMetric val_tpr improved by 0.176 >= min_delta = 0.0001. New best score: 0.615
+Epoch 0: 100%|▉| 2820/2821 [00:49<00:00, 56.93it/s, loss=0.0166, v_num=0, train_loss=0.0212, val_acc=0.978, val_f1=0.977, val_aucMetric val_tpr improved by 0.083 >= min_delta = 0.0001. New best score: 0.699
+Epoch 0: 100%|█| 2821/2821 [00:49<00:00, 56.86it/s, loss=0.0165, v_num=0, train_loss=0.00592, val_acc=0.978, val_f1=0.977, val_au
+Epoch 1:  20%|▏| 564/2821 [00:09<00:37, 60.39it/s, loss=0.0104, v_num=0, train_loss=0.00214, val_acc=0.963, val_f1=0.962, val_aucMetric val_tpr improved by 0.091 >= min_delta = 0.0001. New best score: 0.790
+Epoch 1:  40%|▍| 1128/2821 [00:17<00:26, 63.56it/s, loss=0.00603, v_num=0, train_loss=0.00213, val_acc=0.957, val_f1=0.956, val_aMetric val_tpr improved by 0.037 >= min_delta = 0.0001. New best score: 0.827
+Epoch 1:  80%|▊| 2256/2821 [00:36<00:09, 62.50it/s, loss=0.00679, v_num=0, train_loss=0.0101, val_acc=0.936, val_f1=0.932, val_auMetric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.832
+Epoch 1: 100%|▉| 2820/2821 [00:46<00:00, 61.14it/s, loss=0.00305, v_num=0, train_loss=0.00428, val_acc=0.962, val_f1=0.961, val_aMetric val_tpr improved by 0.036 >= min_delta = 0.0001. New best score: 0.868
+Epoch 1: 100%|█| 2821/2821 [00:46<00:00, 61.03it/s, loss=0.00285, v_num=0, train_loss=0.00103, val_acc=0.962, val_f1=0.961, val_a
+Epoch 2:  20%|▏| 564/2821 [00:09<00:36, 62.31it/s, loss=0.00355, v_num=0, train_loss=0.000792, val_acc=0.949, val_f1=0.946, val_aMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.876
+Epoch 2:  40%|▍| 1128/2821 [00:18<00:27, 61.17it/s, loss=0.0032, v_num=0, train_loss=0.006, val_acc=0.972, val_f1=0.972, val_auc=Metric val_tpr improved by 0.023 >= min_delta = 0.0001. New best score: 0.900
+Epoch 2:  60%|▌| 1692/2821 [00:27<00:18, 60.78it/s, loss=0.00123, v_num=0, train_loss=0.000228, val_acc=0.961, val_f1=0.959, val_Metric val_tpr improved by 0.017 >= min_delta = 0.0001. New best score: 0.917
+Epoch 2:  80%|▊| 2256/2821 [00:37<00:09, 60.67it/s, loss=0.00362, v_num=0, train_loss=0.00193, val_acc=0.875, val_f1=0.857, val_aMetric val_tpr improved by 0.020 >= min_delta = 0.0001. New best score: 0.937
+Epoch 2: 100%|█| 2821/2821 [00:46<00:00, 60.17it/s, loss=0.000966, v_num=0, train_loss=9.85e-5, val_acc=0.967, val_f1=0.966, val_
+Epoch 3:  40%|▍| 1128/2821 [00:20<00:31, 54.36it/s, loss=0.00156, v_num=0, train_loss=6.01e-5, val_acc=0.958, val_f1=0.956, val_aMetric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.937
+Epoch 3:  80%|▊| 2256/2821 [00:40<00:10, 55.25it/s, loss=0.00149, v_num=0, train_loss=0.00018, val_acc=0.958, val_f1=0.956, val_aMetric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.948
+Epoch 3: 100%|█| 2821/2821 [00:55<00:00, 51.29it/s, loss=0.000642, v_num=0, train_loss=5.7e-5, val_acc=0.965, val_f1=0.964, val_a
+Epoch 4:  40%|▍| 1128/2821 [00:18<00:27, 60.66it/s, loss=0.00114, v_num=0, train_loss=0.00219, val_acc=0.964, val_f1=0.963, val_aMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.956
+Epoch 4: 100%|█| 2821/2821 [01:04<00:00, 43.61it/s, loss=0.0035, v_num=0, train_loss=0.00382, val_acc=0.990, val_f1=0.990, val_au
+Epoch 5: 100%|█| 2821/2821 [01:25<00:00, 33.03it/s, loss=0.000295, v_num=0, train_loss=3.17e-5, val_acc=0.984, val_f1=0.984, val_
+Epoch 6:  20%|▏| 564/2821 [00:13<00:55, 40.31it/s, loss=0.000147, v_num=0, train_loss=3.04e-5, val_acc=0.945, val_f1=0.942, val_aMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.959
+Epoch 6: 100%|█| 2821/2821 [01:03<00:00, 44.13it/s, loss=1.48e-05, v_num=0, train_loss=5.21e-6, val_acc=0.920, val_f1=0.913, val_
+Epoch 7:  60%|▌| 1692/2821 [00:35<00:23, 47.32it/s, loss=3.39e-05, v_num=0, train_loss=4.84e-5, val_acc=0.897, val_f1=0.885, val_Metric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.963
+Epoch 7: 100%|█| 2821/2821 [01:05<00:00, 43.39it/s, loss=1.73e-05, v_num=0, train_loss=6.35e-6, val_acc=0.911, val_f1=0.903, val_
+Epoch 8: 100%|█| 2821/2821 [01:12<00:00, 39.00it/s, loss=0.000179, v_num=0, train_loss=2.8e-5, val_acc=0.921, val_f1=0.914, val_a
+Epoch 9:  60%|▌| 1692/2821 [00:34<00:22, 49.27it/s, loss=0.000156, v_num=0, train_loss=1.05e-5, val_acc=0.915, val_f1=0.907, val_Monitored metric val_tpr did not improve in the last 10 records. Best score: 0.963. Signaling Trainer to stop.
+Epoch 9:  60%|▌| 1692/2821 [00:34<00:22, 49.16it/s, loss=0.000156, v_num=0, train_loss=1.05e-5, val_acc=0.915, val_f1=0.907, val_
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9:  60%|▌| 1692/2821 [00:34<00:22, 49.14it/s, loss=0.000156, v_num=0, train_loss=1.05e-5, val_acc=0.915, val_f1=0.907, val_
+[!] Training of MLP_size_1M_lr_onecycle_Tmax_0.001 with lr onecycle_Tmax_0.001 ended:  Wed Aug 16 18:00:27 2023  | Took: 601.37 seconds
+[!] Training of MLP_size_1M_lr_onecycle_Tmax_0.0005 with lr onecycle_Tmax_0.0005 started:  Wed Aug 16 18:00:27 2023
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_1M_lr_onecycle_Tmax_0.0005 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 1.0 M
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+1.0 M     Trainable params
+0         Non-trainable params
+1.0 M     Total params
+4.104     Total estimated model params size (MB)
+Epoch 0:  20%|▏| 564/2821 [00:25<01:41, 22.35it/s, loss=0.693, v_num=0, train_loss=0.689, val_acc=0.500, val_f1=0.000, val_auc=0.Metric val_tpr improved. New best score: 0.038
+Epoch 0:  40%|▍| 1128/2821 [00:39<00:59, 28.67it/s, loss=0.684, v_num=0, train_loss=0.678, val_acc=0.500, val_f1=0.000, val_auc=0Metric val_tpr improved by 0.126 >= min_delta = 0.0001. New best score: 0.164
+Epoch 0:  60%|▌| 1692/2821 [00:55<00:37, 30.36it/s, loss=0.446, v_num=0, train_loss=0.376, val_acc=0.870, val_f1=0.866, val_auc=0Metric val_tpr improved by 0.258 >= min_delta = 0.0001. New best score: 0.422
+Epoch 0: 100%|▉| 2820/2821 [01:27<00:00, 32.37it/s, loss=0.0233, v_num=0, train_loss=0.0265, val_acc=0.953, val_f1=0.951, val_aucMetric val_tpr improved by 0.051 >= min_delta = 0.0001. New best score: 0.473
+Epoch 0: 100%|█| 2821/2821 [01:27<00:00, 32.33it/s, loss=0.023, v_num=0, train_loss=0.00475, val_acc=0.953, val_f1=0.951, val_auc
+Epoch 1:  20%|▏| 564/2821 [00:15<01:02, 36.09it/s, loss=0.0167, v_num=0, train_loss=0.00713, val_acc=0.948, val_f1=0.946, val_aucMetric val_tpr improved by 0.106 >= min_delta = 0.0001. New best score: 0.579
+Epoch 1:  40%|▍| 1128/2821 [00:31<00:47, 35.79it/s, loss=0.0146, v_num=0, train_loss=0.00567, val_acc=0.920, val_f1=0.914, val_auMetric val_tpr improved by 0.087 >= min_delta = 0.0001. New best score: 0.666
+Epoch 1:  60%|▌| 1692/2821 [00:47<00:31, 35.87it/s, loss=0.0181, v_num=0, train_loss=0.0115, val_acc=0.931, val_f1=0.927, val_aucMetric val_tpr improved by 0.053 >= min_delta = 0.0001. New best score: 0.719
+Epoch 1:  80%|▊| 2256/2821 [01:03<00:15, 35.39it/s, loss=0.00727, v_num=0, train_loss=0.00705, val_acc=0.934, val_f1=0.929, val_aMetric val_tpr improved by 0.103 >= min_delta = 0.0001. New best score: 0.822
+Epoch 1: 100%|▉| 2820/2821 [01:15<00:00, 37.23it/s, loss=0.00605, v_num=0, train_loss=0.00595, val_acc=0.960, val_f1=0.958, val_aMetric val_tpr improved by 0.040 >= min_delta = 0.0001. New best score: 0.862
+Epoch 1: 100%|█| 2821/2821 [01:15<00:00, 37.20it/s, loss=0.00582, v_num=0, train_loss=0.000336, val_acc=0.960, val_f1=0.958, val_
+Epoch 2:  40%|▍| 1128/2821 [00:18<00:28, 60.08it/s, loss=0.00766, v_num=0, train_loss=0.0331, val_acc=0.969, val_f1=0.969, val_auMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.866
+Epoch 2:  80%|▊| 2256/2821 [00:38<00:09, 58.41it/s, loss=0.00303, v_num=0, train_loss=0.00426, val_acc=0.935, val_f1=0.931, val_aMetric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.872
+Epoch 2: 100%|▉| 2820/2821 [00:48<00:00, 58.52it/s, loss=0.00203, v_num=0, train_loss=0.000361, val_acc=0.954, val_f1=0.952, val_Metric val_tpr improved by 0.024 >= min_delta = 0.0001. New best score: 0.896
+Epoch 2: 100%|█| 2821/2821 [00:48<00:00, 58.40it/s, loss=0.00201, v_num=0, train_loss=0.000242, val_acc=0.954, val_f1=0.952, val_
+Epoch 3:  20%|▏| 564/2821 [00:13<00:53, 41.84it/s, loss=0.00118, v_num=0, train_loss=0.000205, val_acc=0.934, val_f1=0.929, val_aMetric val_tpr improved by 0.012 >= min_delta = 0.0001. New best score: 0.908
+Epoch 3:  40%|▍| 1128/2821 [00:28<00:43, 39.19it/s, loss=0.0019, v_num=0, train_loss=0.00123, val_acc=0.925, val_f1=0.919, val_auMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.912
+Epoch 3:  80%|▊| 2256/2821 [00:46<00:11, 48.55it/s, loss=0.000241, v_num=0, train_loss=0.000236, val_acc=0.913, val_f1=0.905, valMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.916
+Epoch 3: 100%|▉| 2820/2821 [00:54<00:00, 51.54it/s, loss=0.000676, v_num=0, train_loss=0.00519, val_acc=0.923, val_f1=0.916, val_Metric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.921
+Epoch 3: 100%|█| 2821/2821 [00:54<00:00, 51.47it/s, loss=0.000676, v_num=0, train_loss=6.22e-5, val_acc=0.923, val_f1=0.916, val_
+Epoch 4:  60%|▌| 1692/2821 [00:25<00:17, 65.80it/s, loss=0.000693, v_num=0, train_loss=4.87e-5, val_acc=0.930, val_f1=0.925, val_Metric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.926
+Epoch 4:  80%|▊| 2256/2821 [00:38<00:09, 58.56it/s, loss=0.000129, v_num=0, train_loss=5e-5, val_acc=0.933, val_f1=0.928, val_aucMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.928
+Epoch 4: 100%|█| 2821/2821 [00:51<00:00, 54.72it/s, loss=9.39e-05, v_num=0, train_loss=7.13e-5, val_acc=0.931, val_f1=0.926, val_
+Epoch 5:  80%|▊| 2256/2821 [00:34<00:08, 64.85it/s, loss=0.000287, v_num=0, train_loss=9.93e-5, val_acc=0.912, val_f1=0.903, val_Metric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.929
+Epoch 5: 100%|█| 2821/2821 [00:43<00:00, 64.80it/s, loss=9.67e-05, v_num=0, train_loss=2.1e-5, val_acc=0.934, val_f1=0.930, val_a
+Epoch 6: 100%|█| 2821/2821 [00:59<00:00, 47.18it/s, loss=9.2e-05, v_num=0, train_loss=1.82e-5, val_acc=0.941, val_f1=0.937, val_a
+Epoch 7:  60%|▌| 1692/2821 [00:31<00:20, 54.40it/s, loss=0.000142, v_num=0, train_loss=3.88e-5, val_acc=0.901, val_f1=0.890, val_Metric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.935
+Epoch 7: 100%|█| 2821/2821 [00:53<00:00, 52.89it/s, loss=2.82e-05, v_num=0, train_loss=9.19e-6, val_acc=0.925, val_f1=0.919, val_
+Epoch 8: 100%|█| 2821/2821 [01:01<00:00, 45.95it/s, loss=2.26e-05, v_num=0, train_loss=1.98e-5, val_acc=0.915, val_f1=0.908, val_
+Epoch 9:  60%|▌| 1692/2821 [00:23<00:15, 72.34it/s, loss=3.95e-05, v_num=0, train_loss=3.7e-5, val_acc=0.901, val_f1=0.890, val_aMonitored metric val_tpr did not improve in the last 10 records. Best score: 0.935. Signaling Trainer to stop.
+Epoch 9:  60%|▌| 1692/2821 [00:23<00:15, 72.14it/s, loss=3.95e-05, v_num=0, train_loss=3.7e-5, val_acc=0.901, val_f1=0.890, val_a
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9:  60%|▌| 1692/2821 [00:23<00:15, 72.09it/s, loss=3.95e-05, v_num=0, train_loss=3.7e-5, val_acc=0.901, val_f1=0.890, val_a
+[!] Training of MLP_size_1M_lr_onecycle_Tmax_0.0005 with lr onecycle_Tmax_0.0005 ended:  Wed Aug 16 18:10:09 2023  | Took: 582.10 seconds
+[!] Training of MLP_size_1M_lr_onecycle_Tmax_0.0001 with lr onecycle_Tmax_0.0001 started:  Wed Aug 16 18:10:09 2023
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_1M_lr_onecycle_Tmax_0.0001 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 1.0 M
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+1.0 M     Trainable params
+0         Non-trainable params
+1.0 M     Total params
+4.104     Total estimated model params size (MB)
+Epoch 0:  20%|▏| 564/2821 [00:22<01:30, 24.91it/s, loss=0.693, v_num=0, train_loss=0.693, val_acc=0.500, val_f1=0.000, val_auc=0.Metric val_tpr improved. New best score: 0.000
+Epoch 0:  40%|▍| 1128/2821 [00:30<00:45, 37.02it/s, loss=0.691, v_num=0, train_loss=0.692, val_acc=0.560, val_f1=0.406, val_auc=0Metric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.000
+Epoch 0:  80%|▊| 2256/2821 [00:45<00:11, 49.44it/s, loss=0.681, v_num=0, train_loss=0.685, val_acc=0.546, val_f1=0.181, val_auc=0Metric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.003
+Epoch 0: 100%|▉| 2820/2821 [00:53<00:00, 53.12it/s, loss=0.636, v_num=0, train_loss=0.627, val_acc=0.700, val_f1=0.581, val_auc=0Metric val_tpr improved by 0.334 >= min_delta = 0.0001. New best score: 0.337
+Epoch 0: 100%|█| 2821/2821 [00:53<00:00, 53.07it/s, loss=0.635, v_num=0, train_loss=0.614, val_acc=0.700, val_f1=0.581, val_auc=0
+Epoch 1:  40%|▍| 1128/2821 [00:15<00:23, 72.38it/s, loss=0.0394, v_num=0, train_loss=0.0273, val_acc=0.976, val_f1=0.976, val_aucMetric val_tpr improved by 0.063 >= min_delta = 0.0001. New best score: 0.399
+Epoch 1:  60%|▌| 1692/2821 [00:23<00:15, 73.56it/s, loss=0.0312, v_num=0, train_loss=0.0204, val_acc=0.973, val_f1=0.973, val_aucMetric val_tpr improved by 0.019 >= min_delta = 0.0001. New best score: 0.418
+Epoch 1:  80%|▊| 2256/2821 [00:31<00:07, 71.70it/s, loss=0.0247, v_num=0, train_loss=0.0181, val_acc=0.977, val_f1=0.977, val_aucMetric val_tpr improved by 0.025 >= min_delta = 0.0001. New best score: 0.444
+Epoch 1: 100%|▉| 2820/2821 [00:39<00:00, 72.20it/s, loss=0.022, v_num=0, train_loss=0.0182, val_acc=0.964, val_f1=0.963, val_auc=Metric val_tpr improved by 0.060 >= min_delta = 0.0001. New best score: 0.504
+Epoch 1: 100%|█| 2821/2821 [00:39<00:00, 72.09it/s, loss=0.0218, v_num=0, train_loss=0.00701, val_acc=0.964, val_f1=0.963, val_au
+Epoch 2:  20%|▏| 564/2821 [00:07<00:29, 76.36it/s, loss=0.018, v_num=0, train_loss=0.0115, val_acc=0.967, val_f1=0.967, val_auc=0Metric val_tpr improved by 0.056 >= min_delta = 0.0001. New best score: 0.560
+Epoch 2:  40%|▍| 1128/2821 [00:14<00:22, 75.55it/s, loss=0.0168, v_num=0, train_loss=0.00951, val_acc=0.965, val_f1=0.964, val_auMetric val_tpr improved by 0.066 >= min_delta = 0.0001. New best score: 0.627
+Epoch 2:  60%|▌| 1692/2821 [00:22<00:15, 75.17it/s, loss=0.0176, v_num=0, train_loss=0.0128, val_acc=0.966, val_f1=0.965, val_aucMetric val_tpr improved by 0.088 >= min_delta = 0.0001. New best score: 0.715
+Epoch 2:  80%|▊| 2256/2821 [00:30<00:07, 75.20it/s, loss=0.0148, v_num=0, train_loss=0.0144, val_acc=0.957, val_f1=0.955, val_aucMetric val_tpr improved by 0.069 >= min_delta = 0.0001. New best score: 0.784
+Epoch 2: 100%|▉| 2820/2821 [00:37<00:00, 74.70it/s, loss=0.0101, v_num=0, train_loss=0.0151, val_acc=0.963, val_f1=0.962, val_aucMetric val_tpr improved by 0.045 >= min_delta = 0.0001. New best score: 0.829
+Epoch 2: 100%|█| 2821/2821 [00:37<00:00, 74.57it/s, loss=0.00957, v_num=0, train_loss=0.00137, val_acc=0.963, val_f1=0.962, val_a
+Epoch 3:  20%|▏| 564/2821 [00:07<00:30, 74.75it/s, loss=0.00706, v_num=0, train_loss=0.00238, val_acc=0.958, val_f1=0.956, val_auMetric val_tpr improved by 0.014 >= min_delta = 0.0001. New best score: 0.843
+Epoch 3:  60%|▌| 1692/2821 [00:22<00:15, 75.04it/s, loss=0.00346, v_num=0, train_loss=0.00146, val_acc=0.949, val_f1=0.947, val_aMetric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.854
+Epoch 3:  80%|▊| 2256/2821 [00:30<00:07, 74.35it/s, loss=0.00423, v_num=0, train_loss=0.00426, val_acc=0.949, val_f1=0.946, val_aMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.862
+Epoch 3: 100%|▉| 2820/2821 [00:37<00:00, 74.58it/s, loss=0.00239, v_num=0, train_loss=0.00093, val_acc=0.943, val_f1=0.939, val_aMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.864
+Epoch 3: 100%|█| 2821/2821 [00:37<00:00, 74.45it/s, loss=0.0023, v_num=0, train_loss=0.00407, val_acc=0.943, val_f1=0.939, val_au
+Epoch 4: 100%|▉| 2820/2821 [00:38<00:00, 73.48it/s, loss=0.00209, v_num=0, train_loss=0.00149, val_acc=0.929, val_f1=0.923, val_aMetric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.867
+Epoch 4: 100%|█| 2821/2821 [00:38<00:00, 73.39it/s, loss=0.00205, v_num=0, train_loss=0.000924, val_acc=0.929, val_f1=0.923, val_
+Epoch 5:  20%|▏| 564/2821 [00:07<00:28, 78.06it/s, loss=0.0017, v_num=0, train_loss=0.000309, val_acc=0.932, val_f1=0.927, val_auMetric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.869
+Epoch 5: 100%|█| 2821/2821 [00:39<00:00, 71.52it/s, loss=0.000541, v_num=0, train_loss=0.000185, val_acc=0.929, val_f1=0.924, val
+Epoch 6: 100%|█| 2821/2821 [00:40<00:00, 69.05it/s, loss=0.000748, v_num=0, train_loss=0.000165, val_acc=0.928, val_f1=0.922, val
+Epoch 7:  20%|▏| 564/2821 [00:08<00:33, 66.82it/s, loss=0.000308, v_num=0, train_loss=0.000125, val_acc=0.922, val_f1=0.915, val_Monitored metric val_tpr did not improve in the last 10 records. Best score: 0.869. Signaling Trainer to stop.
+Epoch 7:  20%|▏| 564/2821 [00:08<00:34, 66.32it/s, loss=0.000308, v_num=0, train_loss=0.000125, val_acc=0.922, val_f1=0.915, val_
+Epoch 7:  20%|▏| 564/2821 [00:08<00:34, 66.20it/s, loss=0.000308, v_num=0, train_loss=0.000125, val_acc=0.922, val_f1=0.915, val_
+[!] Training of MLP_size_1M_lr_onecycle_Tmax_0.0001 with lr onecycle_Tmax_0.0001 ended:  Wed Aug 16 18:15:24 2023  | Took: 314.84 seconds
+[!] Training of MLP_size_1M_lr_0.0001 with lr 0.0001 started:  Wed Aug 16 18:15:24 2023
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_1M_lr_0.0001 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 1.0 M
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+1.0 M     Trainable params
+0         Non-trainable params
+1.0 M     Total params
+4.104     Total estimated model params size (MB)
+Epoch 0:  20%|▏| 564/2821 [00:25<01:40, 22.42it/s, loss=0.615, v_num=0, train_loss=0.558, val_acc=0.771, val_f1=0.729, val_auc=0.Metric val_tpr improved. New best score: 0.290
+Epoch 0:  40%|▍| 1128/2821 [00:34<00:51, 32.57it/s, loss=0.0468, v_num=0, train_loss=0.027, val_acc=0.971, val_f1=0.971, val_auc=Metric val_tpr improved by 0.219 >= min_delta = 0.0001. New best score: 0.510
+Epoch 0:  60%|▌| 1692/2821 [00:43<00:29, 38.64it/s, loss=0.0279, v_num=0, train_loss=0.0185, val_acc=0.977, val_f1=0.977, val_aucMetric val_tpr improved by 0.018 >= min_delta = 0.0001. New best score: 0.527
+Epoch 0:  80%|▊| 2256/2821 [00:52<00:13, 42.61it/s, loss=0.0204, v_num=0, train_loss=0.0154, val_acc=0.975, val_f1=0.975, val_aucMetric val_tpr improved by 0.030 >= min_delta = 0.0001. New best score: 0.557
+Epoch 0: 100%|▉| 2820/2821 [01:02<00:00, 45.22it/s, loss=0.0166, v_num=0, train_loss=0.0222, val_acc=0.967, val_f1=0.967, val_aucMetric val_tpr improved by 0.034 >= min_delta = 0.0001. New best score: 0.590
+Epoch 0: 100%|█| 2821/2821 [01:02<00:00, 45.16it/s, loss=0.0164, v_num=0, train_loss=0.00484, val_acc=0.967, val_f1=0.967, val_au
+Epoch 1:  20%|▏| 564/2821 [00:09<00:37, 60.96it/s, loss=0.015, v_num=0, train_loss=0.00905, val_acc=0.961, val_f1=0.960, val_auc=Metric val_tpr improved by 0.057 >= min_delta = 0.0001. New best score: 0.647
+Epoch 1:  40%|▍| 1128/2821 [00:19<00:29, 57.74it/s, loss=0.0109, v_num=0, train_loss=0.0062, val_acc=0.967, val_f1=0.967, val_aucMetric val_tpr improved by 0.067 >= min_delta = 0.0001. New best score: 0.714
+Epoch 1:  60%|▌| 1692/2821 [00:29<00:19, 57.99it/s, loss=0.00974, v_num=0, train_loss=0.00794, val_acc=0.951, val_f1=0.949, val_aMetric val_tpr improved by 0.060 >= min_delta = 0.0001. New best score: 0.775
+Epoch 1:  80%|▊| 2256/2821 [00:38<00:09, 58.03it/s, loss=0.00812, v_num=0, train_loss=0.00837, val_acc=0.952, val_f1=0.950, val_aMetric val_tpr improved by 0.020 >= min_delta = 0.0001. New best score: 0.795
+Epoch 1: 100%|▉| 2820/2821 [00:49<00:00, 57.11it/s, loss=0.00378, v_num=0, train_loss=0.00103, val_acc=0.941, val_f1=0.937, val_aMetric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.806
+Epoch 1: 100%|█| 2821/2821 [00:49<00:00, 57.02it/s, loss=0.00344, v_num=0, train_loss=0.00113, val_acc=0.941, val_f1=0.937, val_a
+Epoch 2:  20%|▏| 564/2821 [00:09<00:38, 59.24it/s, loss=0.00428, v_num=0, train_loss=0.00123, val_acc=0.927, val_f1=0.921, val_auMetric val_tpr improved by 0.026 >= min_delta = 0.0001. New best score: 0.832
+Epoch 2:  40%|▍| 1128/2821 [00:18<00:28, 59.40it/s, loss=0.00342, v_num=0, train_loss=0.000685, val_acc=0.936, val_f1=0.932, val_Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.834
+Epoch 2:  80%|▊| 2256/2821 [00:38<00:09, 58.97it/s, loss=0.00451, v_num=0, train_loss=0.00618, val_acc=0.932, val_f1=0.927, val_aMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.841
+Epoch 2: 100%|▉| 2820/2821 [00:48<00:00, 58.39it/s, loss=0.00241, v_num=0, train_loss=0.00434, val_acc=0.923, val_f1=0.916, val_aMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.846
+Epoch 2: 100%|█| 2821/2821 [00:48<00:00, 58.32it/s, loss=0.00207, v_num=0, train_loss=0.00147, val_acc=0.923, val_f1=0.916, val_a
+Epoch 3:  20%|▏| 564/2821 [00:12<00:49, 45.16it/s, loss=0.00226, v_num=0, train_loss=0.000632, val_acc=0.921, val_f1=0.915, val_aMetric val_tpr improved by 0.014 >= min_delta = 0.0001. New best score: 0.859
+Epoch 3:  80%|▊| 2256/2821 [00:41<00:10, 54.76it/s, loss=0.00474, v_num=0, train_loss=0.00691, val_acc=0.934, val_f1=0.930, val_aMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.861
+Epoch 3: 100%|▉| 2820/2821 [00:50<00:00, 55.60it/s, loss=0.00124, v_num=0, train_loss=0.000404, val_acc=0.926, val_f1=0.921, val_Metric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.867
+Epoch 3: 100%|█| 2821/2821 [00:50<00:00, 55.53it/s, loss=0.00116, v_num=0, train_loss=0.000405, val_acc=0.926, val_f1=0.921, val_
+Epoch 4:  80%|▊| 2256/2821 [00:33<00:08, 67.11it/s, loss=0.00244, v_num=0, train_loss=0.00355, val_acc=0.930, val_f1=0.924, val_aMetric val_tpr improved by 0.013 >= min_delta = 0.0001. New best score: 0.880
+Epoch 4: 100%|▉| 2820/2821 [00:42<00:00, 66.19it/s, loss=0.000551, v_num=0, train_loss=0.00026, val_acc=0.935, val_f1=0.931, val_Metric val_tpr improved by 0.020 >= min_delta = 0.0001. New best score: 0.899
+Epoch 4: 100%|█| 2821/2821 [00:42<00:00, 66.10it/s, loss=0.00053, v_num=0, train_loss=0.000148, val_acc=0.935, val_f1=0.931, val_
+Epoch 5:  20%|▏| 564/2821 [00:08<00:32, 68.70it/s, loss=0.00101, v_num=0, train_loss=0.000134, val_acc=0.935, val_f1=0.931, val_aMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.908
+Epoch 5: 100%|█| 2821/2821 [00:52<00:00, 53.96it/s, loss=0.00166, v_num=0, train_loss=0.00026, val_acc=0.911, val_f1=0.903, val_a
+Epoch 6: 100%|█| 2821/2821 [00:53<00:00, 52.90it/s, loss=0.00178, v_num=0, train_loss=0.000431, val_acc=0.900, val_f1=0.889, val_
+Epoch 7:  20%|▏| 564/2821 [00:09<00:37, 59.76it/s, loss=0.000414, v_num=0, train_loss=0.000137, val_acc=0.907, val_f1=0.898, val_Monitored metric val_tpr did not improve in the last 10 records. Best score: 0.908. Signaling Trainer to stop.
+Epoch 7:  20%|▏| 564/2821 [00:09<00:38, 59.17it/s, loss=0.000414, v_num=0, train_loss=0.000137, val_acc=0.907, val_f1=0.898, val_
+Epoch 7:  20%|▏| 564/2821 [00:09<00:38, 58.98it/s, loss=0.000414, v_num=0, train_loss=0.000137, val_acc=0.907, val_f1=0.898, val_
+[!] Training of MLP_size_1M_lr_0.0001 with lr 0.0001 ended:  Wed Aug 16 18:23:01 2023  | Took: 456.62 seconds
+[!] Training of MLP_size_1M_lr_0.0005 with lr 0.0005 started:  Wed Aug 16 18:23:01 2023
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_1M_lr_0.0005 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 1.0 M
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+1.0 M     Trainable params
+0         Non-trainable params
+1.0 M     Total params
+4.104     Total estimated model params size (MB)
+Epoch 0:  20%|▏| 564/2821 [00:39<02:36, 14.40it/s, loss=0.0271, v_num=0, train_loss=0.0143, val_acc=0.990, val_f1=0.990, val_auc=Metric val_tpr improved. New best score: 0.394
+Epoch 0:  40%|▍| 1128/2821 [00:53<01:20, 20.93it/s, loss=0.0189, v_num=0, train_loss=0.0156, val_acc=0.993, val_f1=0.993, val_aucMetric val_tpr improved by 0.107 >= min_delta = 0.0001. New best score: 0.501
+Epoch 0:  60%|▌| 1692/2821 [01:08<00:45, 24.81it/s, loss=0.0138, v_num=0, train_loss=0.00853, val_acc=0.978, val_f1=0.978, val_auMetric val_tpr improved by 0.175 >= min_delta = 0.0001. New best score: 0.676
+Epoch 0:  80%|▊| 2256/2821 [01:23<00:20, 27.16it/s, loss=0.00883, v_num=0, train_loss=0.0111, val_acc=0.969, val_f1=0.969, val_auMetric val_tpr improved by 0.073 >= min_delta = 0.0001. New best score: 0.750
+Epoch 0: 100%|▉| 2820/2821 [01:36<00:00, 29.12it/s, loss=0.00509, v_num=0, train_loss=0.00663, val_acc=0.963, val_f1=0.962, val_aMetric val_tpr improved by 0.025 >= min_delta = 0.0001. New best score: 0.775
+Epoch 0: 100%|█| 2821/2821 [01:36<00:00, 29.10it/s, loss=0.00462, v_num=0, train_loss=0.000673, val_acc=0.963, val_f1=0.962, val_
+Epoch 1:  60%|▌| 1692/2821 [00:31<00:21, 53.57it/s, loss=0.00424, v_num=0, train_loss=0.00246, val_acc=0.965, val_f1=0.963, val_aMetric val_tpr improved by 0.036 >= min_delta = 0.0001. New best score: 0.810
+Epoch 1: 100%|█| 2821/2821 [00:55<00:00, 51.21it/s, loss=0.00112, v_num=0, train_loss=0.000285, val_acc=0.903, val_f1=0.893, val_
+Epoch 2:  80%|▊| 2256/2821 [01:04<00:16, 35.18it/s, loss=0.00253, v_num=0, train_loss=0.00739, val_acc=0.923, val_f1=0.916, val_aMetric val_tpr improved by 0.022 >= min_delta = 0.0001. New best score: 0.833
+Epoch 2: 100%|▉| 2820/2821 [01:20<00:00, 35.07it/s, loss=0.00166, v_num=0, train_loss=0.000473, val_acc=0.898, val_f1=0.886, val_Metric val_tpr improved by 0.025 >= min_delta = 0.0001. New best score: 0.857
+Epoch 2: 100%|█| 2821/2821 [01:20<00:00, 35.00it/s, loss=0.00136, v_num=0, train_loss=0.000533, val_acc=0.898, val_f1=0.886, val_
+Epoch 3:  40%|▍| 1128/2821 [00:32<00:48, 34.78it/s, loss=0.0233, v_num=0, train_loss=0.00991, val_acc=0.940, val_f1=0.937, val_auMetric val_tpr improved by 0.015 >= min_delta = 0.0001. New best score: 0.872
+Epoch 3:  60%|▌| 1692/2821 [00:44<00:29, 37.90it/s, loss=0.00147, v_num=0, train_loss=0.000102, val_acc=0.951, val_f1=0.949, val_Metric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.873
+Epoch 3:  80%|▊| 2256/2821 [00:54<00:13, 41.48it/s, loss=0.00196, v_num=0, train_loss=0.00195, val_acc=0.910, val_f1=0.901, val_aMetric val_tpr improved by 0.013 >= min_delta = 0.0001. New best score: 0.886
+Epoch 3: 100%|█| 2821/2821 [01:03<00:00, 44.12it/s, loss=0.00126, v_num=0, train_loss=0.000226, val_acc=0.943, val_f1=0.940, val_
+Epoch 4: 100%|█| 2821/2821 [00:48<00:00, 58.28it/s, loss=6.73e-05, v_num=0, train_loss=4.04e-5, val_acc=0.891, val_f1=0.878, val_
+Epoch 5:  80%|▊| 2256/2821 [00:43<00:10, 52.38it/s, loss=7.28e-05, v_num=0, train_loss=5.04e-5, val_acc=0.865, val_f1=0.844, val_Monitored metric val_tpr did not improve in the last 10 records. Best score: 0.886. Signaling Trainer to stop.
+Epoch 5:  80%|▊| 2256/2821 [00:43<00:10, 52.30it/s, loss=7.28e-05, v_num=0, train_loss=5.04e-5, val_acc=0.865, val_f1=0.844, val_
+Epoch 5:  80%|▊| 2256/2821 [00:43<00:10, 52.28it/s, loss=7.28e-05, v_num=0, train_loss=5.04e-5, val_acc=0.865, val_f1=0.844, val_
+[!] Training of MLP_size_1M_lr_0.0005 with lr 0.0005 ended:  Wed Aug 16 18:29:56 2023  | Took: 415.09 seconds
+[!] Training of MLP_size_1M_lr_0.001 with lr 0.001 started:  Wed Aug 16 18:29:56 2023
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_1M_lr_0.001 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 1.0 M
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+1.0 M     Trainable params
+0         Non-trainable params
+1.0 M     Total params
+4.104     Total estimated model params size (MB)
+Epoch 0:  20%|▏| 564/2821 [00:40<02:42, 13.90it/s, loss=0.0181, v_num=0, train_loss=0.0137, val_acc=0.980, val_f1=0.980, val_auc=Metric val_tpr improved. New best score: 0.586
+Epoch 0:  40%|▍| 1128/2821 [00:55<01:23, 20.40it/s, loss=0.0145, v_num=0, train_loss=0.0069, val_acc=0.944, val_f1=0.941, val_aucMetric val_tpr improved by 0.090 >= min_delta = 0.0001. New best score: 0.676
+Epoch 0:  60%|▌| 1692/2821 [01:10<00:46, 24.08it/s, loss=0.0164, v_num=0, train_loss=0.0119, val_acc=0.957, val_f1=0.956, val_aucMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.679
+Epoch 0:  80%|▊| 2256/2821 [01:24<00:21, 26.55it/s, loss=0.00939, v_num=0, train_loss=0.00961, val_acc=0.931, val_f1=0.926, val_aMetric val_tpr improved by 0.083 >= min_delta = 0.0001. New best score: 0.762
+Epoch 0: 100%|▉| 2820/2821 [01:39<00:00, 28.42it/s, loss=0.0051, v_num=0, train_loss=0.00208, val_acc=0.936, val_f1=0.932, val_auMetric val_tpr improved by 0.043 >= min_delta = 0.0001. New best score: 0.806
+Epoch 0: 100%|█| 2821/2821 [01:39<00:00, 28.39it/s, loss=0.00458, v_num=0, train_loss=0.000877, val_acc=0.936, val_f1=0.932, val_
+Epoch 1:  20%|▏| 564/2821 [00:09<00:36, 61.43it/s, loss=0.00196, v_num=0, train_loss=0.000194, val_acc=0.910, val_f1=0.902, val_aMetric val_tpr improved by 0.012 >= min_delta = 0.0001. New best score: 0.818
+Epoch 1:  40%|▍| 1128/2821 [00:18<00:28, 59.58it/s, loss=0.00152, v_num=0, train_loss=0.000344, val_acc=0.898, val_f1=0.887, val_Metric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.822
+Epoch 1:  60%|▌| 1692/2821 [00:29<00:19, 57.77it/s, loss=0.00117, v_num=0, train_loss=0.000227, val_acc=0.908, val_f1=0.899, val_Metric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.828
+Epoch 1: 100%|▉| 2820/2821 [00:58<00:00, 48.38it/s, loss=0.000928, v_num=0, train_loss=0.000149, val_acc=0.899, val_f1=0.888, valMetric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.839
+Epoch 1: 100%|█| 2821/2821 [00:58<00:00, 48.30it/s, loss=0.000934, v_num=0, train_loss=0.000327, val_acc=0.899, val_f1=0.888, val
+Epoch 2:  20%|▏| 564/2821 [00:10<00:43, 51.43it/s, loss=0.000785, v_num=0, train_loss=6.96e-5, val_acc=0.907, val_f1=0.897, val_aMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.843
+Epoch 2: 100%|█| 2821/2821 [00:55<00:00, 51.05it/s, loss=0.00102, v_num=0, train_loss=3.89e-5, val_acc=0.910, val_f1=0.901, val_a
+Epoch 3:  20%|▏| 556/2821 [00:12<00:52, 43.49it/s, loss=0.000477, v_num=0, train_loss=5.89e-5, val_acc=0.910, val_f1=0.901, val_auc=0.998,
+Epoch 3:  80%|▊| 2256/2821 [00:42<00:10, 53.12it/s, loss=0.000243, v_num=0, train_loss=1.78e-5, val_acc=0.900, val_f1=0.889, val_auc=0.997, val_tpr=0.851, tMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.851
+Epoch 3: 100%|▉| 2820/2821 [00:56<00:00, 50.26it/s, loss=0.00183, v_num=0, train_loss=0.000516, val_acc=0.891, val_f1=0.878, val_auc=0.999, val_tpr=0.878, tMetric val_tpr improved by 0.027 >= min_delta = 0.0001. New best score: 0.878
+Epoch 3: 100%|█| 2821/2821 [00:56<00:00, 50.16it/s, loss=0.00194, v_num=0, train_loss=0.00226, val_acc=0.891, val_f1=0.878, val_auc=0.999, val_tpr=0.878, tr
+Epoch 4:  40%|▍| 1128/2821 [00:30<00:45, 37.13it/s, loss=0.000751, v_num=0, train_loss=7.22e-5, val_acc=0.901, val_f1=0.890, val_auc=0.998, val_tpr=0.879, tMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.879
+Epoch 4:  60%|▌| 1692/2821 [00:42<00:28, 40.05it/s, loss=0.0836, v_num=0, train_loss=0.0052, val_acc=0.910, val_f1=0.902, val_auc=1.000, val_tpr=0.915, traiMetric val_tpr improved by 0.037 >= min_delta = 0.0001. New best score: 0.915
+Epoch 4: 100%|█| 2821/2821 [01:04<00:00, 43.78it/s, loss=0.000164, v_num=0, train_loss=6.74e-5, val_acc=0.922, val_f1=0.916, val_auc=1.000, val_tpr=0.903, t
+Epoch 5:  20%|▏| 564/2821 [00:11<00:44, 51.03it/s, loss=0.000434, v_num=0, train_loss=0.000134, val_acc=0.908, val_f1=0.899, val_auc=1.000, val_tpr=0.933, tMetric val_tpr improved by 0.018 >= min_delta = 0.0001. New best score: 0.933
+Epoch 5:  60%|▌| 1692/2821 [00:44<00:29, 38.18it/s, loss=0.000193, v_num=0, train_loss=3.88e-5, val_acc=0.904, val_f1=0.894, val_auc=1.000, val_tpr=0.939, tMetric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.939
+Epoch 5: 100%|█| 2821/2821 [01:10<00:00, 40.23it/s, loss=0.000633, v_num=0, train_loss=1.4e-5, val_acc=0.918, val_f1=0.911, val_auc=0.999, val_tpr=0.893, tr
+Epoch 6: 100%|█| 2821/2821 [00:45<00:00, 61.65it/s, loss=5.01e-05, v_num=0, train_loss=3.5e-5, val_acc=0.905, val_f1=0.896, val_auc=1.000, val_tpr=0.928, tr
+Epoch 7:  60%|▌| 1692/2821 [00:27<00:18, 61.22it/s, loss=6.48e-05, v_num=0, train_loss=3.88e-5, val_acc=0.896, val_f1=0.884, val_auc=1.000, val_tpr=0.933, tMonitored metric val_tpr did not improve in the last 10 records. Best score: 0.939. Signaling Trainer to stop.
+Epoch 7:  60%|▌| 1692/2821 [00:27<00:18, 61.07it/s, loss=6.48e-05, v_num=0, train_loss=3.88e-5, val_acc=0.896, val_f1=0.884, val_auc=1.000, val_tpr=0.933, t
+Epoch 7:  60%|▌| 1692/2821 [00:27<00:18, 61.03it/s, loss=6.48e-05, v_num=0, train_loss=3.88e-5, val_acc=0.896, val_f1=0.884, val_auc=1.000, val_tpr=0.933, t
+[!] Training of MLP_size_1M_lr_0.001 with lr 0.001 ended:  Wed Aug 16 18:38:19 2023  | Took: 503.00 seconds
+[!] Training of MLP_size_1M_lr_0.005 with lr 0.005 started:  Wed Aug 16 18:38:19 2023
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_1M_lr_0.005 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 1.0 M
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+1.0 M     Trainable params
+0         Non-trainable params
+1.0 M     Total params
+4.104     Total estimated model params size (MB)
+Epoch 0:  20%|█▏    | 564/2821 [00:23<01:33, 24.21it/s, loss=0.0166, v_num=0, train_loss=0.00876, val_acc=0.965, val_f1=0.965, val_auc=0.997, val_tpr=0.631]Metric val_tpr improved. New best score: 0.631
+Epoch 0:  40%|█▏ | 1128/2821 [00:31<00:48, 35.26it/s, loss=0.00666, v_num=0, train_loss=0.000435, val_acc=0.956, val_f1=0.953, val_auc=0.999, val_tpr=0.882]Metric val_tpr improved by 0.251 >= min_delta = 0.0001. New best score: 0.882
+Epoch 0:  80%|██▍| 2256/2821 [00:49<00:12, 45.17it/s, loss=0.000561, v_num=0, train_loss=0.00148, val_acc=0.947, val_f1=0.944, val_auc=1.000, val_tpr=0.931]Metric val_tpr improved by 0.049 >= min_delta = 0.0001. New best score: 0.931
+Epoch 0: 100%|█| 2821/2821 [00:58<00:00, 47.87it/s, loss=0.761, v_num=0, train_loss=0.229, val_acc=0.827, val_f1=0.791, val_auc=0.988, val_tpr=0.789, train_
+Epoch 1:  40%|▍| 1128/2821 [00:17<00:26, 63.89it/s, loss=0.00276, v_num=0, train_loss=0.0011, val_acc=0.967, val_f1=0.966, val_auc=1.000, val_tpr=0.937, traMetric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.937
+Epoch 1:  60%|▌| 1692/2821 [00:26<00:17, 63.48it/s, loss=0.00486, v_num=0, train_loss=0.00102, val_acc=0.977, val_f1=0.977, val_auc=1.000, val_tpr=0.967, trMetric val_tpr improved by 0.030 >= min_delta = 0.0001. New best score: 0.967
+Epoch 1: 100%|█| 2821/2821 [00:45<00:00, 62.45it/s, loss=0.000666, v_num=0, train_loss=0.0022, val_acc=0.969, val_f1=0.968, val_auc=1.000, val_tpr=0.935, tr
+Epoch 2: 100%|█| 2821/2821 [00:44<00:00, 62.83it/s, loss=0.000147, v_num=0, train_loss=7.68e-8, val_acc=0.963, val_f1=0.962, val_auc=1.000, val_tpr=0.941, t
+Epoch 3:  60%|▌| 1692/2821 [00:26<00:17, 63.87it/s, loss=0.514, v_num=0, train_loss=0.160, val_acc=0.906, val_f1=0.896, val_auc=1.000, val_tpr=0.973, train_Metric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.973
+Epoch 3: 100%|█| 2821/2821 [00:44<00:00, 63.14it/s, loss=0.00748, v_num=0, train_loss=0.00866, val_acc=0.963, val_f1=0.962, val_auc=1.000, val_tpr=0.928, tr
+Epoch 4: 100%|█| 2821/2821 [00:45<00:00, 62.37it/s, loss=0.00426, v_num=0, train_loss=0.00259, val_acc=0.957, val_f1=0.955, val_auc=1.000, val_tpr=0.938, tr
+Epoch 5:  60%|▌| 1692/2821 [00:28<00:18, 60.03it/s, loss=0.00161, v_num=0, train_loss=0.00155, val_acc=0.951, val_f1=0.949, val_auc=1.000, val_tpr=0.939, trMonitored metric val_tpr did not improve in the last 10 records. Best score: 0.973. Signaling Trainer to stop.
+Epoch 5:  60%|▌| 1692/2821 [00:28<00:18, 59.90it/s, loss=0.00161, v_num=0, train_loss=0.00155, val_acc=0.951, val_f1=0.949, val_auc=1.000, val_tpr=0.939, tr
+Epoch 5:  60%|▌| 1692/2821 [00:28<00:18, 59.87it/s, loss=0.00161, v_num=0, train_loss=0.00155, val_acc=0.951, val_f1=0.949, val_auc=1.000, val_tpr=0.939, tr
+[!] Training of MLP_size_1M_lr_0.005 with lr 0.005 ended:  Wed Aug 16 18:43:07 2023  | Took: 287.98 seconds
+[!] Training of MLP_size_300K_lr_onecycle_Tmax_0.001 with lr onecycle_Tmax_0.001 started:  Wed Aug 16 18:43:07 2023
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_300K_lr_onecycle_Tmax_0.001 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 297 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+297 K     Trainable params
+0         Non-trainable params
+297 K     Total params
+1.189     Total estimated model params size (MB)
+Epoch 0:  20%|█▍     | 564/2821 [00:22<01:30, 24.99it/s, loss=0.691, v_num=0, train_loss=0.686, val_acc=0.500, val_f1=0.000, val_auc=0.840, val_tpr=0.00302]Metric val_tpr improved. New best score: 0.003
+Epoch 0:  40%|███▏    | 1128/2821 [00:29<00:44, 37.83it/s, loss=0.674, v_num=0, train_loss=0.671, val_acc=0.613, val_f1=0.373, val_auc=0.930, val_tpr=0.182]Metric val_tpr improved by 0.179 >= min_delta = 0.0001. New best score: 0.182
+Epoch 0:  60%|█████▍   | 1692/2821 [00:37<00:24, 45.47it/s, loss=0.52, v_num=0, train_loss=0.485, val_acc=0.931, val_f1=0.927, val_auc=0.990, val_tpr=0.410]Metric val_tpr improved by 0.228 >= min_delta = 0.0001. New best score: 0.410
+Epoch 0:  80%|█████▌ | 2256/2821 [00:44<00:11, 50.49it/s, loss=0.104, v_num=0, train_loss=0.0967, val_acc=0.968, val_f1=0.967, val_auc=0.994, val_tpr=0.477]Metric val_tpr improved by 0.067 >= min_delta = 0.0001. New best score: 0.477
+Epoch 0: 100%|█████▉| 2820/2821 [00:51<00:00, 54.29it/s, loss=0.0375, v_num=0, train_loss=0.0345, val_acc=0.959, val_f1=0.958, val_auc=0.996, val_tpr=0.555]Metric val_tpr improved by 0.078 >= min_delta = 0.0001. New best score: 0.555
+Epoch 0: 100%|█| 2821/2821 [00:52<00:00, 54.25it/s, loss=0.0372, v_num=0, train_loss=0.0184, val_acc=0.959, val_f1=0.958, val_auc=0.996, val_tpr=0.555, trai
+Epoch 1:  20%|▏| 564/2821 [00:07<00:30, 75.18it/s, loss=0.0237, v_num=0, train_loss=0.0105, val_acc=0.962, val_f1=0.961, val_auc=0.996, val_tpr=0.607, trainMetric val_tpr improved by 0.052 >= min_delta = 0.0001. New best score: 0.607
+Epoch 1:  40%|▍| 1128/2821 [00:14<00:22, 76.32it/s, loss=0.0179, v_num=0, train_loss=0.0137, val_acc=0.957, val_f1=0.956, val_auc=0.997, val_tpr=0.662, traiMetric val_tpr improved by 0.055 >= min_delta = 0.0001. New best score: 0.662
+Epoch 1:  60%|▌| 1692/2821 [00:21<00:14, 77.30it/s, loss=0.0161, v_num=0, train_loss=0.0164, val_acc=0.958, val_f1=0.957, val_auc=0.999, val_tpr=0.782, traiMetric val_tpr improved by 0.120 >= min_delta = 0.0001. New best score: 0.782
+Epoch 1:  80%|▊| 2256/2821 [00:29<00:07, 76.27it/s, loss=0.00663, v_num=0, train_loss=0.00891, val_acc=0.955, val_f1=0.953, val_auc=0.999, val_tpr=0.850, trMetric val_tpr improved by 0.069 >= min_delta = 0.0001. New best score: 0.850
+Epoch 1: 100%|▉| 2820/2821 [00:37<00:00, 76.01it/s, loss=0.00378, v_num=0, train_loss=0.00185, val_acc=0.953, val_f1=0.951, val_auc=0.999, val_tpr=0.875, trMetric val_tpr improved by 0.025 >= min_delta = 0.0001. New best score: 0.875
+Epoch 1: 100%|█| 2821/2821 [00:37<00:00, 75.94it/s, loss=0.00336, v_num=0, train_loss=0.00171, val_acc=0.953, val_f1=0.951, val_auc=0.999, val_tpr=0.875, tr
+Epoch 2:  20%|▏| 564/2821 [00:07<00:29, 76.70it/s, loss=0.00236, v_num=0, train_loss=0.00226, val_acc=0.957, val_f1=0.955, val_auc=0.999, val_tpr=0.877, traMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.877
+Epoch 2:  40%|▍| 1128/2821 [00:14<00:22, 76.80it/s, loss=0.00186, v_num=0, train_loss=0.000811, val_acc=0.949, val_f1=0.946, val_auc=0.999, val_tpr=0.899, tMetric val_tpr improved by 0.022 >= min_delta = 0.0001. New best score: 0.899
+Epoch 2:  60%|▌| 1692/2821 [00:22<00:14, 75.99it/s, loss=0.00126, v_num=0, train_loss=0.000509, val_acc=0.947, val_f1=0.944, val_auc=0.999, val_tpr=0.902, tMetric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.902
+Epoch 2:  80%|▊| 2256/2821 [00:29<00:07, 76.67it/s, loss=0.00143, v_num=0, train_loss=0.000887, val_acc=0.936, val_f1=0.931, val_auc=0.999, val_tpr=0.902, tMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.902
+Epoch 2: 100%|▉| 2820/2821 [00:36<00:00, 76.50it/s, loss=0.0013, v_num=0, train_loss=0.00099, val_acc=0.930, val_f1=0.925, val_auc=0.999, val_tpr=0.912, traMetric val_tpr improved by 0.009 >= min_delta = 0.0001. New best score: 0.912
+Epoch 2: 100%|█| 2821/2821 [00:36<00:00, 76.43it/s, loss=0.00128, v_num=0, train_loss=0.00112, val_acc=0.930, val_f1=0.925, val_auc=0.999, val_tpr=0.912, tr
+Epoch 3: 100%|█| 2821/2821 [00:37<00:00, 75.90it/s, loss=0.00231, v_num=0, train_loss=0.00327, val_acc=0.935, val_f1=0.931, val_auc=0.999, val_tpr=0.901, tr
+Epoch 4:  40%|▍| 1128/2821 [00:15<00:22, 74.99it/s, loss=0.00199, v_num=0, train_loss=0.00082, val_acc=0.933, val_f1=0.928, val_auc=1.000, val_tpr=0.914, trMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.914
+Epoch 4:  60%|▌| 1692/2821 [00:22<00:14, 75.66it/s, loss=0.000812, v_num=0, train_loss=0.000849, val_acc=0.929, val_f1=0.923, val_auc=1.000, val_tpr=0.920, Metric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.920
+Epoch 4: 100%|▉| 2820/2821 [00:37<00:00, 75.58it/s, loss=0.00062, v_num=0, train_loss=0.000495, val_acc=0.930, val_f1=0.924, val_auc=1.000, val_tpr=0.924, tMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.924
+Epoch 4: 100%|█| 2821/2821 [00:37<00:00, 75.47it/s, loss=0.000622, v_num=0, train_loss=0.000516, val_acc=0.930, val_f1=0.924, val_auc=1.000, val_tpr=0.924,
+Epoch 5:  20%|▏| 564/2821 [00:07<00:29, 75.73it/s, loss=0.00089, v_num=0, train_loss=0.000262, val_acc=0.928, val_f1=0.922, val_auc=1.000, val_tpr=0.927, trMetric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.927
+Epoch 5:  40%|▍| 1128/2821 [00:14<00:22, 75.37it/s, loss=0.0011, v_num=0, train_loss=0.000354, val_acc=0.926, val_f1=0.921, val_auc=1.000, val_tpr=0.927, trMetric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.927
+Epoch 5:  80%|▊| 2256/2821 [00:29<00:07, 75.50it/s, loss=0.000494, v_num=0, train_loss=0.00053, val_acc=0.922, val_f1=0.916, val_auc=1.000, val_tpr=0.931, tMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.931
+Epoch 5: 100%|█| 2821/2821 [00:37<00:00, 74.70it/s, loss=0.000424, v_num=0, train_loss=0.000346, val_acc=0.930, val_f1=0.924, val_auc=1.000, val_tpr=0.929,
+Epoch 6:  60%|▌| 1692/2821 [00:22<00:14, 75.90it/s, loss=0.000376, v_num=0, train_loss=0.000144, val_acc=0.926, val_f1=0.920, val_auc=1.000, val_tpr=0.932, Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.932
+Epoch 6: 100%|█| 2821/2821 [00:37<00:00, 75.46it/s, loss=0.000348, v_num=0, train_loss=8.13e-5, val_acc=0.929, val_f1=0.923, val_auc=1.000, val_tpr=0.932, t
+Epoch 7:  20%|▏| 564/2821 [00:07<00:30, 74.69it/s, loss=0.000283, v_num=0, train_loss=0.000973, val_acc=0.927, val_f1=0.921, val_auc=1.000, val_tpr=0.933, tMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.933
+Epoch 7:  40%|▍| 1128/2821 [00:15<00:22, 74.96it/s, loss=0.000331, v_num=0, train_loss=0.000191, val_acc=0.923, val_f1=0.916, val_auc=1.000, val_tpr=0.936, Metric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.936
+Epoch 7:  80%|▊| 2256/2821 [00:32<00:08, 68.37it/s, loss=0.000397, v_num=0, train_loss=0.00159, val_acc=0.920, val_f1=0.913, val_auc=1.000, val_tpr=0.937, tMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.937
+Epoch 7: 100%|█| 2821/2821 [00:42<00:00, 66.82it/s, loss=0.000222, v_num=0, train_loss=0.000113, val_acc=0.927, val_f1=0.921, val_auc=1.000, val_tpr=0.934,
+Epoch 8: 100%|█| 2821/2821 [00:44<00:00, 63.45it/s, loss=0.000215, v_num=0, train_loss=0.00024, val_acc=0.929, val_f1=0.924, val_auc=1.000, val_tpr=0.934, t
+Epoch 9:  80%|▊| 2256/2821 [00:45<00:11, 49.54it/s, loss=0.000279, v_num=0, train_loss=0.000239, val_acc=0.924, val_f1=0.918, val_auc=1.000, val_tpr=0.936, Monitored metric val_tpr did not improve in the last 10 records. Best score: 0.937. Signaling Trainer to stop.
+Epoch 9:  80%|▊| 2256/2821 [00:45<00:11, 49.49it/s, loss=0.000279, v_num=0, train_loss=0.000239, val_acc=0.924, val_f1=0.918, val_auc=1.000, val_tpr=0.936,
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9:  80%|▊| 2256/2821 [00:45<00:11, 49.48it/s, loss=0.000279, v_num=0, train_loss=0.000239, val_acc=0.924, val_f1=0.918, val_auc=1.000, val_tpr=0.936,
+[!] Training of MLP_size_300K_lr_onecycle_Tmax_0.001 with lr onecycle_Tmax_0.001 ended:  Wed Aug 16 18:51:06 2023  | Took: 479.25 seconds
+[!] Training of MLP_size_300K_lr_onecycle_Tmax_0.0005 with lr onecycle_Tmax_0.0005 started:  Wed Aug 16 18:51:06 2023
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_300K_lr_onecycle_Tmax_0.0005 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 297 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+297 K     Trainable params
+0         Non-trainable params
+297 K     Total params
+1.189     Total estimated model params size (MB)
+Epoch 0:  20%|█▏    | 564/2821 [00:23<01:32, 24.30it/s, loss=0.692, v_num=0, train_loss=0.685, val_acc=0.500, val_f1=0.000, val_auc=0.824, val_tpr=0.000488]Metric val_tpr improved. New best score: 0.000
+Epoch 0:  40%|██▊    | 1128/2821 [00:31<00:47, 35.57it/s, loss=0.688, v_num=0, train_loss=0.684, val_acc=0.500, val_f1=0.000, val_auc=0.831, val_tpr=0.0348]Metric val_tpr improved by 0.034 >= min_delta = 0.0001. New best score: 0.035
+Epoch 0:  60%|████▊   | 1692/2821 [00:40<00:26, 41.83it/s, loss=0.677, v_num=0, train_loss=0.674, val_acc=0.600, val_f1=0.333, val_auc=0.876, val_tpr=0.195]Metric val_tpr improved by 0.161 >= min_delta = 0.0001. New best score: 0.195
+Epoch 0:  80%|██████▍ | 2256/2821 [00:49<00:12, 45.71it/s, loss=0.593, v_num=0, train_loss=0.572, val_acc=0.808, val_f1=0.765, val_auc=0.988, val_tpr=0.352]Metric val_tpr improved by 0.156 >= min_delta = 0.0001. New best score: 0.352
+Epoch 0: 100%|███████▉| 2820/2821 [00:57<00:00, 48.68it/s, loss=0.193, v_num=0, train_loss=0.166, val_acc=0.969, val_f1=0.969, val_auc=0.994, val_tpr=0.523]Metric val_tpr improved by 0.171 >= min_delta = 0.0001. New best score: 0.523
+Epoch 0: 100%|█| 2821/2821 [00:57<00:00, 48.66it/s, loss=0.19, v_num=0, train_loss=0.162, val_acc=0.969, val_f1=0.969, val_auc=0.994, val_tpr=0.523, train_a
+Epoch 1:  20%|▏| 564/2821 [00:08<00:35, 63.78it/s, loss=0.0431, v_num=0, train_loss=0.0307, val_acc=0.969, val_f1=0.968, val_auc=0.995, val_tpr=0.557, trainMetric val_tpr improved by 0.034 >= min_delta = 0.0001. New best score: 0.557
+Epoch 1:  40%|▍| 1128/2821 [00:17<00:26, 64.41it/s, loss=0.0261, v_num=0, train_loss=0.0174, val_acc=0.967, val_f1=0.966, val_auc=0.995, val_tpr=0.577, traiMetric val_tpr improved by 0.020 >= min_delta = 0.0001. New best score: 0.577
+Epoch 1:  60%|▌| 1692/2821 [00:26<00:17, 65.07it/s, loss=0.024, v_num=0, train_loss=0.0165, val_acc=0.963, val_f1=0.962, val_auc=0.995, val_tpr=0.592, trainMetric val_tpr improved by 0.015 >= min_delta = 0.0001. New best score: 0.592
+Epoch 1:  80%|▊| 2256/2821 [00:33<00:08, 66.74it/s, loss=0.0196, v_num=0, train_loss=0.020, val_acc=0.963, val_f1=0.962, val_auc=0.996, val_tpr=0.616, trainMetric val_tpr improved by 0.025 >= min_delta = 0.0001. New best score: 0.616
+Epoch 1: 100%|▉| 2820/2821 [00:41<00:00, 67.83it/s, loss=0.0165, v_num=0, train_loss=0.017, val_acc=0.956, val_f1=0.954, val_auc=0.997, val_tpr=0.664, trainMetric val_tpr improved by 0.048 >= min_delta = 0.0001. New best score: 0.664
+Epoch 1: 100%|█| 2821/2821 [00:41<00:00, 67.78it/s, loss=0.0163, v_num=0, train_loss=0.00427, val_acc=0.956, val_f1=0.954, val_auc=0.997, val_tpr=0.664, tra
+Epoch 2:  20%|▏| 564/2821 [00:07<00:28, 79.37it/s, loss=0.0101, v_num=0, train_loss=0.00642, val_acc=0.938, val_f1=0.934, val_auc=0.998, val_tpr=0.733, traiMetric val_tpr improved by 0.068 >= min_delta = 0.0001. New best score: 0.733
+Epoch 2:  40%|▍| 1128/2821 [00:15<00:24, 70.52it/s, loss=0.00845, v_num=0, train_loss=0.00946, val_acc=0.949, val_f1=0.946, val_auc=0.998, val_tpr=0.782, trMetric val_tpr improved by 0.050 >= min_delta = 0.0001. New best score: 0.782
+Epoch 2:  60%|▌| 1692/2821 [00:24<00:16, 68.45it/s, loss=0.00411, v_num=0, train_loss=0.00438, val_acc=0.926, val_f1=0.920, val_auc=0.999, val_tpr=0.821, trMetric val_tpr improved by 0.038 >= min_delta = 0.0001. New best score: 0.821
+Epoch 2:  80%|▊| 2256/2821 [00:32<00:08, 69.37it/s, loss=0.00452, v_num=0, train_loss=0.00997, val_acc=0.951, val_f1=0.949, val_auc=0.998, val_tpr=0.833, trMetric val_tpr improved by 0.012 >= min_delta = 0.0001. New best score: 0.833
+Epoch 2: 100%|▉| 2820/2821 [00:39<00:00, 70.82it/s, loss=0.00338, v_num=0, train_loss=0.00343, val_acc=0.940, val_f1=0.936, val_auc=0.999, val_tpr=0.852, trMetric val_tpr improved by 0.019 >= min_delta = 0.0001. New best score: 0.852
+Epoch 2: 100%|█| 2821/2821 [00:39<00:00, 70.73it/s, loss=0.00329, v_num=0, train_loss=0.00168, val_acc=0.940, val_f1=0.936, val_auc=0.999, val_tpr=0.852, tr
+Epoch 3:  20%|▏| 564/2821 [00:09<00:36, 61.60it/s, loss=0.00232, v_num=0, train_loss=0.00104, val_acc=0.924, val_f1=0.918, val_auc=0.999, val_tpr=0.862, traMetric val_tpr improved by 0.010 >= min_delta = 0.0001. New best score: 0.862
+Epoch 3:  60%|▌| 1692/2821 [00:26<00:17, 64.26it/s, loss=0.00308, v_num=0, train_loss=0.000788, val_acc=0.916, val_f1=0.908, val_auc=0.999, val_tpr=0.868, tMetric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.868
+Epoch 3:  80%|▊| 2256/2821 [00:35<00:08, 64.25it/s, loss=0.00165, v_num=0, train_loss=0.000488, val_acc=0.904, val_f1=0.894, val_auc=0.999, val_tpr=0.871, tMetric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.871
+Epoch 3: 100%|▉| 2820/2821 [00:43<00:00, 64.56it/s, loss=0.0016, v_num=0, train_loss=0.0025, val_acc=0.891, val_f1=0.877, val_auc=0.999, val_tpr=0.884, traiMetric val_tpr improved by 0.013 >= min_delta = 0.0001. New best score: 0.884
+Epoch 3: 100%|█| 2821/2821 [00:43<00:00, 64.51it/s, loss=0.0016, v_num=0, train_loss=0.00137, val_acc=0.891, val_f1=0.877, val_auc=0.999, val_tpr=0.884, tra
+Epoch 4: 100%|█| 2821/2821 [00:44<00:00, 63.36it/s, loss=0.000688, v_num=0, train_loss=0.000306, val_acc=0.885, val_f1=0.870, val_auc=0.998, val_tpr=0.883,
+Epoch 5:  40%|▍| 1128/2821 [00:18<00:27, 62.47it/s, loss=0.00128, v_num=0, train_loss=0.000321, val_acc=0.890, val_f1=0.877, val_auc=0.999, val_tpr=0.893, tMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.893
+Epoch 5: 100%|█| 2821/2821 [00:45<00:00, 62.63it/s, loss=0.000529, v_num=0, train_loss=0.00035, val_acc=0.893, val_f1=0.881, val_auc=0.999, val_tpr=0.892, t
+Epoch 6: 100%|▉| 2820/2821 [00:44<00:00, 63.24it/s, loss=0.0004, v_num=0, train_loss=8.92e-5, val_acc=0.885, val_f1=0.870, val_auc=0.999, val_tpr=0.897, traMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.897
+Epoch 6: 100%|█| 2821/2821 [00:44<00:00, 63.18it/s, loss=0.000399, v_num=0, train_loss=5.28e-5, val_acc=0.885, val_f1=0.870, val_auc=0.999, val_tpr=0.897, t
+Epoch 7:  60%|▌| 1692/2821 [00:26<00:17, 63.93it/s, loss=0.000378, v_num=0, train_loss=0.000132, val_acc=0.878, val_f1=0.861, val_auc=0.999, val_tpr=0.900, Metric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.900
+Epoch 7: 100%|▉| 2820/2821 [00:44<00:00, 63.70it/s, loss=0.000156, v_num=0, train_loss=0.000145, val_acc=0.879, val_f1=0.862, val_auc=0.999, val_tpr=0.901, Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.901
+Epoch 7: 100%|█| 2821/2821 [00:44<00:00, 63.65it/s, loss=0.000163, v_num=0, train_loss=0.00025, val_acc=0.879, val_f1=0.862, val_auc=0.999, val_tpr=0.901, t
+Epoch 8:  60%|▌| 1692/2821 [00:26<00:17, 62.81it/s, loss=0.000237, v_num=0, train_loss=0.000121, val_acc=0.878, val_f1=0.861, val_auc=0.999, val_tpr=0.904, Metric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.904
+Epoch 8: 100%|█| 2821/2821 [00:44<00:00, 63.18it/s, loss=0.000193, v_num=0, train_loss=7.8e-5, val_acc=0.887, val_f1=0.872, val_auc=0.999, val_tpr=0.898, tr
+Epoch 9: 100%|█| 2821/2821 [00:43<00:00, 64.99it/s, loss=0.000285, v_num=0, train_loss=1.68e-5, val_acc=0.882, val_f1=0.867, val_auc=0.999, val_tpr=0.902, t
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█| 2821/2821 [00:43<00:00, 64.96it/s, loss=0.000285, v_num=0, train_loss=1.68e-5, val_acc=0.882, val_f1=0.867, val_auc=0.999, val_tpr=0.902, t
+[!] Training of MLP_size_300K_lr_onecycle_Tmax_0.0005 with lr onecycle_Tmax_0.0005 ended:  Wed Aug 16 18:58:53 2023  | Took: 467.28 seconds
+[!] Training of MLP_size_300K_lr_onecycle_Tmax_0.0001 with lr onecycle_Tmax_0.0001 started:  Wed Aug 16 18:58:53 2023
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_300K_lr_onecycle_Tmax_0.0001 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 297 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+297 K     Trainable params
+0         Non-trainable params
+297 K     Total params
+1.189     Total estimated model params size (MB)
+Epoch 0:  20%|█▏    | 564/2821 [00:21<01:25, 26.37it/s, loss=0.697, v_num=0, train_loss=0.693, val_acc=0.500, val_f1=0.000, val_auc=0.799, val_tpr=0.000583]Metric val_tpr improved. New best score: 0.001
+Epoch 0: 100%|█| 2821/2821 [00:51<00:00, 54.90it/s, loss=0.69, v_num=0, train_loss=0.688, val_acc=0.500, val_f1=0.000, val_auc=0.808, val_tpr=0.000561, trai
+Epoch 1:  20%|▏| 564/2821 [00:07<00:30, 73.65it/s, loss=0.686, v_num=0, train_loss=0.681, val_acc=0.500, val_f1=0.000, val_auc=0.817, val_tpr=0.0336, train_Metric val_tpr improved by 0.033 >= min_delta = 0.0001. New best score: 0.034
+Epoch 1:  40%|▍| 1128/2821 [00:15<00:22, 74.47it/s, loss=0.664, v_num=0, train_loss=0.656, val_acc=0.627, val_f1=0.446, val_auc=0.870, val_tpr=0.243, train_Metric val_tpr improved by 0.210 >= min_delta = 0.0001. New best score: 0.243
+Epoch 1:  60%|▌| 1692/2821 [00:22<00:14, 75.87it/s, loss=0.568, v_num=0, train_loss=0.545, val_acc=0.761, val_f1=0.719, val_auc=0.935, val_tpr=0.299, train_Metric val_tpr improved by 0.056 >= min_delta = 0.0001. New best score: 0.299
+Epoch 1:  80%|▊| 2256/2821 [00:30<00:07, 74.91it/s, loss=0.332, v_num=0, train_loss=0.316, val_acc=0.887, val_f1=0.876, val_auc=0.972, val_tpr=0.537, train_Metric val_tpr improved by 0.238 >= min_delta = 0.0001. New best score: 0.537
+Epoch 1: 100%|▉| 2820/2821 [00:37<00:00, 75.19it/s, loss=0.158, v_num=0, train_loss=0.143, val_acc=0.900, val_f1=0.891, val_auc=0.982, val_tpr=0.573, train_Metric val_tpr improved by 0.036 >= min_delta = 0.0001. New best score: 0.573
+Epoch 1: 100%|█| 2821/2821 [00:37<00:00, 75.12it/s, loss=0.156, v_num=0, train_loss=0.141, val_acc=0.900, val_f1=0.891, val_auc=0.982, val_tpr=0.573, train_
+Epoch 2:  20%|▏| 564/2821 [00:07<00:28, 79.88it/s, loss=0.0794, v_num=0, train_loss=0.0719, val_acc=0.903, val_f1=0.894, val_auc=0.987, val_tpr=0.577, trainMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.577
+Epoch 2:  40%|▍| 1128/2821 [00:14<00:21, 77.05it/s, loss=0.0495, v_num=0, train_loss=0.0409, val_acc=0.905, val_f1=0.896, val_auc=0.990, val_tpr=0.581, traiMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.581
+Epoch 2:  60%|▌| 1692/2821 [00:23<00:15, 72.59it/s, loss=0.0421, v_num=0, train_loss=0.0328, val_acc=0.903, val_f1=0.895, val_auc=0.992, val_tpr=0.589, traiMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.589
+Epoch 2:  80%|▊| 2256/2821 [00:30<00:07, 73.87it/s, loss=0.0326, v_num=0, train_loss=0.0354, val_acc=0.904, val_f1=0.895, val_auc=0.992, val_tpr=0.599, traiMetric val_tpr improved by 0.009 >= min_delta = 0.0001. New best score: 0.599
+Epoch 2: 100%|▉| 2820/2821 [00:38<00:00, 73.99it/s, loss=0.0289, v_num=0, train_loss=0.035, val_acc=0.901, val_f1=0.892, val_auc=0.993, val_tpr=0.606, trainMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.606
+Epoch 2: 100%|█| 2821/2821 [00:38<00:00, 73.93it/s, loss=0.0287, v_num=0, train_loss=0.017, val_acc=0.901, val_f1=0.892, val_auc=0.993, val_tpr=0.606, train
+Epoch 3:  20%|▏| 564/2821 [00:07<00:30, 74.85it/s, loss=0.0228, v_num=0, train_loss=0.0181, val_acc=0.901, val_f1=0.892, val_auc=0.993, val_tpr=0.617, trainMetric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.617
+Epoch 3:  40%|▍| 1128/2821 [00:15<00:22, 75.15it/s, loss=0.0216, v_num=0, train_loss=0.0152, val_acc=0.903, val_f1=0.895, val_auc=0.993, val_tpr=0.631, traiMetric val_tpr improved by 0.014 >= min_delta = 0.0001. New best score: 0.631
+Epoch 3:  60%|▌| 1692/2821 [00:22<00:14, 75.88it/s, loss=0.0235, v_num=0, train_loss=0.0186, val_acc=0.902, val_f1=0.893, val_auc=0.994, val_tpr=0.644, traiMetric val_tpr improved by 0.013 >= min_delta = 0.0001. New best score: 0.644
+Epoch 3:  80%|▊| 2256/2821 [00:29<00:07, 75.75it/s, loss=0.0209, v_num=0, train_loss=0.019, val_acc=0.907, val_f1=0.899, val_auc=0.994, val_tpr=0.663, trainMetric val_tpr improved by 0.019 >= min_delta = 0.0001. New best score: 0.663
+Epoch 3: 100%|▉| 2820/2821 [00:37<00:00, 76.17it/s, loss=0.019, v_num=0, train_loss=0.0191, val_acc=0.901, val_f1=0.891, val_auc=0.995, val_tpr=0.675, trainMetric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.675
+Epoch 3: 100%|█| 2821/2821 [00:37<00:00, 76.09it/s, loss=0.0187, v_num=0, train_loss=0.00705, val_acc=0.901, val_f1=0.891, val_auc=0.995, val_tpr=0.675, tra
+Epoch 4:  20%|▏| 564/2821 [00:07<00:30, 75.05it/s, loss=0.0147, v_num=0, train_loss=0.0104, val_acc=0.903, val_f1=0.894, val_auc=0.995, val_tpr=0.687, trainMetric val_tpr improved by 0.012 >= min_delta = 0.0001. New best score: 0.687
+Epoch 4:  40%|▍| 1128/2821 [00:15<00:22, 74.89it/s, loss=0.0147, v_num=0, train_loss=0.00811, val_acc=0.895, val_f1=0.885, val_auc=0.995, val_tpr=0.696, traMetric val_tpr improved by 0.009 >= min_delta = 0.0001. New best score: 0.696
+Epoch 4:  60%|▌| 1692/2821 [00:24<00:16, 68.31it/s, loss=0.0154, v_num=0, train_loss=0.0117, val_acc=0.887, val_f1=0.875, val_auc=0.996, val_tpr=0.702, traiMetric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.702
+Epoch 4:  80%|▊| 2256/2821 [00:33<00:08, 66.81it/s, loss=0.0132, v_num=0, train_loss=0.0105, val_acc=0.893, val_f1=0.882, val_auc=0.996, val_tpr=0.714, traiMetric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.714
+Epoch 4: 100%|▉| 2820/2821 [00:43<00:00, 65.44it/s, loss=0.0113, v_num=0, train_loss=0.0152, val_acc=0.898, val_f1=0.888, val_auc=0.995, val_tpr=0.721, traiMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.721
+Epoch 4: 100%|█| 2821/2821 [00:43<00:00, 65.37it/s, loss=0.0108, v_num=0, train_loss=0.00425, val_acc=0.898, val_f1=0.888, val_auc=0.995, val_tpr=0.721, tra
+Epoch 5:  20%|▏| 564/2821 [00:07<00:31, 72.46it/s, loss=0.0102, v_num=0, train_loss=0.00618, val_acc=0.894, val_f1=0.883, val_auc=0.995, val_tpr=0.725, traiMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.725
+Epoch 5:  40%|▍| 1128/2821 [00:16<00:24, 69.74it/s, loss=0.0084, v_num=0, train_loss=0.00435, val_acc=0.892, val_f1=0.881, val_auc=0.996, val_tpr=0.729, traMetric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.729
+Epoch 5:  60%|▌| 1692/2821 [00:26<00:17, 65.04it/s, loss=0.00785, v_num=0, train_loss=0.00293, val_acc=0.886, val_f1=0.872, val_auc=0.996, val_tpr=0.734, trMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.734
+Epoch 5:  80%|▊| 2256/2821 [00:35<00:08, 63.26it/s, loss=0.00737, v_num=0, train_loss=0.00934, val_acc=0.886, val_f1=0.872, val_auc=0.996, val_tpr=0.739, trMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.739
+Epoch 5: 100%|▉| 2820/2821 [00:44<00:00, 63.55it/s, loss=0.0067, v_num=0, train_loss=0.0101, val_acc=0.893, val_f1=0.880, val_auc=0.996, val_tpr=0.743, traiMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.743
+Epoch 5: 100%|█| 2821/2821 [00:44<00:00, 63.49it/s, loss=0.0065, v_num=0, train_loss=0.00294, val_acc=0.893, val_f1=0.880, val_auc=0.996, val_tpr=0.743, tra
+Epoch 6:  20%|▏| 564/2821 [00:07<00:31, 71.85it/s, loss=0.00544, v_num=0, train_loss=0.00289, val_acc=0.888, val_f1=0.875, val_auc=0.996, val_tpr=0.748, traMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.748
+Epoch 6:  40%|▍| 1128/2821 [00:16<00:24, 68.71it/s, loss=0.00607, v_num=0, train_loss=0.0053, val_acc=0.892, val_f1=0.879, val_auc=0.995, val_tpr=0.749, traMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.749
+Epoch 6:  60%|▌| 1692/2821 [00:25<00:16, 66.58it/s, loss=0.00493, v_num=0, train_loss=0.00322, val_acc=0.888, val_f1=0.874, val_auc=0.996, val_tpr=0.752, trMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.752
+Epoch 6:  80%|▊| 2256/2821 [00:33<00:08, 66.57it/s, loss=0.00531, v_num=0, train_loss=0.00376, val_acc=0.885, val_f1=0.870, val_auc=0.996, val_tpr=0.755, trMetric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.755
+Epoch 6: 100%|▉| 2820/2821 [00:41<00:00, 67.31it/s, loss=0.00406, v_num=0, train_loss=0.00437, val_acc=0.888, val_f1=0.874, val_auc=0.996, val_tpr=0.756, trMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.756
+Epoch 6: 100%|█| 2821/2821 [00:41<00:00, 67.26it/s, loss=0.00388, v_num=0, train_loss=0.00131, val_acc=0.888, val_f1=0.874, val_auc=0.996, val_tpr=0.756, tr
+Epoch 7:  20%|▏| 564/2821 [00:08<00:33, 67.18it/s, loss=0.00353, v_num=0, train_loss=0.00321, val_acc=0.886, val_f1=0.871, val_auc=0.996, val_tpr=0.759, traMetric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.759
+Epoch 7:  60%|▌| 1692/2821 [00:23<00:15, 70.61it/s, loss=0.00421, v_num=0, train_loss=0.00199, val_acc=0.885, val_f1=0.870, val_auc=0.996, val_tpr=0.761, trMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.761
+Epoch 7:  80%|▊| 2256/2821 [00:32<00:08, 70.16it/s, loss=0.00547, v_num=0, train_loss=0.00699, val_acc=0.884, val_f1=0.869, val_auc=0.996, val_tpr=0.761, trMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.761
+Epoch 7: 100%|▉| 2820/2821 [00:40<00:00, 70.18it/s, loss=0.00316, v_num=0, train_loss=0.00289, val_acc=0.887, val_f1=0.873, val_auc=0.996, val_tpr=0.761, trMetric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.761
+Epoch 7: 100%|█| 2821/2821 [00:40<00:00, 70.13it/s, loss=0.00294, v_num=0, train_loss=0.00131, val_acc=0.887, val_f1=0.873, val_auc=0.996, val_tpr=0.761, tr
+Epoch 8:  20%|▏| 564/2821 [00:07<00:30, 74.38it/s, loss=0.00384, v_num=0, train_loss=0.00182, val_acc=0.890, val_f1=0.876, val_auc=0.996, val_tpr=0.762, traMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.762
+Epoch 8:  40%|▍| 1128/2821 [00:15<00:23, 72.05it/s, loss=0.00374, v_num=0, train_loss=0.00638, val_acc=0.886, val_f1=0.871, val_auc=0.996, val_tpr=0.763, trMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.763
+Epoch 8:  80%|▊| 2256/2821 [00:31<00:07, 71.59it/s, loss=0.00452, v_num=0, train_loss=0.0088, val_acc=0.886, val_f1=0.871, val_auc=0.996, val_tpr=0.764, traMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.764
+Epoch 8: 100%|▉| 2820/2821 [00:39<00:00, 71.30it/s, loss=0.00314, v_num=0, train_loss=0.00513, val_acc=0.886, val_f1=0.872, val_auc=0.996, val_tpr=0.764, trMetric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.764
+Epoch 8: 100%|█| 2821/2821 [00:39<00:00, 71.24it/s, loss=0.00307, v_num=0, train_loss=0.00167, val_acc=0.886, val_f1=0.872, val_auc=0.996, val_tpr=0.764, tr
+Epoch 9:  40%|▍| 1128/2821 [00:15<00:23, 73.17it/s, loss=0.0046, v_num=0, train_loss=0.00142, val_acc=0.886, val_f1=0.872, val_auc=0.996, val_tpr=0.764, traMetric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.764
+Epoch 9: 100%|█| 2821/2821 [00:39<00:00, 70.53it/s, loss=0.00292, v_num=0, train_loss=0.00327, val_acc=0.887, val_f1=0.872, val_auc=0.996, val_tpr=0.764, tr
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█| 2821/2821 [00:40<00:00, 70.50it/s, loss=0.00292, v_num=0, train_loss=0.00327, val_acc=0.887, val_f1=0.872, val_auc=0.996, val_tpr=0.764, tr
+[!] Training of MLP_size_300K_lr_onecycle_Tmax_0.0001 with lr onecycle_Tmax_0.0001 ended:  Wed Aug 16 19:06:56 2023  | Took: 482.50 seconds
+[!] Training of MLP_size_300K_lr_0.0001 with lr 0.0001 started:  Wed Aug 16 19:06:56 2023
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_300K_lr_0.0001 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 297 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+297 K     Trainable params
+0         Non-trainable params
+297 K     Total params
+1.189     Total estimated model params size (MB)
+Epoch 0:  20%|█▌      | 564/2821 [00:22<01:29, 25.29it/s, loss=0.67, v_num=0, train_loss=0.667, val_acc=0.630, val_f1=0.447, val_auc=0.836, val_tpr=0.00488]Metric val_tpr improved. New best score: 0.005
+Epoch 0:  40%|███▉      | 1128/2821 [00:30<00:45, 37.48it/s, loss=0.6, v_num=0, train_loss=0.587, val_acc=0.814, val_f1=0.777, val_auc=0.959, val_tpr=0.262]Metric val_tpr improved by 0.257 >= min_delta = 0.0001. New best score: 0.262
+Epoch 0:  60%|████▊   | 1692/2821 [00:38<00:25, 44.30it/s, loss=0.346, v_num=0, train_loss=0.306, val_acc=0.948, val_f1=0.947, val_auc=0.994, val_tpr=0.485]Metric val_tpr improved by 0.223 >= min_delta = 0.0001. New best score: 0.485
+Epoch 0:  80%|██████▍ | 2256/2821 [00:46<00:11, 48.93it/s, loss=0.131, v_num=0, train_loss=0.131, val_acc=0.971, val_f1=0.970, val_auc=0.995, val_tpr=0.539]Metric val_tpr improved by 0.053 >= min_delta = 0.0001. New best score: 0.539
+Epoch 0: 100%|██████▉| 2820/2821 [00:53<00:00, 52.36it/s, loss=0.064, v_num=0, train_loss=0.0691, val_acc=0.973, val_f1=0.973, val_auc=0.995, val_tpr=0.545]Metric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.545
+Epoch 0: 100%|█| 2821/2821 [00:53<00:00, 52.32it/s, loss=0.0636, v_num=0, train_loss=0.0563, val_acc=0.973, val_f1=0.973, val_auc=0.995, val_tpr=0.545, trai
+Epoch 1:  20%|▏| 564/2821 [00:07<00:31, 71.37it/s, loss=0.0404, v_num=0, train_loss=0.032, val_acc=0.976, val_f1=0.976, val_auc=0.995, val_tpr=0.554, train_Metric val_tpr improved by 0.009 >= min_delta = 0.0001. New best score: 0.554
+Epoch 1:  40%|▍| 1128/2821 [00:15<00:23, 71.70it/s, loss=0.0332, v_num=0, train_loss=0.0189, val_acc=0.976, val_f1=0.976, val_auc=0.995, val_tpr=0.561, traiMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.561
+Epoch 1:  60%|▌| 1692/2821 [00:23<00:15, 72.22it/s, loss=0.0325, v_num=0, train_loss=0.0293, val_acc=0.976, val_f1=0.976, val_auc=0.995, val_tpr=0.569, traiMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.569
+Epoch 1:  80%|▊| 2256/2821 [00:31<00:07, 71.14it/s, loss=0.026, v_num=0, train_loss=0.0214, val_acc=0.969, val_f1=0.969, val_auc=0.996, val_tpr=0.576, trainMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.576
+Epoch 1: 100%|▉| 2820/2821 [00:39<00:00, 70.74it/s, loss=0.0243, v_num=0, train_loss=0.0272, val_acc=0.980, val_f1=0.980, val_auc=0.996, val_tpr=0.589, traiMetric val_tpr improved by 0.013 >= min_delta = 0.0001. New best score: 0.589
+Epoch 1: 100%|█| 2821/2821 [00:39<00:00, 70.68it/s, loss=0.024, v_num=0, train_loss=0.00893, val_acc=0.980, val_f1=0.980, val_auc=0.996, val_tpr=0.589, trai
+Epoch 2:  20%|▏| 564/2821 [00:07<00:30, 73.06it/s, loss=0.0201, v_num=0, train_loss=0.0125, val_acc=0.974, val_f1=0.973, val_auc=0.996, val_tpr=0.600, trainMetric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.600
+Epoch 2:  40%|▍| 1128/2821 [00:15<00:23, 71.80it/s, loss=0.0216, v_num=0, train_loss=0.0079, val_acc=0.971, val_f1=0.971, val_auc=0.996, val_tpr=0.610, traiMetric val_tpr improved by 0.010 >= min_delta = 0.0001. New best score: 0.610
+Epoch 2:  60%|▌| 1692/2821 [00:23<00:15, 71.27it/s, loss=0.0227, v_num=0, train_loss=0.0165, val_acc=0.967, val_f1=0.966, val_auc=0.996, val_tpr=0.623, traiMetric val_tpr improved by 0.013 >= min_delta = 0.0001. New best score: 0.623
+Epoch 2:  80%|▊| 2256/2821 [00:31<00:07, 71.79it/s, loss=0.0197, v_num=0, train_loss=0.0157, val_acc=0.961, val_f1=0.960, val_auc=0.997, val_tpr=0.639, traiMetric val_tpr improved by 0.016 >= min_delta = 0.0001. New best score: 0.639
+Epoch 2: 100%|▉| 2820/2821 [00:39<00:00, 71.75it/s, loss=0.0185, v_num=0, train_loss=0.0243, val_acc=0.965, val_f1=0.965, val_auc=0.997, val_tpr=0.656, traiMetric val_tpr improved by 0.018 >= min_delta = 0.0001. New best score: 0.656
+Epoch 2: 100%|█| 2821/2821 [00:39<00:00, 71.68it/s, loss=0.0183, v_num=0, train_loss=0.00571, val_acc=0.965, val_f1=0.965, val_auc=0.997, val_tpr=0.656, tra
+Epoch 3:  20%|▏| 564/2821 [00:07<00:31, 71.30it/s, loss=0.0153, v_num=0, train_loss=0.0104, val_acc=0.970, val_f1=0.969, val_auc=0.997, val_tpr=0.675, trainMetric val_tpr improved by 0.018 >= min_delta = 0.0001. New best score: 0.675
+Epoch 3:  40%|▍| 1128/2821 [00:15<00:23, 72.28it/s, loss=0.0151, v_num=0, train_loss=0.0071, val_acc=0.967, val_f1=0.966, val_auc=0.997, val_tpr=0.689, traiMetric val_tpr improved by 0.015 >= min_delta = 0.0001. New best score: 0.689
+Epoch 3:  60%|▌| 1692/2821 [00:23<00:15, 71.86it/s, loss=0.0173, v_num=0, train_loss=0.0226, val_acc=0.960, val_f1=0.959, val_auc=0.997, val_tpr=0.706, traiMetric val_tpr improved by 0.016 >= min_delta = 0.0001. New best score: 0.706
+Epoch 3:  80%|▊| 2256/2821 [00:31<00:07, 72.70it/s, loss=0.0149, v_num=0, train_loss=0.0138, val_acc=0.957, val_f1=0.956, val_auc=0.998, val_tpr=0.728, traiMetric val_tpr improved by 0.022 >= min_delta = 0.0001. New best score: 0.728
+Epoch 3: 100%|▉| 2820/2821 [00:38<00:00, 73.31it/s, loss=0.0121, v_num=0, train_loss=0.0126, val_acc=0.966, val_f1=0.965, val_auc=0.998, val_tpr=0.746, traiMetric val_tpr improved by 0.019 >= min_delta = 0.0001. New best score: 0.746
+Epoch 3: 100%|█| 2821/2821 [00:38<00:00, 73.23it/s, loss=0.0119, v_num=0, train_loss=0.00409, val_acc=0.966, val_f1=0.965, val_auc=0.998, val_tpr=0.746, tra
+Epoch 4:  20%|▏| 564/2821 [00:07<00:28, 77.89it/s, loss=0.01, v_num=0, train_loss=0.00338, val_acc=0.962, val_f1=0.961, val_auc=0.998, val_tpr=0.767, train_Metric val_tpr improved by 0.020 >= min_delta = 0.0001. New best score: 0.767
+Epoch 4:  40%|▍| 1128/2821 [00:14<00:22, 76.69it/s, loss=0.00826, v_num=0, train_loss=0.00457, val_acc=0.968, val_f1=0.967, val_auc=0.999, val_tpr=0.778, trMetric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.778
+Epoch 4:  60%|▌| 1692/2821 [00:21<00:14, 77.33it/s, loss=0.008, v_num=0, train_loss=0.0105, val_acc=0.971, val_f1=0.971, val_auc=0.999, val_tpr=0.799, trainMetric val_tpr improved by 0.022 >= min_delta = 0.0001. New best score: 0.799
+Epoch 4:  80%|▊| 2256/2821 [00:29<00:07, 76.80it/s, loss=0.00721, v_num=0, train_loss=0.00803, val_acc=0.959, val_f1=0.957, val_auc=0.999, val_tpr=0.813, trMetric val_tpr improved by 0.014 >= min_delta = 0.0001. New best score: 0.813
+Epoch 4: 100%|▉| 2820/2821 [00:36<00:00, 76.69it/s, loss=0.00477, v_num=0, train_loss=0.00979, val_acc=0.967, val_f1=0.966, val_auc=0.999, val_tpr=0.817, trMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.817
+Epoch 4: 100%|█| 2821/2821 [00:36<00:00, 76.62it/s, loss=0.00438, v_num=0, train_loss=0.00162, val_acc=0.967, val_f1=0.966, val_auc=0.999, val_tpr=0.817, tr
+Epoch 5:  20%|▏| 564/2821 [00:07<00:28, 80.30it/s, loss=0.00488, v_num=0, train_loss=0.00359, val_acc=0.958, val_f1=0.957, val_auc=0.999, val_tpr=0.829, traMetric val_tpr improved by 0.012 >= min_delta = 0.0001. New best score: 0.829
+Epoch 5:  40%|▍| 1128/2821 [00:14<00:21, 77.29it/s, loss=0.00501, v_num=0, train_loss=0.0041, val_acc=0.960, val_f1=0.959, val_auc=0.999, val_tpr=0.830, traMetric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.830
+Epoch 5:  60%|▌| 1692/2821 [00:21<00:14, 77.46it/s, loss=0.00481, v_num=0, train_loss=0.00646, val_acc=0.969, val_f1=0.968, val_auc=0.999, val_tpr=0.837, trMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.837
+Epoch 5:  80%|▊| 2256/2821 [00:29<00:07, 77.00it/s, loss=0.00488, v_num=0, train_loss=0.00773, val_acc=0.943, val_f1=0.939, val_auc=0.999, val_tpr=0.846, trMetric val_tpr improved by 0.009 >= min_delta = 0.0001. New best score: 0.846
+Epoch 5: 100%|█| 2821/2821 [00:36<00:00, 76.56it/s, loss=0.00326, v_num=0, train_loss=0.00203, val_acc=0.957, val_f1=0.956, val_auc=0.999, val_tpr=0.845, tr
+Epoch 6:  20%|▏| 564/2821 [00:07<00:29, 76.23it/s, loss=0.00366, v_num=0, train_loss=0.00131, val_acc=0.958, val_f1=0.956, val_auc=0.999, val_tpr=0.848, traMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.848
+Epoch 6:  60%|▌| 1692/2821 [00:21<00:14, 77.23it/s, loss=0.00314, v_num=0, train_loss=0.00544, val_acc=0.955, val_f1=0.953, val_auc=0.999, val_tpr=0.857, trMetric val_tpr improved by 0.010 >= min_delta = 0.0001. New best score: 0.857
+Epoch 6:  80%|▊| 2256/2821 [00:29<00:07, 76.91it/s, loss=0.00434, v_num=0, train_loss=0.00492, val_acc=0.934, val_f1=0.930, val_auc=0.999, val_tpr=0.861, trMetric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.861
+Epoch 6: 100%|▉| 2820/2821 [00:36<00:00, 77.08it/s, loss=0.00222, v_num=0, train_loss=0.00784, val_acc=0.953, val_f1=0.951, val_auc=0.999, val_tpr=0.861, trMetric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.861
+Epoch 6: 100%|█| 2821/2821 [00:36<00:00, 77.01it/s, loss=0.00217, v_num=0, train_loss=0.00167, val_acc=0.953, val_f1=0.951, val_auc=0.999, val_tpr=0.861, tr
+Epoch 7:  20%|▏| 564/2821 [00:07<00:30, 73.02it/s, loss=0.00296, v_num=0, train_loss=0.000901, val_acc=0.938, val_f1=0.934, val_auc=0.999, val_tpr=0.870, trMetric val_tpr improved by 0.009 >= min_delta = 0.0001. New best score: 0.870
+Epoch 7:  60%|▌| 1692/2821 [00:22<00:14, 76.12it/s, loss=0.00143, v_num=0, train_loss=0.00107, val_acc=0.947, val_f1=0.944, val_auc=0.999, val_tpr=0.871, trMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.871
+Epoch 7:  80%|▊| 2256/2821 [00:29<00:07, 75.33it/s, loss=0.00353, v_num=0, train_loss=0.0081, val_acc=0.930, val_f1=0.925, val_auc=0.999, val_tpr=0.875, traMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.875
+Epoch 7: 100%|▉| 2820/2821 [00:37<00:00, 75.46it/s, loss=0.00221, v_num=0, train_loss=0.00816, val_acc=0.934, val_f1=0.929, val_auc=0.999, val_tpr=0.875, trMetric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.875
+Epoch 7: 100%|█| 2821/2821 [00:37<00:00, 75.42it/s, loss=0.00192, v_num=0, train_loss=0.000921, val_acc=0.934, val_f1=0.929, val_auc=0.999, val_tpr=0.875, t
+Epoch 8:  80%|▊| 2256/2821 [00:28<00:07, 78.28it/s, loss=0.00242, v_num=0, train_loss=0.000642, val_acc=0.896, val_f1=0.884, val_auc=0.999, val_tpr=0.878, tMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.878
+Epoch 8: 100%|█| 2821/2821 [00:37<00:00, 74.86it/s, loss=0.000772, v_num=0, train_loss=0.000329, val_acc=0.933, val_f1=0.928, val_auc=0.999, val_tpr=0.869,
+Epoch 9:  60%|▌| 1692/2821 [16:20<10:54,  1.73it/s, loss=0.00102, v_num=0, train_loss=0.000473, val_acc=0.926, val_f1=0.921, val_auc=0.999, val_tpr=0.886, tMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.886
+Epoch 9:  80%|▊| 2256/2821 [16:33<04:08,  2.27it/s, loss=0.00133, v_num=0, train_loss=0.00121, val_acc=0.904, val_f1=0.893, val_auc=0.999, val_tpr=0.888, trMetric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.888
+Epoch 9: 100%|▉| 2820/2821 [16:41<00:00,  2.81it/s, loss=0.000724, v_num=0, train_loss=0.000662, val_acc=0.918, val_f1=0.911, val_auc=1.000, val_tpr=0.894, Metric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.894
+Epoch 9: 100%|█| 2821/2821 [16:41<00:00,  2.82it/s, loss=0.000498, v_num=0, train_loss=0.000203, val_acc=0.918, val_f1=0.911, val_auc=1.000, val_tpr=0.894,
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█| 2821/2821 [16:41<00:00,  2.82it/s, loss=0.000498, v_num=0, train_loss=0.000203, val_acc=0.918, val_f1=0.911, val_auc=1.000, val_tpr=0.894,
+[!] Training of MLP_size_300K_lr_0.0001 with lr 0.0001 ended:  Wed Aug 16 19:29:52 2023  | Took: 1376.09 seconds
+[!] Training of MLP_size_300K_lr_0.0005 with lr 0.0005 started:  Wed Aug 16 19:29:52 2023
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_300K_lr_0.0005 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 297 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+297 K     Trainable params
+0         Non-trainable params
+297 K     Total params
+1.189     Total estimated model params size (MB)
+Epoch 0:  20%|█▊       | 564/2821 [00:18<01:13, 30.52it/s, loss=0.334, v_num=0, train_loss=0.247, val_acc=0.932, val_f1=0.929, val_auc=0.994, val_tpr=0.618]Metric val_tpr improved. New best score: 0.618
+Epoch 0:  40%|██▍   | 1128/2821 [00:25<00:37, 44.74it/s, loss=0.0313, v_num=0, train_loss=0.0184, val_acc=0.991, val_f1=0.991, val_auc=0.997, val_tpr=0.644]Metric val_tpr improved by 0.027 >= min_delta = 0.0001. New best score: 0.644
+Epoch 0:  60%|███▌  | 1692/2821 [00:32<00:21, 52.06it/s, loss=0.0213, v_num=0, train_loss=0.0141, val_acc=0.992, val_f1=0.992, val_auc=0.998, val_tpr=0.711]Metric val_tpr improved by 0.066 >= min_delta = 0.0001. New best score: 0.711
+Epoch 0:  80%|████▊ | 2256/2821 [00:39<00:09, 57.00it/s, loss=0.0162, v_num=0, train_loss=0.0108, val_acc=0.991, val_f1=0.991, val_auc=0.999, val_tpr=0.810]Metric val_tpr improved by 0.099 >= min_delta = 0.0001. New best score: 0.810
+Epoch 0: 100%|█████▉| 2820/2821 [00:46<00:00, 60.67it/s, loss=0.0105, v_num=0, train_loss=0.0136, val_acc=0.993, val_f1=0.993, val_auc=1.000, val_tpr=0.906]Metric val_tpr improved by 0.096 >= min_delta = 0.0001. New best score: 0.906
+Epoch 0: 100%|█| 2821/2821 [00:46<00:00, 60.65it/s, loss=0.0104, v_num=0, train_loss=0.00236, val_acc=0.993, val_f1=0.993, val_auc=1.000, val_tpr=0.906, tra
+Epoch 1:  20%|▏| 564/2821 [00:06<00:27, 80.75it/s, loss=0.0056, v_num=0, train_loss=0.00448, val_acc=0.988, val_f1=0.988, val_auc=1.000, val_tpr=0.946, traiMetric val_tpr improved by 0.040 >= min_delta = 0.0001. New best score: 0.946
+Epoch 1:  40%|▍| 1128/2821 [00:14<00:21, 80.43it/s, loss=0.00437, v_num=0, train_loss=0.00308, val_acc=0.995, val_f1=0.995, val_auc=1.000, val_tpr=0.956, trMetric val_tpr improved by 0.010 >= min_delta = 0.0001. New best score: 0.956
+Epoch 1:  60%|▌| 1692/2821 [00:20<00:13, 81.34it/s, loss=0.00216, v_num=0, train_loss=0.00395, val_acc=0.992, val_f1=0.992, val_auc=1.000, val_tpr=0.960, trMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.960
+Epoch 1:  80%|▊| 2256/2821 [00:28<00:07, 80.45it/s, loss=0.00202, v_num=0, train_loss=0.00355, val_acc=0.992, val_f1=0.992, val_auc=1.000, val_tpr=0.961, trMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.961
+Epoch 1: 100%|▉| 2820/2821 [00:35<00:00, 79.43it/s, loss=0.00251, v_num=0, train_loss=0.00447, val_acc=0.995, val_f1=0.995, val_auc=1.000, val_tpr=0.966, trMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.966
+Epoch 1: 100%|█| 2821/2821 [00:35<00:00, 79.36it/s, loss=0.00249, v_num=0, train_loss=0.000751, val_acc=0.995, val_f1=0.995, val_auc=1.000, val_tpr=0.966, t
+Epoch 2:  20%|▏| 564/2821 [00:06<00:27, 82.12it/s, loss=0.00127, v_num=0, train_loss=0.00038, val_acc=0.991, val_f1=0.990, val_auc=1.000, val_tpr=0.968, traMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.968
+Epoch 2:  40%|▍| 1128/2821 [00:14<00:21, 79.99it/s, loss=0.00218, v_num=0, train_loss=0.00114, val_acc=0.971, val_f1=0.970, val_auc=1.000, val_tpr=0.969, trMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.969
+Epoch 2:  80%|▊| 2256/2821 [00:28<00:07, 79.13it/s, loss=0.000459, v_num=0, train_loss=0.000222, val_acc=0.968, val_f1=0.967, val_auc=1.000, val_tpr=0.971, Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.971
+Epoch 2: 100%|▉| 2820/2821 [00:35<00:00, 78.96it/s, loss=0.000784, v_num=0, train_loss=0.000328, val_acc=0.972, val_f1=0.971, val_auc=1.000, val_tpr=0.971, Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.971
+Epoch 2: 100%|█| 2821/2821 [00:35<00:00, 78.88it/s, loss=0.000782, v_num=0, train_loss=0.000425, val_acc=0.972, val_f1=0.971, val_auc=1.000, val_tpr=0.971,
+Epoch 3: 100%|█| 2821/2821 [00:35<00:00, 80.16it/s, loss=0.000351, v_num=0, train_loss=5.77e-5, val_acc=0.972, val_f1=0.971, val_auc=1.000, val_tpr=0.965, t
+Epoch 4: 100%|▉| 2820/2821 [00:38<00:00, 72.42it/s, loss=0.000627, v_num=0, train_loss=0.000173, val_acc=0.959, val_f1=0.958, val_auc=1.000, val_tpr=0.969, Monitored metric val_tpr did not improve in the last 10 records. Best score: 0.971. Signaling Trainer to stop.
+Epoch 4: 100%|▉| 2820/2821 [00:38<00:00, 72.34it/s, loss=0.000627, v_num=0, train_loss=0.000173, val_acc=0.959, val_f1=0.958, val_auc=1.000, val_tpr=0.969,
+Epoch 4: 100%|▉| 2820/2821 [00:38<00:00, 72.34it/s, loss=0.000627, v_num=0, train_loss=0.000173, val_acc=0.959, val_f1=0.958, val_auc=1.000, val_tpr=0.969,
+[!] Training of MLP_size_300K_lr_0.0005 with lr 0.0005 ended:  Wed Aug 16 19:34:12 2023  | Took: 259.93 seconds
+[!] Training of MLP_size_300K_lr_0.001 with lr 0.001 started:  Wed Aug 16 19:34:12 2023
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_300K_lr_0.001 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 297 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+297 K     Trainable params
+0         Non-trainable params
+297 K     Total params
+1.189     Total estimated model params size (MB)
+Epoch 0:  20%|█▍     | 564/2821 [00:20<01:23, 27.16it/s, loss=0.0317, v_num=0, train_loss=0.0152, val_acc=0.962, val_f1=0.961, val_auc=0.993, val_tpr=0.387]Metric val_tpr improved. New best score: 0.387
+Epoch 0:  40%|█▉   | 1128/2821 [00:27<00:41, 40.73it/s, loss=0.0194, v_num=0, train_loss=0.00573, val_acc=0.951, val_f1=0.949, val_auc=0.995, val_tpr=0.570]Metric val_tpr improved by 0.183 >= min_delta = 0.0001. New best score: 0.570
+Epoch 0:  60%|██▉  | 1692/2821 [00:34<00:23, 48.57it/s, loss=0.0159, v_num=0, train_loss=0.00996, val_acc=0.944, val_f1=0.941, val_auc=0.998, val_tpr=0.745]Metric val_tpr improved by 0.176 >= min_delta = 0.0001. New best score: 0.745
+Epoch 0:  80%|███▏| 2256/2821 [00:42<00:10, 53.37it/s, loss=0.00726, v_num=0, train_loss=0.00843, val_acc=0.935, val_f1=0.931, val_auc=0.998, val_tpr=0.851]Metric val_tpr improved by 0.105 >= min_delta = 0.0001. New best score: 0.851
+Epoch 0: 100%|████▉| 2820/2821 [00:50<00:00, 56.32it/s, loss=0.0029, v_num=0, train_loss=0.00142, val_acc=0.949, val_f1=0.947, val_auc=0.999, val_tpr=0.869]Metric val_tpr improved by 0.018 >= min_delta = 0.0001. New best score: 0.869
+Epoch 0: 100%|█| 2821/2821 [00:50<00:00, 56.28it/s, loss=0.0027, v_num=0, train_loss=0.000746, val_acc=0.949, val_f1=0.947, val_auc=0.999, val_tpr=0.869, tr
+Epoch 1:  20%|▏| 564/2821 [00:08<00:32, 68.83it/s, loss=0.00197, v_num=0, train_loss=0.000627, val_acc=0.942, val_f1=0.938, val_auc=0.998, val_tpr=0.870, trMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.870
+Epoch 1:  40%|▍| 1128/2821 [00:16<00:25, 67.47it/s, loss=0.00289, v_num=0, train_loss=0.0056, val_acc=0.928, val_f1=0.923, val_auc=0.998, val_tpr=0.876, traMetric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.876
+Epoch 1:  60%|▌| 1692/2821 [00:24<00:16, 69.27it/s, loss=0.000782, v_num=0, train_loss=0.000805, val_acc=0.940, val_f1=0.936, val_auc=0.999, val_tpr=0.882, Metric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.882
+Epoch 1:  80%|▊| 2256/2821 [00:32<00:08, 69.20it/s, loss=0.00198, v_num=0, train_loss=0.00949, val_acc=0.911, val_f1=0.903, val_auc=0.999, val_tpr=0.891, trMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.891
+Epoch 1: 100%|▉| 2820/2821 [00:39<00:00, 70.51it/s, loss=0.00164, v_num=0, train_loss=0.00151, val_acc=0.940, val_f1=0.937, val_auc=0.999, val_tpr=0.895, trMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.895
+Epoch 1: 100%|█| 2821/2821 [00:40<00:00, 70.45it/s, loss=0.00142, v_num=0, train_loss=0.000449, val_acc=0.940, val_f1=0.937, val_auc=0.999, val_tpr=0.895, t
+Epoch 2:  40%|▍| 1128/2821 [00:15<00:22, 74.03it/s, loss=0.00134, v_num=0, train_loss=0.0016, val_acc=0.913, val_f1=0.904, val_auc=0.999, val_tpr=0.901, traMetric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.901
+Epoch 2:  80%|▊| 2256/2821 [00:30<00:07, 75.03it/s, loss=0.00102, v_num=0, train_loss=0.000835, val_acc=0.932, val_f1=0.927, val_auc=0.999, val_tpr=0.909, tMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.909
+Epoch 2: 100%|▉| 2820/2821 [00:38<00:00, 74.03it/s, loss=0.000646, v_num=0, train_loss=0.00119, val_acc=0.934, val_f1=0.929, val_auc=0.999, val_tpr=0.920, tMetric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.920
+Epoch 2: 100%|█| 2821/2821 [00:38<00:00, 73.97it/s, loss=0.000668, v_num=0, train_loss=0.00111, val_acc=0.934, val_f1=0.929, val_auc=0.999, val_tpr=0.920, t
+Epoch 3:  60%|▌| 1692/2821 [00:22<00:14, 76.41it/s, loss=0.000569, v_num=0, train_loss=0.000743, val_acc=0.907, val_f1=0.898, val_auc=1.000, val_tpr=0.928, Metric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.928
+Epoch 3: 100%|█| 2821/2821 [00:37<00:00, 75.90it/s, loss=0.000242, v_num=0, train_loss=5.65e-5, val_acc=0.923, val_f1=0.917, val_auc=0.999, val_tpr=0.926, t
+Epoch 4: 100%|█| 2821/2821 [00:37<00:00, 76.08it/s, loss=0.000507, v_num=0, train_loss=7.6e-5, val_acc=0.929, val_f1=0.924, val_auc=0.999, val_tpr=0.928, tr
+Epoch 5:  20%|▏| 564/2821 [00:07<00:28, 79.41it/s, loss=0.000454, v_num=0, train_loss=7.33e-5, val_acc=0.916, val_f1=0.908, val_auc=1.000, val_tpr=0.943, trMetric val_tpr improved by 0.015 >= min_delta = 0.0001. New best score: 0.943
+Epoch 5: 100%|█| 2821/2821 [00:37<00:00, 75.28it/s, loss=0.000385, v_num=0, train_loss=7.88e-6, val_acc=0.921, val_f1=0.915, val_auc=0.999, val_tpr=0.914, t
+Epoch 6: 100%|█| 2821/2821 [00:36<00:00, 76.61it/s, loss=0.00044, v_num=0, train_loss=0.000981, val_acc=0.936, val_f1=0.932, val_auc=1.000, val_tpr=0.921, t
+Epoch 7:  20%|▏| 564/2821 [00:09<00:39, 57.50it/s, loss=0.00131, v_num=0, train_loss=0.000599, val_acc=0.909, val_f1=0.900, val_auc=1.000, val_tpr=0.941, trMonitored metric val_tpr did not improve in the last 10 records. Best score: 0.943. Signaling Trainer to stop.
+Epoch 7:  20%|▏| 564/2821 [00:09<00:39, 57.22it/s, loss=0.00131, v_num=0, train_loss=0.000599, val_acc=0.909, val_f1=0.900, val_auc=1.000, val_tpr=0.941, tr
+Epoch 7:  20%|▏| 564/2821 [00:09<00:39, 57.13it/s, loss=0.00131, v_num=0, train_loss=0.000599, val_acc=0.909, val_f1=0.900, val_auc=1.000, val_tpr=0.941, tr
+[!] Training of MLP_size_300K_lr_0.001 with lr 0.001 ended:  Wed Aug 16 19:39:15 2023  | Took: 303.74 seconds
+[!] Training of MLP_size_300K_lr_0.005 with lr 0.005 started:  Wed Aug 16 19:39:15 2023
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_300K_lr_0.005 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 297 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+297 K     Trainable params
+0         Non-trainable params
+297 K     Total params
+1.189     Total estimated model params size (MB)
+Epoch 0:  20%|▉    | 564/2821 [00:23<01:33, 24.05it/s, loss=0.00883, v_num=0, train_loss=0.00296, val_acc=0.971, val_f1=0.970, val_auc=0.999, val_tpr=0.843]Metric val_tpr improved. New best score: 0.843
+Epoch 0:  40%|█▌  | 1128/2821 [00:33<00:49, 34.04it/s, loss=0.00443, v_num=0, train_loss=0.00104, val_acc=0.963, val_f1=0.962, val_auc=1.000, val_tpr=0.911]Metric val_tpr improved by 0.068 >= min_delta = 0.0001. New best score: 0.911
+Epoch 0:  60%|█▊ | 1692/2821 [00:42<00:28, 40.16it/s, loss=0.00208, v_num=0, train_loss=0.000669, val_acc=0.966, val_f1=0.964, val_auc=1.000, val_tpr=0.936]Metric val_tpr improved by 0.025 >= min_delta = 0.0001. New best score: 0.936
+Epoch 0:  80%|█▌| 2256/2821 [00:51<00:12, 44.21it/s, loss=0.000782, v_num=0, train_loss=0.000438, val_acc=0.964, val_f1=0.963, val_auc=1.000, val_tpr=0.951]Metric val_tpr improved by 0.015 >= min_delta = 0.0001. New best score: 0.951
+Epoch 0: 100%|█▉| 2820/2821 [00:59<00:00, 47.39it/s, loss=0.000565, v_num=0, train_loss=0.000234, val_acc=0.961, val_f1=0.960, val_auc=1.000, val_tpr=0.955]Metric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.955
+Epoch 0: 100%|█| 2821/2821 [00:59<00:00, 47.36it/s, loss=0.00055, v_num=0, train_loss=0.000313, val_acc=0.961, val_f1=0.960, val_auc=1.000, val_tpr=0.955, t
+Epoch 1:  20%|▏| 564/2821 [00:08<00:32, 68.61it/s, loss=0.000359, v_num=0, train_loss=0.00022, val_acc=0.950, val_f1=0.947, val_auc=1.000, val_tpr=0.955, trMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.955
+Epoch 1:  60%|▌| 1692/2821 [00:25<00:17, 65.39it/s, loss=0.000414, v_num=0, train_loss=0.002, val_acc=0.931, val_f1=0.925, val_auc=1.000, val_tpr=0.956, traMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.956
+Epoch 1: 100%|█| 2821/2821 [00:44<00:00, 63.78it/s, loss=0.000156, v_num=0, train_loss=7.47e-5, val_acc=0.941, val_f1=0.938, val_auc=1.000, val_tpr=0.953, t
+Epoch 2:  40%|▍| 1128/2821 [00:18<00:27, 61.93it/s, loss=0.0013, v_num=0, train_loss=0.00022, val_acc=0.933, val_f1=0.929, val_auc=1.000, val_tpr=0.963, traMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.963
+Epoch 2: 100%|▉| 2820/2821 [00:44<00:00, 62.75it/s, loss=0.000508, v_num=0, train_loss=0.0002, val_acc=0.935, val_f1=0.930, val_auc=1.000, val_tpr=0.972, trMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.972
+Epoch 2: 100%|█| 2821/2821 [00:45<00:00, 62.69it/s, loss=0.000342, v_num=0, train_loss=5.29e-5, val_acc=0.935, val_f1=0.930, val_auc=1.000, val_tpr=0.972, t
+Epoch 3:  80%|▊| 2256/2821 [00:42<00:10, 53.62it/s, loss=0.000162, v_num=0, train_loss=8.21e-5, val_acc=0.944, val_f1=0.941, val_auc=1.000, val_tpr=0.973, tMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.973
+Epoch 3: 100%|█| 2821/2821 [00:52<00:00, 53.51it/s, loss=3.28e-05, v_num=0, train_loss=8.03e-5, val_acc=0.954, val_f1=0.951, val_auc=1.000, val_tpr=0.948, t
+Epoch 4:  20%|▏| 564/2821 [00:10<00:41, 53.85it/s, loss=0.00033, v_num=0, train_loss=6.72e-5, val_acc=0.945, val_f1=0.941, val_auc=1.000, val_tpr=0.982, traMetric val_tpr improved by 0.009 >= min_delta = 0.0001. New best score: 0.982
+Epoch 4: 100%|█| 2821/2821 [00:53<00:00, 53.20it/s, loss=0.000106, v_num=0, train_loss=2.01e-5, val_acc=0.939, val_f1=0.935, val_auc=1.000, val_tpr=0.953, t
+Epoch 5: 100%|█| 2821/2821 [00:50<00:00, 55.78it/s, loss=5.7e-05, v_num=0, train_loss=1.82e-5, val_acc=0.960, val_f1=0.958, val_auc=1.000, val_tpr=0.948, tr
+Epoch 6:  20%|▏| 564/2821 [00:15<01:02, 36.25it/s, loss=0.000167, v_num=0, train_loss=1.45e-5, val_acc=0.929, val_f1=0.924, val_auc=1.000, val_tpr=0.983, trMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.983
+Epoch 6:  80%|▊| 2256/2821 [01:34<00:23, 23.99it/s, loss=0.000145, v_num=0, train_loss=3.08e-5, val_acc=0.926, val_f1=0.920, val_auc=1.000, val_tpr=0.985, tMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.985
+Epoch 6: 100%|█| 2821/2821 [01:47<00:00, 26.26it/s, loss=0.000118, v_num=0, train_loss=9.79e-7, val_acc=0.947, val_f1=0.944, val_auc=1.000, val_tpr=0.963, t
+Epoch 7: 100%|█| 2821/2821 [00:52<00:00, 53.73it/s, loss=0.00399, v_num=0, train_loss=0.015, val_acc=0.995, val_f1=0.995, val_auc=1.000, val_tpr=0.969, trai
+Epoch 8:  80%|▊| 2256/2821 [00:33<00:08, 66.84it/s, loss=4.62e-05, v_num=0, train_loss=0.000419, val_acc=0.951, val_f1=0.948, val_auc=1.000, val_tpr=0.959, Monitored metric val_tpr did not improve in the last 10 records. Best score: 0.985. Signaling Trainer to stop.
+Epoch 8:  80%|▊| 2256/2821 [00:33<00:08, 66.76it/s, loss=4.62e-05, v_num=0, train_loss=0.000419, val_acc=0.951, val_f1=0.948, val_auc=1.000, val_tpr=0.959,
+Epoch 8:  80%|▊| 2256/2821 [00:33<00:08, 66.73it/s, loss=4.62e-05, v_num=0, train_loss=0.000419, val_acc=0.951, val_f1=0.948, val_auc=1.000, val_tpr=0.959,
+[!] Training of MLP_size_300K_lr_0.005 with lr 0.005 ended:  Wed Aug 16 19:47:52 2023  | Took: 516.96 seconds
+[!] Training of MLP_size_500k_lr_onecycle_Tmax_0.001 with lr onecycle_Tmax_0.001 started:  Wed Aug 16 19:47:52 2023
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_500k_lr_onecycle_Tmax_0.001 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 467 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+467 K     Trainable params
+0         Non-trainable params
+467 K     Total params
+1.872     Total estimated model params size (MB)
+Epoch 0:  20%|█▏    | 564/2821 [00:28<01:52, 20.00it/s, loss=0.684, v_num=0, train_loss=0.679, val_acc=0.593, val_f1=0.329, val_auc=0.806, val_tpr=0.000702]Metric val_tpr improved. New best score: 0.001
+Epoch 0:  40%|███▏    | 1128/2821 [00:37<00:55, 30.40it/s, loss=0.637, v_num=0, train_loss=0.621, val_acc=0.692, val_f1=0.566, val_auc=0.941, val_tpr=0.262]Metric val_tpr improved by 0.261 >= min_delta = 0.0001. New best score: 0.262
+Epoch 0:  60%|████▏  | 1692/2821 [00:45<00:30, 36.98it/s, loss=0.119, v_num=0, train_loss=0.0846, val_acc=0.963, val_f1=0.963, val_auc=0.993, val_tpr=0.400]Metric val_tpr improved by 0.138 >= min_delta = 0.0001. New best score: 0.400
+Epoch 0:  80%|████▊ | 2256/2821 [00:56<00:14, 40.13it/s, loss=0.0257, v_num=0, train_loss=0.0179, val_acc=0.956, val_f1=0.955, val_auc=0.995, val_tpr=0.493]Metric val_tpr improved by 0.093 >= min_delta = 0.0001. New best score: 0.493
+Epoch 0: 100%|███████▉| 2820/2821 [01:06<00:00, 42.67it/s, loss=0.02, v_num=0, train_loss=0.0286, val_acc=0.957, val_f1=0.955, val_auc=0.995, val_tpr=0.530]Metric val_tpr improved by 0.037 >= min_delta = 0.0001. New best score: 0.530
+Epoch 0: 100%|█| 2821/2821 [01:06<00:00, 42.64it/s, loss=0.0197, v_num=0, train_loss=0.00529, val_acc=0.957, val_f1=0.955, val_auc=0.995, val_tpr=0.530, tra
+Epoch 1:  20%|▏| 564/2821 [00:09<00:38, 59.25it/s, loss=0.0156, v_num=0, train_loss=0.010, val_acc=0.938, val_f1=0.935, val_auc=0.996, val_tpr=0.603, train_Metric val_tpr improved by 0.073 >= min_delta = 0.0001. New best score: 0.603
+Epoch 1:  40%|▍| 1128/2821 [00:24<00:36, 46.66it/s, loss=0.0122, v_num=0, train_loss=0.00387, val_acc=0.943, val_f1=0.940, val_auc=0.995, val_tpr=0.736, traMetric val_tpr improved by 0.133 >= min_delta = 0.0001. New best score: 0.736
+Epoch 1:  80%|▊| 2256/2821 [00:54<00:13, 41.07it/s, loss=0.00952, v_num=0, train_loss=0.00929, val_acc=0.943, val_f1=0.941, val_auc=0.997, val_tpr=0.775, trMetric val_tpr improved by 0.039 >= min_delta = 0.0001. New best score: 0.775
+Epoch 1: 100%|▉| 2820/2821 [01:05<00:00, 43.24it/s, loss=0.00377, v_num=0, train_loss=0.00231, val_acc=0.910, val_f1=0.902, val_auc=0.998, val_tpr=0.789, trMetric val_tpr improved by 0.015 >= min_delta = 0.0001. New best score: 0.789
+Epoch 1: 100%|█| 2821/2821 [01:05<00:00, 43.20it/s, loss=0.00351, v_num=0, train_loss=0.000968, val_acc=0.910, val_f1=0.902, val_auc=0.998, val_tpr=0.789, t
+Epoch 2:  20%|▏| 564/2821 [00:10<00:40, 55.75it/s, loss=0.002, v_num=0, train_loss=0.000722, val_acc=0.908, val_f1=0.899, val_auc=0.997, val_tpr=0.804, traiMetric val_tpr improved by 0.015 >= min_delta = 0.0001. New best score: 0.804
+Epoch 2:  60%|▌| 1692/2821 [00:32<00:21, 52.67it/s, loss=0.000912, v_num=0, train_loss=0.000197, val_acc=0.936, val_f1=0.932, val_auc=0.995, val_tpr=0.839, Metric val_tpr improved by 0.035 >= min_delta = 0.0001. New best score: 0.839
+Epoch 2: 100%|▉| 2820/2821 [00:52<00:00, 54.04it/s, loss=0.000924, v_num=0, train_loss=0.000126, val_acc=0.907, val_f1=0.898, val_auc=0.997, val_tpr=0.854, Metric val_tpr improved by 0.015 >= min_delta = 0.0001. New best score: 0.854
+Epoch 2: 100%|█| 2821/2821 [00:52<00:00, 53.99it/s, loss=0.000765, v_num=0, train_loss=0.00012, val_acc=0.907, val_f1=0.898, val_auc=0.997, val_tpr=0.854, t
+Epoch 3: 100%|█| 2821/2821 [01:00<00:00, 46.80it/s, loss=0.000207, v_num=0, train_loss=1.98e-5, val_acc=0.885, val_f1=0.870, val_auc=0.992, val_tpr=0.841, t
+Epoch 4:  20%|▏| 564/2821 [00:11<00:47, 47.18it/s, loss=0.000554, v_num=0, train_loss=9.47e-5, val_acc=0.906, val_f1=0.896, val_auc=0.994, val_tpr=0.860, trMetric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.860
+Epoch 4: 100%|█| 2821/2821 [01:01<00:00, 45.72it/s, loss=0.000378, v_num=0, train_loss=0.000107, val_acc=0.912, val_f1=0.904, val_auc=0.980, val_tpr=0.845,
+Epoch 5:  40%|▍| 1128/2821 [00:21<00:32, 52.32it/s, loss=0.00115, v_num=0, train_loss=0.00317, val_acc=0.898, val_f1=0.887, val_auc=0.979, val_tpr=0.862, trMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.862
+Epoch 5:  60%|▌| 1692/2821 [00:32<00:21, 52.06it/s, loss=0.000193, v_num=0, train_loss=3.22e-5, val_acc=0.881, val_f1=0.865, val_auc=0.984, val_tpr=0.862, tMetric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.862
+Epoch 5:  80%|▊| 2256/2821 [00:43<00:10, 51.39it/s, loss=6.69e-05, v_num=0, train_loss=0.000104, val_acc=0.883, val_f1=0.868, val_auc=0.991, val_tpr=0.880, Metric val_tpr improved by 0.018 >= min_delta = 0.0001. New best score: 0.880
+Epoch 5: 100%|▉| 2820/2821 [00:54<00:00, 52.16it/s, loss=0.000141, v_num=0, train_loss=0.000102, val_acc=0.868, val_f1=0.848, val_auc=0.994, val_tpr=0.892, Metric val_tpr improved by 0.012 >= min_delta = 0.0001. New best score: 0.892
+Epoch 5: 100%|█| 2821/2821 [00:54<00:00, 52.11it/s, loss=0.00014, v_num=0, train_loss=1.81e-5, val_acc=0.868, val_f1=0.848, val_auc=0.994, val_tpr=0.892, tr
+Epoch 6: 100%|█| 2821/2821 [00:54<00:00, 51.86it/s, loss=8.22e-05, v_num=0, train_loss=4.26e-5, val_acc=0.876, val_f1=0.858, val_auc=0.986, val_tpr=0.876, t
+Epoch 7: 100%|▉| 2820/2821 [00:46<00:00, 60.33it/s, loss=1.56e-05, v_num=0, train_loss=9.17e-6, val_acc=0.868, val_f1=0.848, val_auc=0.988, val_tpr=0.881, tMonitored metric val_tpr did not improve in the last 10 records. Best score: 0.892. Signaling Trainer to stop.
+Epoch 7: 100%|▉| 2820/2821 [00:46<00:00, 60.25it/s, loss=1.56e-05, v_num=0, train_loss=9.17e-6, val_acc=0.868, val_f1=0.848, val_auc=0.988, val_tpr=0.881, t
+Epoch 7: 100%|▉| 2820/2821 [00:46<00:00, 60.22it/s, loss=1.56e-05, v_num=0, train_loss=9.17e-6, val_acc=0.868, val_f1=0.848, val_auc=0.988, val_tpr=0.881, t
+[!] Training of MLP_size_500k_lr_onecycle_Tmax_0.001 with lr onecycle_Tmax_0.001 ended:  Wed Aug 16 19:55:52 2023  | Took: 479.80 seconds
+[!] Training of MLP_size_500k_lr_onecycle_Tmax_0.0005 with lr onecycle_Tmax_0.0005 started:  Wed Aug 16 19:55:52 2023
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_500k_lr_onecycle_Tmax_0.0005 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 467 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+467 K     Trainable params
+0         Non-trainable params
+467 K     Total params
+1.872     Total estimated model params size (MB)
+Epoch 0:  20%|█▍     | 564/2821 [00:23<01:34, 23.81it/s, loss=0.69, v_num=0, train_loss=0.689, val_acc=0.590, val_f1=0.328, val_auc=0.808, val_tpr=0.000804]Metric val_tpr improved. New best score: 0.001
+Epoch 0:  40%|██▍   | 1128/2821 [00:32<00:48, 34.87it/s, loss=0.679, v_num=0, train_loss=0.675, val_acc=0.594, val_f1=0.330, val_auc=0.816, val_tpr=0.00154]Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.002
+Epoch 0:  60%|████▊   | 1692/2821 [00:41<00:27, 40.95it/s, loss=0.608, v_num=0, train_loss=0.584, val_acc=0.752, val_f1=0.706, val_auc=0.917, val_tpr=0.287]Metric val_tpr improved by 0.285 >= min_delta = 0.0001. New best score: 0.287
+Epoch 0:  80%|██████▍ | 2256/2821 [00:51<00:12, 43.89it/s, loss=0.136, v_num=0, train_loss=0.124, val_acc=0.940, val_f1=0.943, val_auc=0.980, val_tpr=0.421]Metric val_tpr improved by 0.134 >= min_delta = 0.0001. New best score: 0.421
+Epoch 0: 100%|█████▉| 2820/2821 [01:01<00:00, 45.82it/s, loss=0.0282, v_num=0, train_loss=0.0291, val_acc=0.966, val_f1=0.965, val_auc=0.994, val_tpr=0.450]Metric val_tpr improved by 0.030 >= min_delta = 0.0001. New best score: 0.450
+Epoch 0: 100%|█| 2821/2821 [01:01<00:00, 45.79it/s, loss=0.0281, v_num=0, train_loss=0.0138, val_acc=0.966, val_f1=0.965, val_auc=0.994, val_tpr=0.450, trai
+Epoch 1:  20%|▏| 564/2821 [00:09<00:37, 60.98it/s, loss=0.019, v_num=0, train_loss=0.0107, val_acc=0.956, val_f1=0.955, val_auc=0.995, val_tpr=0.552, train_Metric val_tpr improved by 0.102 >= min_delta = 0.0001. New best score: 0.552
+Epoch 1:  40%|▍| 1128/2821 [00:18<00:27, 62.26it/s, loss=0.0157, v_num=0, train_loss=0.00701, val_acc=0.960, val_f1=0.959, val_auc=0.996, val_tpr=0.601, traMetric val_tpr improved by 0.049 >= min_delta = 0.0001. New best score: 0.601
+Epoch 1:  60%|▌| 1692/2821 [00:27<00:18, 62.36it/s, loss=0.0155, v_num=0, train_loss=0.0106, val_acc=0.944, val_f1=0.942, val_auc=0.997, val_tpr=0.710, traiMetric val_tpr improved by 0.109 >= min_delta = 0.0001. New best score: 0.710
+Epoch 1:  80%|▊| 2256/2821 [00:36<00:09, 62.05it/s, loss=0.00977, v_num=0, train_loss=0.00732, val_acc=0.980, val_f1=0.980, val_auc=0.999, val_tpr=0.847, trMetric val_tpr improved by 0.137 >= min_delta = 0.0001. New best score: 0.847
+Epoch 1: 100%|▉| 2820/2821 [00:45<00:00, 61.81it/s, loss=0.0043, v_num=0, train_loss=0.00268, val_acc=0.977, val_f1=0.977, val_auc=1.000, val_tpr=0.907, traMetric val_tpr improved by 0.060 >= min_delta = 0.0001. New best score: 0.907
+Epoch 1: 100%|█| 2821/2821 [00:45<00:00, 61.79it/s, loss=0.00425, v_num=0, train_loss=0.00147, val_acc=0.977, val_f1=0.977, val_auc=1.000, val_tpr=0.907, tr
+Epoch 2:  20%|▏| 564/2821 [00:08<00:33, 68.21it/s, loss=0.00212, v_num=0, train_loss=0.000351, val_acc=0.990, val_f1=0.990, val_auc=1.000, val_tpr=0.919, trMetric val_tpr improved by 0.012 >= min_delta = 0.0001. New best score: 0.919
+Epoch 2: 100%|█| 2821/2821 [00:44<00:00, 63.81it/s, loss=0.00158, v_num=0, train_loss=0.000287, val_acc=0.968, val_f1=0.967, val_auc=1.000, val_tpr=0.915, t
+Epoch 3:  20%|▏| 564/2821 [00:08<00:35, 63.21it/s, loss=0.00101, v_num=0, train_loss=0.000418, val_acc=0.940, val_f1=0.937, val_auc=1.000, val_tpr=0.927, trMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.927
+Epoch 3:  40%|▍| 1128/2821 [00:18<00:27, 61.41it/s, loss=0.00138, v_num=0, train_loss=0.000625, val_acc=0.935, val_f1=0.931, val_auc=1.000, val_tpr=0.934, tMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.934
+Epoch 3:  60%|▌| 1692/2821 [00:26<00:17, 63.28it/s, loss=0.000346, v_num=0, train_loss=0.000141, val_acc=0.959, val_f1=0.957, val_auc=1.000, val_tpr=0.938, Metric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.938
+Epoch 3: 100%|▉| 2820/2821 [00:43<00:00, 64.23it/s, loss=0.000605, v_num=0, train_loss=0.000124, val_acc=0.960, val_f1=0.959, val_auc=1.000, val_tpr=0.942, Metric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.942
+Epoch 3: 100%|█| 2821/2821 [00:43<00:00, 64.16it/s, loss=0.00056, v_num=0, train_loss=0.00021, val_acc=0.960, val_f1=0.959, val_auc=1.000, val_tpr=0.942, tr
+Epoch 4:  20%|▏| 564/2821 [00:07<00:31, 70.85it/s, loss=0.00156, v_num=0, train_loss=0.000197, val_acc=0.951, val_f1=0.948, val_auc=1.000, val_tpr=0.950, trMetric val_tpr improved by 0.009 >= min_delta = 0.0001. New best score: 0.950
+Epoch 4: 100%|█| 2821/2821 [00:43<00:00, 65.16it/s, loss=0.0012, v_num=0, train_loss=0.000126, val_acc=0.936, val_f1=0.931, val_auc=1.000, val_tpr=0.918, tr
+Epoch 5: 100%|█| 2821/2821 [00:41<00:00, 67.54it/s, loss=0.000327, v_num=0, train_loss=5.67e-5, val_acc=0.934, val_f1=0.930, val_auc=1.000, val_tpr=0.943, t
+Epoch 6:  20%|▏| 564/2821 [00:08<00:32, 69.11it/s, loss=0.000203, v_num=0, train_loss=3.98e-5, val_acc=0.917, val_f1=0.909, val_auc=1.000, val_tpr=0.938, trMonitored metric val_tpr did not improve in the last 10 records. Best score: 0.950. Signaling Trainer to stop.
+Epoch 6:  20%|▏| 564/2821 [00:08<00:32, 68.72it/s, loss=0.000203, v_num=0, train_loss=3.98e-5, val_acc=0.917, val_f1=0.909, val_auc=1.000, val_tpr=0.938, tr
+Epoch 6:  20%|▏| 564/2821 [00:08<00:32, 68.72it/s, loss=0.000203, v_num=0, train_loss=3.98e-5, val_acc=0.917, val_f1=0.909, val_auc=1.000, val_tpr=0.938, tr
+[!] Training of MLP_size_500k_lr_onecycle_Tmax_0.0005 with lr onecycle_Tmax_0.0005 ended:  Wed Aug 16 20:02:01 2023  | Took: 368.32 seconds
+[!] Training of MLP_size_500k_lr_onecycle_Tmax_0.0001 with lr onecycle_Tmax_0.0001 started:  Wed Aug 16 20:02:01 2023
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_500k_lr_onecycle_Tmax_0.0001 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 467 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+467 K     Trainable params
+0         Non-trainable params
+467 K     Total params
+1.872     Total estimated model params size (MB)
+Epoch 0:  20%|█▊       | 564/2821 [00:23<01:34, 23.88it/s, loss=0.693, v_num=0, train_loss=0.693, val_acc=0.500, val_f1=0.000, val_auc=0.761, val_tpr=0.000]Metric val_tpr improved. New best score: 0.000
+Epoch 0:  40%|█▉   | 1128/2821 [00:31<00:47, 35.85it/s, loss=0.691, v_num=0, train_loss=0.693, val_acc=0.559, val_f1=0.431, val_auc=0.785, val_tpr=0.000475]Metric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.000
+Epoch 0: 100%|██████▉| 2820/2821 [00:57<00:00, 48.88it/s, loss=0.671, v_num=0, train_loss=0.673, val_acc=0.619, val_f1=0.397, val_auc=0.848, val_tpr=0.0765]Metric val_tpr improved by 0.076 >= min_delta = 0.0001. New best score: 0.076
+Epoch 0: 100%|█| 2821/2821 [00:57<00:00, 48.84it/s, loss=0.67, v_num=0, train_loss=0.661, val_acc=0.619, val_f1=0.397, val_auc=0.848, val_tpr=0.0765, train_
+Epoch 1:  20%|▏| 564/2821 [00:08<00:34, 64.87it/s, loss=0.599, v_num=0, train_loss=0.576, val_acc=0.831, val_f1=0.815, val_auc=0.954, val_tpr=0.246, train_aMetric val_tpr improved by 0.169 >= min_delta = 0.0001. New best score: 0.246
+Epoch 1:  60%|▌| 1692/2821 [00:24<00:16, 67.74it/s, loss=0.0529, v_num=0, train_loss=0.0419, val_acc=0.951, val_f1=0.949, val_auc=0.991, val_tpr=0.275, traiMetric val_tpr improved by 0.029 >= min_delta = 0.0001. New best score: 0.275
+Epoch 1:  80%|▊| 2256/2821 [00:33<00:08, 66.54it/s, loss=0.0309, v_num=0, train_loss=0.0296, val_acc=0.948, val_f1=0.946, val_auc=0.992, val_tpr=0.314, traiMetric val_tpr improved by 0.039 >= min_delta = 0.0001. New best score: 0.314
+Epoch 1: 100%|▉| 2820/2821 [00:42<00:00, 66.36it/s, loss=0.0259, v_num=0, train_loss=0.034, val_acc=0.948, val_f1=0.945, val_auc=0.992, val_tpr=0.336, trainMetric val_tpr improved by 0.022 >= min_delta = 0.0001. New best score: 0.336
+Epoch 1: 100%|█| 2821/2821 [00:42<00:00, 66.29it/s, loss=0.0253, v_num=0, train_loss=0.00884, val_acc=0.948, val_f1=0.945, val_auc=0.992, val_tpr=0.336, tra
+Epoch 2:  20%|▏| 564/2821 [00:08<00:34, 65.49it/s, loss=0.0215, v_num=0, train_loss=0.0149, val_acc=0.947, val_f1=0.945, val_auc=0.992, val_tpr=0.381, trainMetric val_tpr improved by 0.044 >= min_delta = 0.0001. New best score: 0.381
+Epoch 2:  40%|▍| 1128/2821 [00:17<00:26, 64.76it/s, loss=0.0175, v_num=0, train_loss=0.00777, val_acc=0.947, val_f1=0.944, val_auc=0.993, val_tpr=0.451, traMetric val_tpr improved by 0.071 >= min_delta = 0.0001. New best score: 0.451
+Epoch 2:  60%|▌| 1692/2821 [00:26<00:17, 63.94it/s, loss=0.0207, v_num=0, train_loss=0.0129, val_acc=0.947, val_f1=0.945, val_auc=0.994, val_tpr=0.532, traiMetric val_tpr improved by 0.081 >= min_delta = 0.0001. New best score: 0.532
+Epoch 2:  80%|▊| 2256/2821 [00:35<00:08, 64.27it/s, loss=0.018, v_num=0, train_loss=0.0188, val_acc=0.947, val_f1=0.944, val_auc=0.993, val_tpr=0.570, trainMetric val_tpr improved by 0.038 >= min_delta = 0.0001. New best score: 0.570
+Epoch 2: 100%|▉| 2820/2821 [00:43<00:00, 64.19it/s, loss=0.0169, v_num=0, train_loss=0.0188, val_acc=0.947, val_f1=0.945, val_auc=0.993, val_tpr=0.603, traiMetric val_tpr improved by 0.033 >= min_delta = 0.0001. New best score: 0.603
+Epoch 2: 100%|█| 2821/2821 [00:43<00:00, 64.12it/s, loss=0.0166, v_num=0, train_loss=0.00338, val_acc=0.947, val_f1=0.945, val_auc=0.993, val_tpr=0.603, tra
+Epoch 3:  20%|▏| 564/2821 [00:08<00:34, 65.21it/s, loss=0.0154, v_num=0, train_loss=0.00708, val_acc=0.946, val_f1=0.944, val_auc=0.994, val_tpr=0.629, traiMetric val_tpr improved by 0.026 >= min_delta = 0.0001. New best score: 0.629
+Epoch 3:  40%|▍| 1128/2821 [00:16<00:25, 67.39it/s, loss=0.0134, v_num=0, train_loss=0.00614, val_acc=0.946, val_f1=0.944, val_auc=0.990, val_tpr=0.667, traMetric val_tpr improved by 0.038 >= min_delta = 0.0001. New best score: 0.667
+Epoch 3:  60%|▌| 1692/2821 [00:25<00:16, 67.14it/s, loss=0.0145, v_num=0, train_loss=0.0111, val_acc=0.946, val_f1=0.944, val_auc=0.993, val_tpr=0.740, traiMetric val_tpr improved by 0.073 >= min_delta = 0.0001. New best score: 0.740
+Epoch 3:  80%|▊| 2256/2821 [00:33<00:08, 67.14it/s, loss=0.0123, v_num=0, train_loss=0.0146, val_acc=0.947, val_f1=0.945, val_auc=0.986, val_tpr=0.774, traiMetric val_tpr improved by 0.034 >= min_delta = 0.0001. New best score: 0.774
+Epoch 3: 100%|▉| 2820/2821 [00:41<00:00, 67.19it/s, loss=0.00961, v_num=0, train_loss=0.0161, val_acc=0.938, val_f1=0.935, val_auc=0.986, val_tpr=0.779, traMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.779
+Epoch 3: 100%|█| 2821/2821 [00:42<00:00, 67.09it/s, loss=0.00925, v_num=0, train_loss=0.00331, val_acc=0.938, val_f1=0.935, val_auc=0.986, val_tpr=0.779, tr
+Epoch 4:  20%|▏| 564/2821 [00:07<00:31, 70.64it/s, loss=0.00766, v_num=0, train_loss=0.00238, val_acc=0.943, val_f1=0.940, val_auc=0.986, val_tpr=0.793, traMetric val_tpr improved by 0.013 >= min_delta = 0.0001. New best score: 0.793
+Epoch 4:  40%|▍| 1128/2821 [00:16<00:24, 67.99it/s, loss=0.00628, v_num=0, train_loss=0.00664, val_acc=0.945, val_f1=0.942, val_auc=0.983, val_tpr=0.799, trMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.799
+Epoch 4:  60%|▌| 1692/2821 [00:24<00:16, 68.74it/s, loss=0.00517, v_num=0, train_loss=0.00226, val_acc=0.943, val_f1=0.940, val_auc=0.987, val_tpr=0.807, trMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.807
+Epoch 4:  80%|▊| 2256/2821 [00:33<00:08, 67.83it/s, loss=0.00508, v_num=0, train_loss=0.0111, val_acc=0.942, val_f1=0.939, val_auc=0.979, val_tpr=0.814, traMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.814
+Epoch 4: 100%|▉| 2820/2821 [00:41<00:00, 67.49it/s, loss=0.00266, v_num=0, train_loss=0.000972, val_acc=0.940, val_f1=0.936, val_auc=0.986, val_tpr=0.818, tMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.818
+Epoch 4: 100%|█| 2821/2821 [00:41<00:00, 67.41it/s, loss=0.00221, v_num=0, train_loss=0.000951, val_acc=0.940, val_f1=0.936, val_auc=0.986, val_tpr=0.818, t
+Epoch 5:  20%|▏| 564/2821 [00:08<00:34, 65.64it/s, loss=0.00332, v_num=0, train_loss=0.000782, val_acc=0.945, val_f1=0.942, val_auc=0.980, val_tpr=0.827, trMetric val_tpr improved by 0.009 >= min_delta = 0.0001. New best score: 0.827
+Epoch 5:  60%|▌| 1692/2821 [00:26<00:17, 64.71it/s, loss=0.00279, v_num=0, train_loss=0.000771, val_acc=0.950, val_f1=0.947, val_auc=0.983, val_tpr=0.832, tMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.832
+Epoch 5:  80%|▊| 2256/2821 [00:34<00:08, 65.13it/s, loss=0.00408, v_num=0, train_loss=0.00804, val_acc=0.927, val_f1=0.922, val_auc=0.988, val_tpr=0.835, trMetric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.835
+Epoch 5: 100%|█| 2821/2821 [00:42<00:00, 65.71it/s, loss=0.00146, v_num=0, train_loss=0.000692, val_acc=0.938, val_f1=0.935, val_auc=0.987, val_tpr=0.834, t
+Epoch 6: 100%|█| 2821/2821 [00:42<00:00, 66.65it/s, loss=0.000983, v_num=0, train_loss=0.000427, val_acc=0.923, val_f1=0.917, val_auc=0.985, val_tpr=0.833,
+Epoch 7:  20%|▏| 564/2821 [00:08<00:33, 66.85it/s, loss=0.00184, v_num=0, train_loss=0.000465, val_acc=0.927, val_f1=0.922, val_auc=0.984, val_tpr=0.838, trMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.838
+Epoch 7:  80%|▊| 2256/2821 [00:34<00:08, 66.33it/s, loss=0.00303, v_num=0, train_loss=0.00949, val_acc=0.923, val_f1=0.917, val_auc=0.984, val_tpr=0.840, trMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.840
+Epoch 7: 100%|█| 2821/2821 [00:43<00:00, 65.35it/s, loss=0.00105, v_num=0, train_loss=0.000302, val_acc=0.920, val_f1=0.914, val_auc=0.985, val_tpr=0.837, t
+Epoch 8:  20%|▏| 564/2821 [00:08<00:34, 66.07it/s, loss=0.00158, v_num=0, train_loss=0.00028, val_acc=0.924, val_f1=0.918, val_auc=0.987, val_tpr=0.842, traMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.842
+Epoch 8: 100%|█| 2821/2821 [00:42<00:00, 66.75it/s, loss=0.000875, v_num=0, train_loss=0.000307, val_acc=0.920, val_f1=0.913, val_auc=0.985, val_tpr=0.840,
+Epoch 9: 100%|█| 2821/2821 [00:42<00:00, 66.48it/s, loss=0.00084, v_num=0, train_loss=0.00036, val_acc=0.921, val_f1=0.914, val_auc=0.985, val_tpr=0.840, tr
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█| 2821/2821 [00:42<00:00, 66.46it/s, loss=0.00084, v_num=0, train_loss=0.00036, val_acc=0.921, val_f1=0.914, val_auc=0.985, val_tpr=0.840, tr
+[!] Training of MLP_size_500k_lr_onecycle_Tmax_0.0001 with lr onecycle_Tmax_0.0001 ended:  Wed Aug 16 20:09:41 2023  | Took: 460.40 seconds
+[!] Training of MLP_size_500k_lr_0.0001 with lr 0.0001 started:  Wed Aug 16 20:09:41 2023
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_500k_lr_0.0001 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 467 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+467 K     Trainable params
+0         Non-trainable params
+467 K     Total params
+1.872     Total estimated model params size (MB)
+Epoch 0:  20%|█▊       | 564/2821 [00:52<03:29, 10.75it/s, loss=0.649, v_num=0, train_loss=0.625, val_acc=0.704, val_f1=0.607, val_auc=0.934, val_tpr=0.236]Metric val_tpr improved. New best score: 0.236
+Epoch 0:  40%|███▏    | 1128/2821 [01:01<01:32, 18.40it/s, loss=0.128, v_num=0, train_loss=0.102, val_acc=0.990, val_f1=0.990, val_auc=0.995, val_tpr=0.506]Metric val_tpr improved by 0.270 >= min_delta = 0.0001. New best score: 0.506
+Epoch 0:  60%|███▌  | 1692/2821 [01:10<00:46, 24.08it/s, loss=0.0319, v_num=0, train_loss=0.0243, val_acc=0.990, val_f1=0.990, val_auc=0.996, val_tpr=0.532]Metric val_tpr improved by 0.026 >= min_delta = 0.0001. New best score: 0.532
+Epoch 0:  80%|████▊ | 2256/2821 [01:18<00:19, 28.59it/s, loss=0.0219, v_num=0, train_loss=0.0207, val_acc=0.989, val_f1=0.989, val_auc=0.996, val_tpr=0.566]Metric val_tpr improved by 0.034 >= min_delta = 0.0001. New best score: 0.566
+Epoch 0: 100%|█████▉| 2820/2821 [01:27<00:00, 32.16it/s, loss=0.0208, v_num=0, train_loss=0.0265, val_acc=0.988, val_f1=0.988, val_auc=0.996, val_tpr=0.582]Metric val_tpr improved by 0.016 >= min_delta = 0.0001. New best score: 0.582
+Epoch 0: 100%|█| 2821/2821 [01:27<00:00, 32.14it/s, loss=0.0203, v_num=0, train_loss=0.00525, val_acc=0.988, val_f1=0.988, val_auc=0.996, val_tpr=0.582, tra
+Epoch 1:  20%|▏| 564/2821 [00:08<00:32, 68.59it/s, loss=0.0162, v_num=0, train_loss=0.00943, val_acc=0.987, val_f1=0.987, val_auc=0.996, val_tpr=0.604, traiMetric val_tpr improved by 0.021 >= min_delta = 0.0001. New best score: 0.604
+Epoch 1:  40%|▍| 1128/2821 [00:16<00:24, 68.45it/s, loss=0.0154, v_num=0, train_loss=0.00576, val_acc=0.983, val_f1=0.983, val_auc=0.997, val_tpr=0.631, traMetric val_tpr improved by 0.027 >= min_delta = 0.0001. New best score: 0.631
+Epoch 1:  60%|▌| 1692/2821 [00:24<00:16, 67.68it/s, loss=0.018, v_num=0, train_loss=0.0109, val_acc=0.982, val_f1=0.982, val_auc=0.997, val_tpr=0.665, trainMetric val_tpr improved by 0.035 >= min_delta = 0.0001. New best score: 0.665
+Epoch 1:  80%|▊| 2256/2821 [00:33<00:08, 67.06it/s, loss=0.0142, v_num=0, train_loss=0.0135, val_acc=0.982, val_f1=0.982, val_auc=0.998, val_tpr=0.716, traiMetric val_tpr improved by 0.051 >= min_delta = 0.0001. New best score: 0.716
+Epoch 1: 100%|▉| 2820/2821 [00:41<00:00, 67.16it/s, loss=0.0126, v_num=0, train_loss=0.015, val_acc=0.982, val_f1=0.982, val_auc=0.999, val_tpr=0.778, trainMetric val_tpr improved by 0.061 >= min_delta = 0.0001. New best score: 0.778
+Epoch 1: 100%|█| 2821/2821 [00:42<00:00, 67.11it/s, loss=0.0123, v_num=0, train_loss=0.00327, val_acc=0.982, val_f1=0.982, val_auc=0.999, val_tpr=0.778, tra
+Epoch 2:  20%|▏| 564/2821 [00:08<00:32, 68.57it/s, loss=0.00937, v_num=0, train_loss=0.0023, val_acc=0.988, val_f1=0.988, val_auc=0.999, val_tpr=0.814, traiMetric val_tpr improved by 0.036 >= min_delta = 0.0001. New best score: 0.814
+Epoch 2:  40%|▍| 1128/2821 [00:16<00:24, 68.34it/s, loss=0.00646, v_num=0, train_loss=0.0055, val_acc=0.984, val_f1=0.984, val_auc=0.999, val_tpr=0.825, traMetric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.825
+Epoch 2:  60%|▌| 1692/2821 [00:25<00:16, 67.02it/s, loss=0.00429, v_num=0, train_loss=0.00192, val_acc=0.986, val_f1=0.986, val_auc=0.999, val_tpr=0.844, trMetric val_tpr improved by 0.019 >= min_delta = 0.0001. New best score: 0.844
+Epoch 2:  80%|▊| 2256/2821 [00:33<00:08, 67.44it/s, loss=0.00575, v_num=0, train_loss=0.00881, val_acc=0.981, val_f1=0.981, val_auc=0.999, val_tpr=0.850, trMetric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.850
+Epoch 2: 100%|▉| 2820/2821 [00:42<00:00, 66.88it/s, loss=0.00394, v_num=0, train_loss=0.00651, val_acc=0.980, val_f1=0.980, val_auc=1.000, val_tpr=0.862, trMetric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.862
+Epoch 2: 100%|█| 2821/2821 [00:42<00:00, 66.83it/s, loss=0.00358, v_num=0, train_loss=0.000779, val_acc=0.980, val_f1=0.980, val_auc=1.000, val_tpr=0.862, t
+Epoch 3:  20%|▏| 564/2821 [00:08<00:32, 68.97it/s, loss=0.00316, v_num=0, train_loss=0.00112, val_acc=0.979, val_f1=0.979, val_auc=1.000, val_tpr=0.876, traMetric val_tpr improved by 0.014 >= min_delta = 0.0001. New best score: 0.876
+Epoch 3:  40%|▍| 1128/2821 [00:16<00:24, 69.03it/s, loss=0.00443, v_num=0, train_loss=0.0117, val_acc=0.971, val_f1=0.970, val_auc=1.000, val_tpr=0.883, traMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.883
+Epoch 3:  80%|▊| 2256/2821 [00:34<00:08, 65.83it/s, loss=0.00392, v_num=0, train_loss=0.00677, val_acc=0.977, val_f1=0.977, val_auc=1.000, val_tpr=0.891, trMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.891
+Epoch 3: 100%|▉| 2820/2821 [00:42<00:00, 66.14it/s, loss=0.00272, v_num=0, train_loss=0.00401, val_acc=0.969, val_f1=0.968, val_auc=1.000, val_tpr=0.896, trMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.896
+Epoch 3: 100%|█| 2821/2821 [00:42<00:00, 66.06it/s, loss=0.00219, v_num=0, train_loss=0.00112, val_acc=0.969, val_f1=0.968, val_auc=1.000, val_tpr=0.896, tr
+Epoch 4:  80%|▊| 2256/2821 [00:34<00:08, 66.27it/s, loss=0.0038, v_num=0, train_loss=0.00628, val_acc=0.961, val_f1=0.960, val_auc=1.000, val_tpr=0.904, traMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.904
+Epoch 4: 100%|▉| 2820/2821 [00:42<00:00, 66.42it/s, loss=0.00219, v_num=0, train_loss=0.00161, val_acc=0.975, val_f1=0.974, val_auc=1.000, val_tpr=0.904, trMetric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.904
+Epoch 4: 100%|█| 2821/2821 [00:42<00:00, 66.37it/s, loss=0.00184, v_num=0, train_loss=0.000311, val_acc=0.975, val_f1=0.974, val_auc=1.000, val_tpr=0.904, t
+Epoch 5:  20%|▏| 564/2821 [00:08<00:34, 66.12it/s, loss=0.00164, v_num=0, train_loss=0.000537, val_acc=0.947, val_f1=0.944, val_auc=1.000, val_tpr=0.905, trMetric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.905
+Epoch 5:  40%|▍| 1128/2821 [00:17<00:26, 64.16it/s, loss=0.00251, v_num=0, train_loss=0.00698, val_acc=0.958, val_f1=0.956, val_auc=1.000, val_tpr=0.911, trMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.911
+Epoch 5: 100%|▉| 2820/2821 [00:43<00:00, 64.22it/s, loss=0.00195, v_num=0, train_loss=0.000233, val_acc=0.972, val_f1=0.972, val_auc=1.000, val_tpr=0.916, tMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.916
+Epoch 5: 100%|█| 2821/2821 [00:43<00:00, 64.18it/s, loss=0.0012, v_num=0, train_loss=0.000265, val_acc=0.972, val_f1=0.972, val_auc=1.000, val_tpr=0.916, tr
+Epoch 6:  20%|▏| 564/2821 [00:09<00:38, 59.30it/s, loss=0.00125, v_num=0, train_loss=0.00101, val_acc=0.938, val_f1=0.934, val_auc=1.000, val_tpr=0.919, traMetric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.919
+Epoch 6:  60%|▌| 1692/2821 [00:27<00:18, 61.13it/s, loss=0.00107, v_num=0, train_loss=0.000624, val_acc=0.963, val_f1=0.962, val_auc=1.000, val_tpr=0.931, tMetric val_tpr improved by 0.012 >= min_delta = 0.0001. New best score: 0.931
+Epoch 6: 100%|█| 2821/2821 [00:45<00:00, 61.33it/s, loss=0.00103, v_num=0, train_loss=0.000339, val_acc=0.950, val_f1=0.948, val_auc=1.000, val_tpr=0.931, t
+Epoch 7:  40%|▍| 1128/2821 [00:17<00:26, 63.53it/s, loss=0.00108, v_num=0, train_loss=0.000466, val_acc=0.957, val_f1=0.955, val_auc=1.000, val_tpr=0.946, tMetric val_tpr improved by 0.015 >= min_delta = 0.0001. New best score: 0.946
+Epoch 7:  60%|▌| 1692/2821 [00:26<00:17, 64.84it/s, loss=0.000979, v_num=0, train_loss=0.000324, val_acc=0.971, val_f1=0.970, val_auc=1.000, val_tpr=0.946, Metric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.946
+Epoch 7: 100%|▉| 2820/2821 [00:43<00:00, 64.90it/s, loss=0.000579, v_num=0, train_loss=0.000277, val_acc=0.952, val_f1=0.950, val_auc=1.000, val_tpr=0.954, Metric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.954
+Epoch 7: 100%|█| 2821/2821 [00:43<00:00, 64.84it/s, loss=0.00053, v_num=0, train_loss=0.000165, val_acc=0.952, val_f1=0.950, val_auc=1.000, val_tpr=0.954, t
+Epoch 8: 100%|▉| 2820/2821 [00:41<00:00, 68.42it/s, loss=0.000167, v_num=0, train_loss=9.25e-5, val_acc=0.960, val_f1=0.958, val_auc=1.000, val_tpr=0.961, tMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.961
+Epoch 8: 100%|█| 2821/2821 [00:41<00:00, 68.36it/s, loss=0.000163, v_num=0, train_loss=7.09e-5, val_acc=0.960, val_f1=0.958, val_auc=1.000, val_tpr=0.961, t
+Epoch 9: 100%|█| 2821/2821 [00:42<00:00, 66.27it/s, loss=0.000162, v_num=0, train_loss=0.000235, val_acc=0.948, val_f1=0.945, val_auc=1.000, val_tpr=0.960,
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█| 2821/2821 [00:42<00:00, 66.23it/s, loss=0.000162, v_num=0, train_loss=0.000235, val_acc=0.948, val_f1=0.945, val_auc=1.000, val_tpr=0.960,
+[!] Training of MLP_size_500k_lr_0.0001 with lr 0.0001 ended:  Wed Aug 16 20:17:53 2023  | Took: 492.27 seconds
+[!] Training of MLP_size_500k_lr_0.0005 with lr 0.0005 started:  Wed Aug 16 20:17:53 2023
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_500k_lr_0.0005 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 467 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+467 K     Trainable params
+0         Non-trainable params
+467 K     Total params
+1.872     Total estimated model params size (MB)
+Epoch 0:  20%|█▍     | 564/2821 [00:24<01:38, 22.80it/s, loss=0.0323, v_num=0, train_loss=0.0195, val_acc=0.986, val_f1=0.986, val_auc=0.994, val_tpr=0.382]Metric val_tpr improved. New best score: 0.382
+Epoch 0:  40%|█▉   | 1128/2821 [00:33<00:50, 33.74it/s, loss=0.0182, v_num=0, train_loss=0.00901, val_acc=0.985, val_f1=0.985, val_auc=0.996, val_tpr=0.533]Metric val_tpr improved by 0.151 >= min_delta = 0.0001. New best score: 0.533
+Epoch 0:  60%|████▏  | 1692/2821 [00:44<00:29, 38.26it/s, loss=0.0201, v_num=0, train_loss=0.020, val_acc=0.987, val_f1=0.987, val_auc=0.997, val_tpr=0.645]Metric val_tpr improved by 0.112 >= min_delta = 0.0001. New best score: 0.645
+Epoch 0:  80%|████▊ | 2256/2821 [00:53<00:13, 41.82it/s, loss=0.0126, v_num=0, train_loss=0.0106, val_acc=0.969, val_f1=0.968, val_auc=0.999, val_tpr=0.835]Metric val_tpr improved by 0.190 >= min_delta = 0.0001. New best score: 0.835
+Epoch 0: 100%|███▉| 2820/2821 [01:02<00:00, 44.92it/s, loss=0.00637, v_num=0, train_loss=0.00428, val_acc=0.992, val_f1=0.992, val_auc=1.000, val_tpr=0.906]Metric val_tpr improved by 0.072 >= min_delta = 0.0001. New best score: 0.906
+Epoch 0: 100%|█| 2821/2821 [01:02<00:00, 44.90it/s, loss=0.00609, v_num=0, train_loss=0.000907, val_acc=0.992, val_f1=0.992, val_auc=1.000, val_tpr=0.906, t
+Epoch 1:  20%|▏| 564/2821 [00:09<00:38, 58.53it/s, loss=0.00606, v_num=0, train_loss=0.000635, val_acc=0.993, val_f1=0.993, val_auc=1.000, val_tpr=0.923, trMetric val_tpr improved by 0.017 >= min_delta = 0.0001. New best score: 0.923
+Epoch 1:  40%|▍| 1128/2821 [00:21<00:31, 53.28it/s, loss=0.00209, v_num=0, train_loss=0.000461, val_acc=0.969, val_f1=0.968, val_auc=1.000, val_tpr=0.931, tMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.931
+Epoch 1:  80%|▊| 2256/2821 [00:40<00:10, 55.79it/s, loss=0.00202, v_num=0, train_loss=0.00184, val_acc=0.978, val_f1=0.978, val_auc=1.000, val_tpr=0.959, trMetric val_tpr improved by 0.028 >= min_delta = 0.0001. New best score: 0.959
+Epoch 1: 100%|█| 2821/2821 [00:49<00:00, 57.11it/s, loss=0.000911, v_num=0, train_loss=0.000104, val_acc=0.979, val_f1=0.978, val_auc=1.000, val_tpr=0.955,
+Epoch 2: 100%|▉| 2820/2821 [00:45<00:00, 61.42it/s, loss=0.000584, v_num=0, train_loss=0.000196, val_acc=0.952, val_f1=0.949, val_auc=1.000, val_tpr=0.967, Metric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.967
+Epoch 2: 100%|█| 2821/2821 [00:45<00:00, 61.35it/s, loss=0.000551, v_num=0, train_loss=8.52e-5, val_acc=0.952, val_f1=0.949, val_auc=1.000, val_tpr=0.967, t
+Epoch 3:  40%|▍| 1128/2821 [00:16<00:24, 68.08it/s, loss=0.000273, v_num=0, train_loss=0.000444, val_acc=0.927, val_f1=0.921, val_auc=1.000, val_tpr=0.983, Metric val_tpr improved by 0.016 >= min_delta = 0.0001. New best score: 0.983
+Epoch 3: 100%|█| 2821/2821 [00:43<00:00, 65.16it/s, loss=0.00058, v_num=0, train_loss=3.11e-5, val_acc=0.947, val_f1=0.944, val_auc=1.000, val_tpr=0.966, tr
+Epoch 4:  80%|▊| 2256/2821 [00:36<00:09, 61.84it/s, loss=0.00158, v_num=0, train_loss=0.00015, val_acc=0.963, val_f1=0.962, val_auc=1.000, val_tpr=0.984, trMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.984
+Epoch 4: 100%|▉| 2820/2821 [00:45<00:00, 61.80it/s, loss=0.000534, v_num=0, train_loss=0.000182, val_acc=0.962, val_f1=0.961, val_auc=1.000, val_tpr=0.985, Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.985
+Epoch 4: 100%|█| 2821/2821 [00:45<00:00, 61.73it/s, loss=0.00053, v_num=0, train_loss=4.87e-5, val_acc=0.962, val_f1=0.961, val_auc=1.000, val_tpr=0.985, tr
+Epoch 5: 100%|█| 2821/2821 [00:44<00:00, 63.06it/s, loss=0.000799, v_num=0, train_loss=0.000692, val_acc=0.960, val_f1=0.958, val_auc=1.000, val_tpr=0.982,
+Epoch 6:  40%|▍| 1128/2821 [00:17<00:26, 63.73it/s, loss=0.000339, v_num=0, train_loss=0.000288, val_acc=0.949, val_f1=0.946, val_auc=1.000, val_tpr=0.986, Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.986
+Epoch 6:  80%|▊| 2256/2821 [00:35<00:08, 63.06it/s, loss=0.000105, v_num=0, train_loss=2.69e-5, val_acc=0.955, val_f1=0.953, val_auc=1.000, val_tpr=0.986, tMetric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.986
+Epoch 6: 100%|█| 2821/2821 [00:44<00:00, 63.05it/s, loss=0.000158, v_num=0, train_loss=5.75e-5, val_acc=0.973, val_f1=0.972, val_auc=1.000, val_tpr=0.982, t
+Epoch 7:  40%|▍| 1128/2821 [00:18<00:27, 61.75it/s, loss=0.000532, v_num=0, train_loss=0.000329, val_acc=0.957, val_f1=0.955, val_auc=1.000, val_tpr=0.987, Metric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.987
+Epoch 7:  80%|▊| 2256/2821 [00:35<00:08, 62.82it/s, loss=0.000494, v_num=0, train_loss=0.000329, val_acc=0.971, val_f1=0.970, val_auc=1.000, val_tpr=0.990, Metric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.990
+Epoch 7: 100%|█| 2821/2821 [00:44<00:00, 62.81it/s, loss=1.89e-05, v_num=0, train_loss=7.83e-6, val_acc=0.971, val_f1=0.970, val_auc=1.000, val_tpr=0.990, t
+Epoch 8: 100%|█| 2821/2821 [00:44<00:00, 62.75it/s, loss=0.000201, v_num=0, train_loss=6e-5, val_acc=0.954, val_f1=0.952, val_auc=1.000, val_tpr=0.984, trai
+Epoch 9:  80%|▊| 2256/2821 [00:36<00:09, 61.13it/s, loss=0.00189, v_num=0, train_loss=0.00696, val_acc=0.997, val_f1=0.997, val_auc=1.000, val_tpr=0.987, trMonitored metric val_tpr did not improve in the last 10 records. Best score: 0.990. Signaling Trainer to stop.
+Epoch 9:  80%|▊| 2256/2821 [00:36<00:09, 61.04it/s, loss=0.00189, v_num=0, train_loss=0.00696, val_acc=0.997, val_f1=0.997, val_auc=1.000, val_tpr=0.987, tr
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9:  80%|▊| 2256/2821 [00:36<00:09, 61.03it/s, loss=0.00189, v_num=0, train_loss=0.00696, val_acc=0.997, val_f1=0.997, val_auc=1.000, val_tpr=0.987, tr
+[!] Training of MLP_size_500k_lr_0.0005 with lr 0.0005 ended:  Wed Aug 16 20:26:27 2023  | Took: 513.94 seconds
+[!] Training of MLP_size_500k_lr_0.001 with lr 0.001 started:  Wed Aug 16 20:26:27 2023
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_500k_lr_0.001 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 467 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+467 K     Trainable params
+0         Non-trainable params
+467 K     Total params
+1.872     Total estimated model params size (MB)
+Epoch 0:  20%|█▍     | 564/2821 [00:21<01:25, 26.36it/s, loss=0.0185, v_num=0, train_loss=0.0103, val_acc=0.946, val_f1=0.944, val_auc=0.995, val_tpr=0.541]Metric val_tpr improved. New best score: 0.541
+Epoch 0:  40%|█▉   | 1128/2821 [00:28<00:42, 39.67it/s, loss=0.0167, v_num=0, train_loss=0.00806, val_acc=0.961, val_f1=0.960, val_auc=0.997, val_tpr=0.702]Metric val_tpr improved by 0.161 >= min_delta = 0.0001. New best score: 0.702
+Epoch 0:  60%|██▍ | 1692/2821 [00:37<00:25, 45.08it/s, loss=0.00847, v_num=0, train_loss=0.00366, val_acc=0.916, val_f1=0.908, val_auc=0.998, val_tpr=0.819]Metric val_tpr improved by 0.117 >= min_delta = 0.0001. New best score: 0.819
+Epoch 0:  80%|███▉ | 2256/2821 [00:46<00:11, 48.54it/s, loss=0.00491, v_num=0, train_loss=0.0102, val_acc=0.940, val_f1=0.937, val_auc=0.998, val_tpr=0.842]Metric val_tpr improved by 0.023 >= min_delta = 0.0001. New best score: 0.842
+Epoch 0: 100%|█| 2821/2821 [00:54<00:00, 51.90it/s, loss=0.0063, v_num=0, train_loss=0.0021, val_acc=0.929, val_f1=0.924, val_auc=0.998, val_tpr=0.823, trai
+Epoch 1:  20%|▏| 564/2821 [00:09<00:37, 60.85it/s, loss=0.00181, v_num=0, train_loss=0.00138, val_acc=0.926, val_f1=0.920, val_auc=0.999, val_tpr=0.852, traMetric val_tpr improved by 0.010 >= min_delta = 0.0001. New best score: 0.852
+Epoch 1:  40%|▍| 1128/2821 [00:17<00:26, 64.06it/s, loss=0.0013, v_num=0, train_loss=0.000225, val_acc=0.931, val_f1=0.926, val_auc=0.999, val_tpr=0.859, trMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.859
+Epoch 1:  60%|▌| 1692/2821 [00:26<00:17, 64.91it/s, loss=0.00141, v_num=0, train_loss=0.000182, val_acc=0.952, val_f1=0.949, val_auc=0.999, val_tpr=0.874, tMetric val_tpr improved by 0.015 >= min_delta = 0.0001. New best score: 0.874
+Epoch 1:  80%|▊| 2256/2821 [00:35<00:08, 63.85it/s, loss=0.000901, v_num=0, train_loss=0.000793, val_acc=0.938, val_f1=0.934, val_auc=0.999, val_tpr=0.876, Metric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.876
+Epoch 1: 100%|▉| 2820/2821 [00:43<00:00, 64.88it/s, loss=0.000577, v_num=0, train_loss=0.000116, val_acc=0.921, val_f1=0.914, val_auc=0.999, val_tpr=0.878, Metric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.878
+Epoch 1: 100%|█| 2821/2821 [00:43<00:00, 64.83it/s, loss=0.00056, v_num=0, train_loss=8.27e-5, val_acc=0.921, val_f1=0.914, val_auc=0.999, val_tpr=0.878, tr
+Epoch 2:  20%|▏| 564/2821 [00:08<00:32, 68.93it/s, loss=0.000135, v_num=0, train_loss=5.85e-5, val_acc=0.919, val_f1=0.912, val_auc=0.999, val_tpr=0.879, trMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.879
+Epoch 2:  60%|▌| 1692/2821 [00:27<00:18, 62.44it/s, loss=0.000481, v_num=0, train_loss=0.000127, val_acc=0.914, val_f1=0.906, val_auc=0.999, val_tpr=0.880, Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.880
+Epoch 2: 100%|▉| 2820/2821 [00:44<00:00, 63.11it/s, loss=0.000305, v_num=0, train_loss=0.000129, val_acc=0.941, val_f1=0.937, val_auc=0.999, val_tpr=0.893, Metric val_tpr improved by 0.013 >= min_delta = 0.0001. New best score: 0.893
+Epoch 2: 100%|█| 2821/2821 [00:44<00:00, 63.05it/s, loss=0.000295, v_num=0, train_loss=4.57e-5, val_acc=0.941, val_f1=0.937, val_auc=0.999, val_tpr=0.893, t
+Epoch 3:  20%|▏| 564/2821 [00:08<00:35, 63.36it/s, loss=0.000987, v_num=0, train_loss=8.22e-5, val_acc=0.947, val_f1=0.945, val_auc=0.999, val_tpr=0.895, trMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.895
+Epoch 3:  80%|▊| 2256/2821 [00:36<00:09, 62.66it/s, loss=0.00059, v_num=0, train_loss=0.000153, val_acc=0.933, val_f1=0.928, val_auc=0.999, val_tpr=0.907, tMetric val_tpr improved by 0.012 >= min_delta = 0.0001. New best score: 0.907
+Epoch 3: 100%|▉| 2820/2821 [00:44<00:00, 63.18it/s, loss=0.000379, v_num=0, train_loss=6.35e-5, val_acc=0.954, val_f1=0.952, val_auc=0.999, val_tpr=0.915, tMetric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.915
+Epoch 3: 100%|█| 2821/2821 [00:44<00:00, 63.12it/s, loss=0.000372, v_num=0, train_loss=7.37e-5, val_acc=0.954, val_f1=0.952, val_auc=0.999, val_tpr=0.915, t
+Epoch 4:  20%|▏| 564/2821 [00:08<00:35, 64.39it/s, loss=6.16e-05, v_num=0, train_loss=9.3e-6, val_acc=0.937, val_f1=0.933, val_auc=0.999, val_tpr=0.924, traMetric val_tpr improved by 0.009 >= min_delta = 0.0001. New best score: 0.924
+Epoch 4: 100%|█| 2821/2821 [00:45<00:00, 62.45it/s, loss=0.000457, v_num=0, train_loss=5.08e-5, val_acc=0.934, val_f1=0.930, val_auc=0.999, val_tpr=0.919, t
+Epoch 5:  20%|▏| 564/2821 [00:08<00:35, 63.55it/s, loss=0.00131, v_num=0, train_loss=0.0037, val_acc=0.929, val_f1=0.923, val_auc=1.000, val_tpr=0.929, traiMetric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.929
+Epoch 5:  60%|▌| 1692/2821 [00:26<00:17, 63.43it/s, loss=0.0027, v_num=0, train_loss=0.000485, val_acc=0.924, val_f1=0.917, val_auc=1.000, val_tpr=0.943, trMetric val_tpr improved by 0.014 >= min_delta = 0.0001. New best score: 0.943
+Epoch 5:  80%|▊| 2256/2821 [00:35<00:08, 63.58it/s, loss=0.000375, v_num=0, train_loss=0.000211, val_acc=0.954, val_f1=0.952, val_auc=1.000, val_tpr=0.947, Metric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.947
+Epoch 5: 100%|█| 2821/2821 [00:44<00:00, 63.03it/s, loss=0.0015, v_num=0, train_loss=0.00396, val_acc=0.930, val_f1=0.924, val_auc=0.999, val_tpr=0.912, tra
+Epoch 6: 100%|█| 2821/2821 [00:44<00:00, 63.42it/s, loss=0.000211, v_num=0, train_loss=0.000104, val_acc=0.938, val_f1=0.934, val_auc=1.000, val_tpr=0.942,
+Epoch 7:  20%|▏| 564/2821 [00:09<00:36, 62.44it/s, loss=0.00133, v_num=0, train_loss=0.000361, val_acc=0.948, val_f1=0.945, val_auc=1.000, val_tpr=0.950, trMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.950
+Epoch 7: 100%|█| 2821/2821 [00:45<00:00, 62.54it/s, loss=9.75e-05, v_num=0, train_loss=7.79e-5, val_acc=0.945, val_f1=0.942, val_auc=1.000, val_tpr=0.949, t
+Epoch 8:  20%|▏| 564/2821 [00:08<00:34, 65.26it/s, loss=0.0017, v_num=0, train_loss=0.000581, val_acc=0.931, val_f1=0.926, val_auc=1.000, val_tpr=0.952, traMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.952
+Epoch 8:  80%|▊| 2256/2821 [00:35<00:08, 63.46it/s, loss=0.000725, v_num=0, train_loss=4.61e-5, val_acc=0.935, val_f1=0.931, val_auc=1.000, val_tpr=0.959, tMetric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.959
+Epoch 8: 100%|█| 2821/2821 [00:44<00:00, 64.05it/s, loss=0.00163, v_num=0, train_loss=0.000334, val_acc=0.943, val_f1=0.940, val_auc=1.000, val_tpr=0.949, t
+Epoch 9:  20%|▏| 564/2821 [00:07<00:31, 71.19it/s, loss=0.00217, v_num=0, train_loss=0.000199, val_acc=0.949, val_f1=0.946, val_auc=1.000, val_tpr=0.972, trMetric val_tpr improved by 0.013 >= min_delta = 0.0001. New best score: 0.972
+Epoch 9: 100%|█| 2821/2821 [00:38<00:00, 74.06it/s, loss=0.000313, v_num=0, train_loss=8.16e-5, val_acc=0.941, val_f1=0.937, val_auc=0.998, val_tpr=0.930, t
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█| 2821/2821 [00:38<00:00, 74.03it/s, loss=0.000313, v_num=0, train_loss=8.16e-5, val_acc=0.941, val_f1=0.937, val_auc=0.998, val_tpr=0.930, t
+[!] Training of MLP_size_500k_lr_0.001 with lr 0.001 ended:  Wed Aug 16 20:35:07 2023  | Took: 519.55 seconds
+[!] Training of MLP_size_500k_lr_0.005 with lr 0.005 started:  Wed Aug 16 20:35:07 2023
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training MLP_size_500k_lr_0.005 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 467 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+467 K     Trainable params
+0         Non-trainable params
+467 K     Total params
+1.872     Total estimated model params size (MB)
+Epoch 0:  20%|█▏    | 564/2821 [00:22<01:28, 25.40it/s, loss=0.0139, v_num=0, train_loss=0.00463, val_acc=0.993, val_f1=0.993, val_auc=0.998, val_tpr=0.691]Metric val_tpr improved. New best score: 0.691
+Epoch 0:  40%|█▌  | 1128/2821 [00:29<00:44, 37.92it/s, loss=0.00404, v_num=0, train_loss=0.00368, val_acc=0.997, val_f1=0.997, val_auc=1.000, val_tpr=0.955]Metric val_tpr improved by 0.264 >= min_delta = 0.0001. New best score: 0.955
+Epoch 0: 100%|█| 2821/2821 [00:51<00:00, 54.42it/s, loss=0.000381, v_num=0, train_loss=1.69e-5, val_acc=0.995, val_f1=0.995, val_auc=1.000, val_tpr=0.938, t
+Epoch 1:  40%|▍| 1128/2821 [00:14<00:22, 75.76it/s, loss=0.00257, v_num=0, train_loss=0.00187, val_acc=0.992, val_f1=0.992, val_auc=1.000, val_tpr=0.978, trMetric val_tpr improved by 0.023 >= min_delta = 0.0001. New best score: 0.978
+Epoch 1: 100%|█| 2821/2821 [00:37<00:00, 75.98it/s, loss=1.85e-05, v_num=0, train_loss=7.15e-6, val_acc=0.991, val_f1=0.991, val_auc=1.000, val_tpr=0.940, t
+Epoch 2: 100%|█| 2821/2821 [00:37<00:00, 76.01it/s, loss=3.47e-05, v_num=0, train_loss=2.38e-5, val_acc=0.988, val_f1=0.988, val_auc=1.000, val_tpr=0.946, t
+Epoch 3:  40%|▍| 1128/2821 [00:14<00:21, 77.46it/s, loss=0.000161, v_num=0, train_loss=0.000337, val_acc=0.922, val_f1=0.916, val_auc=1.000, val_tpr=0.970, Monitored metric val_tpr did not improve in the last 10 records. Best score: 0.978. Signaling Trainer to stop.
+Epoch 3:  40%|▍| 1128/2821 [00:14<00:21, 77.29it/s, loss=0.000161, v_num=0, train_loss=0.000337, val_acc=0.922, val_f1=0.916, val_auc=1.000, val_tpr=0.970,
+Epoch 3:  40%|▍| 1128/2821 [00:14<00:21, 77.21it/s, loss=0.000161, v_num=0, train_loss=0.000337, val_acc=0.922, val_f1=0.916, val_auc=1.000, val_tpr=0.970,
+[!] Training of MLP_size_500k_lr_0.005 with lr 0.005 ended:  Wed Aug 16 20:37:45 2023  | Took: 157.89 seconds
+[!] Script end time: Wed Aug 16 20:37:45 2023

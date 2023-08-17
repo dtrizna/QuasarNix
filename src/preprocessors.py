@@ -10,6 +10,7 @@ class OneHotCustomVectorizer:
         self.tokenizer = tokenizer
         self.max_features = max_features
         self.vocab = {}
+        self.__name__ = "OneHotCustomVectorizer"
         
     def fit(self, sequences):
         # Tokenize and lowercase sequences
@@ -46,6 +47,7 @@ class CommandTokenizer:
         self.token_to_int = {}
         self.UNK_TOKEN = "<UNK>"
         self.PAD_TOKEN = "<PAD>"
+        self.__name__ = "CommandTokenizer"
         
     def tokenize(self, commands):
         return [self.tokenizer_fn(cmd) for cmd in commands]
@@ -82,3 +84,9 @@ class CommandTokenizer:
                 padded_seq = seq + [0] * (max_len - len(seq))
             padded_list.append(padded_seq)
         return array(padded_list)
+
+    def transform(self, commands):
+        tokenized_commands = self.tokenize(commands)
+        encoded_commands = self.encode(tokenized_commands)
+        padded_commands = self.pad(encoded_commands, max_len=10)
+        return padded_commands

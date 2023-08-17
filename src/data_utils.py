@@ -13,15 +13,23 @@ class CSRTensorDataset(Dataset):
         self.csr_data = csr_data
         self.labels = labels
 
+    def get_tensor(self, row):
+        assert isinstance(row, (np.ndarray, torch.Tensor)),\
+            "Expected row to be a numpy array or torch tensor, but got {}".format(type(row))
+        if isinstance(row, np.ndarray):
+            data = torch.from_numpy(row).float()
+        elif isinstance(row, torch.Tensor):
+            data = row.clone().detach().float()
+        return data
+
     def __len__(self):
         return self.csr_data.shape[0]
 
     def __getitem__(self, index):
         row = self.csr_data[index].toarray().squeeze()  # Convert the sparse row to a dense numpy array
-        x_data = torch.tensor(row, dtype=torch.float32)
-        
+        x_data = self.get_tensor(row)
         if self.labels is not None:
-            y_data = torch.tensor(self.labels[index], dtype=torch.float32)
+            y_data = self.get_tensor(self.labels[index])
             return x_data, y_data
         else:
             return x_data,

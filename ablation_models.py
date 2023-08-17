@@ -28,7 +28,7 @@ from xgboost import XGBClassifier
 
 from src.models import *
 from src.lit_utils import LitProgressBar
-from src.preprocessors import CommandTokenizer
+from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
 from src.data_utils import create_dataloader
 
 from typing import List
@@ -65,12 +65,18 @@ def training_tabular(model, name, X_train_minhash, X_test_minhash, y_train, y_te
         pickle.dump(model, f)
     
     y_test_preds = model.predict_proba(X_test_minhash)[:,1]
+
     tpr = get_tpr_at_fpr(y_test_preds, y_test)
     f1 = f1_score(y_test, y_test_preds.round())
     acc = accuracy_score(y_test, y_test_preds.round())
     auc = roc_auc_score(y_test, y_test_preds)
+    
     print(f"[!] {name} model scores: tpr={tpr:.4f}, f1={f1:.4f}, acc={acc:.4f}, auc={auc:.4f}")
-
+    
+    metrics_csv = pd.DataFrame({"tpr": [tpr], "f1": [f1], "acc": [acc], "auc": [auc]})
+    with open(f"{logs_folder}/{name}/metrics.csv", "w") as f:
+        metrics_csv.to_csv(f, index=False)
+    
 
 def configure_trainer(name, log_folder, epochs):
     """Configure the PyTorch Lightning Trainer."""
@@ -87,7 +93,7 @@ def configure_trainer(name, log_folder, epochs):
         monitor="val_tpr",
         save_top_k=1,
         mode="max",
-        verbose=True,
+        verbose=False,
         save_last=True,
         filename="{epoch}-tpr{val_tpr:.4f}-f1{val_f1:.4f}"
     )
@@ -189,30 +195,14 @@ DROPOUT = 0.5
 
 # PROD
 DEVICE = "gpu"
-EPOCHS = 15
+EPOCHS = 20
 LIT_SANITY_STEPS = 1
 LIMIT = None
 DATALOADER_WORKERS = 4
 LOGS_FOLDER = "logs_models"
 
 LEARNING_RATE = 1e-3
-SCHEDULER = None
-SCHEDULER_BUDGET = None
-
-RUNS = [
-    '_tabular_rf',
-    '_tabular_xgb',
-    '_tabular_log_reg'
-    '_tabular_mlp',
-    'mlp_seq',
-    'attpool_transformer',
-    'cls_transformer',
-    'mean_transformer',
-    'neurlux',
-    'cnn',
-    'lstm',
-    'cnn_lstm',
-]
+SCHEDULER = "onecycle"
 
 
 if __name__ == "__main__":
@@ -253,8 +243,12 @@ if __name__ == "__main__":
     X_train_minhash = minhash.fit_transform(X_train_cmds)
     X_test_minhash = minhash.transform(X_test_cmds)
 
-    X_train_loader_minhash = create_dataloader(X_train_minhash, y_train, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-    X_test_loader_minhash = create_dataloader(X_test_minhash, y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+    # ========== ONE-HOT TABULAR ENCODING ===========
+    oh = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
+
+    print("[*] Fitting One-Hot encoder...")
+    X_train_onehot = oh.fit_transform(X_train_cmds)
+    X_test_onehot = oh.transform(X_test_cmds)
 
     # =============================================
     # DEFINING MODELS
@@ -270,19 +264,27 @@ if __name__ == "__main__":
     neurlux = NeurLuxModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, max_len=MAX_LEN, hidden_dim=32, output_dim=1, dropout=DROPOUT) # 402 K params
 
     # tabular models
-    rf_model = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=SEED)
-    xgb_model = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
-    log_reg = LogisticRegression(random_state=SEED)
-    mlp_tab_model = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
+    rf_model_minhash = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=SEED)
+    xgb_model_minhash = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
+    log_reg_minhash = LogisticRegression(random_state=SEED)
+    mlp_tab_model_minhash = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
+    rf_model_onehot = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=SEED)
+    xgb_model_onehot = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
+    log_reg_onehot = LogisticRegression(random_state=SEED)
+    mlp_tab_model_onehot = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
 
     models = {
-        "_tabular_mlp": mlp_tab_model,
-        "_tabular_rf": rf_model,
-        "_tabular_xgb": xgb_model,
-        "_tabular_log_reg": log_reg,
+        #"_tabular_mlp_minhash": mlp_tab_model_minhash,
+        # "_tabular_rf_minhash": rf_model_minhash,
+        # "_tabular_xgb_minhash": xgb_model_minhash,
+        # "_tabular_log_reg_minhash": log_reg_minhash,
+        "_tabular_mlp_onehot": mlp_tab_model_onehot,
+        "_tabular_rf_onehot": rf_model_onehot,
+        "_tabular_xgb_onehot": xgb_model_onehot,
+        "_tabular_log_reg_onehot": log_reg_onehot,
         "mlp_seq": mlp_seq_model,
-        "attpool_transformer": attpool_transformer_model,
-        "cls_transformer": cls_transformer_model,
+        #"attpool_transformer": attpool_transformer_model,
+        #"cls_transformer": cls_transformer_model,
         "mean_transformer": mean_transformer_model,
         "neurlux": neurlux,
         "cnn": cnn_model,
@@ -295,9 +297,6 @@ if __name__ == "__main__":
     # =============================================
 
     for name, model in models.items():
-        if name not in RUNS:
-            continue
-        
         if os.path.exists(os.path.join(LOGS_FOLDER, f"{name}_csv", "version_0", "checkpoints")):
             print(f"[!] Training of {name} already done, skipping...")
             continue
@@ -305,28 +304,43 @@ if __name__ == "__main__":
         now = time.time()
         print(f"[!] Training of {name} started: ", time.ctime())
         
-        if name in ["_tabular_rf", "_tabular_xgb", "_tabular_log_reg"]:
-            training_tabular(
-                model,
-                name,
-                X_train_minhash,
-                X_test_minhash,
-                y_train,
-                y_test,
-                logs_folder=LOGS_FOLDER
-            )        
-        elif name == "_tabular_mlp":
-            _ = train_lit_model(
-                X_train_loader,
-                X_test_loader,
-                model,
-                name,
-                log_folder=LOGS_FOLDER,
-                epochs=EPOCHS,
-                learning_rate=LEARNING_RATE,
-                scheduler=SCHEDULER,
-                scheduler_budget=SCHEDULER_BUDGET
-            )
+        if name.startswith("_tabular"):
+            x_train, x_test = None, None
+            
+            preprocessor = name.split("_")[-1]
+            assert preprocessor in ["onehot", "minhash"]
+
+            if preprocessor == "onehot":
+                x_train = X_train_onehot
+                x_test = X_test_onehot
+            elif preprocessor == "minhash":
+                x_train = X_train_minhash
+                x_test = X_test_minhash
+            
+            if "_mlp_" in name:
+                train_loader = create_dataloader(x_train, y_train, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+                test_loader = create_dataloader(x_test, y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+                _ = train_lit_model(
+                    train_loader,
+                    test_loader,
+                    model,
+                    name,
+                    log_folder=LOGS_FOLDER,
+                    epochs=EPOCHS,
+                    learning_rate=LEARNING_RATE,
+                    scheduler=SCHEDULER,
+                    scheduler_budget = EPOCHS * len(X_train_loader)
+                )            
+            else:
+                training_tabular(
+                    model,
+                    name,
+                    x_train,
+                    x_test,
+                    y_train,
+                    y_test,
+                    logs_folder=LOGS_FOLDER
+                )        
         else:
             _ = train_lit_model(
                 X_train_loader,
@@ -337,7 +351,7 @@ if __name__ == "__main__":
                 epochs=EPOCHS,
                 learning_rate=LEARNING_RATE,
                 scheduler=SCHEDULER,
-                scheduler_budget=SCHEDULER_BUDGET
+                scheduler_budget= EPOCHS * len(X_train_loader)
             )
         
         print(f"[!] Training of {name} ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")

@@ -34,7 +34,7 @@ def configure_trainer(name, log_folder, epochs) -> Tuple:
 
     early_stop = EarlyStopping(
         monitor="val_tpr",
-        patience=10,
+        patience=20,
         min_delta=0.0001,
         verbose=True,
         mode="max"
@@ -64,8 +64,9 @@ def load_lit_model(model_file, pytorch_model, name, log_folder, epochs):
     return trainer, lightning_model
 
 
-def train_lit_model(X_train_loader, X_test_loader, pytorch_model, name, log_folder, epochs=10, learning_rate=1e-3):
-    lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=learning_rate)
+def train_lit_model(X_train_loader, X_test_loader, pytorch_model, name, log_folder, epochs=10, learning_rate=1e-3, scheduler_budget=None):
+    scheduler = "onecycle" if scheduler_budget is not None else None
+    lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=learning_rate, scheduler=scheduler, scheduler_step_budget=scheduler_budget)
     trainer = configure_trainer(name, log_folder, epochs)
 
     print(f"[*] Training {name} model...")
@@ -88,14 +89,17 @@ def predict(loader, trainer, lightning_model, decision_threshold=0.5, dump_logit
 def commands_to_loader(
         cmd: List[str],
         tokenizer: Union[CommandTokenizer, OneHotCustomVectorizer],
-        y: np.ndarray = None
+        y: np.ndarray = None,
+        workers: int = None
 ) -> DataLoader:
     """Convert a list of commands to a DataLoader."""
     padded = tokenizer.transform(cmd)
+    if workers is None:
+        workers = DATALOADER_WORKERS
     if y is None:
-        loader = create_dataloader(padded, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+        loader = create_dataloader(padded, batch_size=BATCH_SIZE, workers=workers)
     else:
-        loader = create_dataloader(padded, y, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+        loader = create_dataloader(padded, y, batch_size=BATCH_SIZE, workers=workers)
     return loader
 
 
@@ -106,6 +110,7 @@ def attack_template_prepend(command: str, baseline: List[str], payload_size: int
     """
     if template is None:
         # template = """awk 'BEGIN { print ARGV[1] }' "PAYLOAD" """
+        # template = """echo "PAYLOAD" """
         template = """python3 -c "print('PAYLOAD')" """
     
     # while not exceeds payload_size -- sample from baseline and add to payload
@@ -137,14 +142,14 @@ def load_data():
     train_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/train_rvrs.parquet/', train_rvrs_parquet_file))
     test_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/test_rvrs.parquet/', test_rvrs_parquet_file))
 
-    X_train_baseline_cmd = train_baseline_df['cmd'].values.tolist()[:LIMIT//2]
-    X_train_malicious_cmd = train_malicious_df['cmd'].values.tolist()[:LIMIT//2]
+    X_train_baseline_cmd = train_baseline_df['cmd'].values.tolist()[:LIMIT]
+    X_train_malicious_cmd = train_malicious_df['cmd'].values.tolist()[:LIMIT]
     X_train_non_shuffled = X_train_baseline_cmd + X_train_malicious_cmd
     y_train = np.array([0] * len(train_baseline_df) + [1] * len(train_malicious_df), dtype=np.int8)
     X_train_cmds, y_train = shuffle(X_train_non_shuffled, y_train, random_state=SEED)
 
-    X_test_baseline_cmd = test_baseline_df['cmd'].values.tolist()[:LIMIT//2]
-    X_test_malicious_cmd = test_malicious_df['cmd'].values.tolist()[:LIMIT//2]
+    X_test_baseline_cmd = test_baseline_df['cmd'].values.tolist()[:LIMIT]
+    X_test_malicious_cmd = test_malicious_df['cmd'].values.tolist()[:LIMIT]
     X_test_non_shuffled = X_test_baseline_cmd + X_test_malicious_cmd
     y_test = np.array([0] * len(test_baseline_df) + [1] * len(test_malicious_df), dtype=np.int8)
     X_test_cmds, y_test = shuffle(X_test_non_shuffled, y_test, random_state=SEED)
@@ -165,7 +170,15 @@ DECISION_THRESHOLD = 0.5
 
 ATTACK = attack_template_prepend
 BASELINE = load_nl2bash()
-PREPROCESSING = "onehot" # TODO: "sequential"
+
+PREPROCESSING = "sequential"
+SEQUENTIAL_MODEL = "CLS" # TODO: "CNN" ?
+
+# NOTE: Sequential experiments are weird
+# Accuracy is low even on orig set: full ~0.74 / subsample ~0.5
+# Adversarial attack with payload of any size drop accuracy to 0.0
+# It is for both CLS and CNN
+# Why not getting good scores as in `ablation_models.oy`?
 
 # TEST
 # DEVICE = "cpu"
@@ -182,16 +195,17 @@ EPOCHS = 20
 LIT_SANITY_STEPS = 1
 LIMIT = None
 DATALOADER_WORKERS = 4
-PAYLOAD_SIZES = [16, 32, 64, 128]
+PAYLOAD_SIZES = [32, 64, 128]
 ADV_ATTACK_SUBSAMPLE = 5000
 
+
 PREFIX = "TEST_" if LIMIT is not None else ""
-LOGS_FOLDER = f"{PREFIX}logs_adversarial_blackbox_{PREPROCESSING}_nl2bash"
-os.makedirs(LOGS_FOLDER, exist_ok=True)
+LOGS_FOLDER = f"{PREFIX}logs_adversarial_blackbox_{PREPROCESSING}_{SEQUENTIAL_MODEL}_nl2bash"
 
 if __name__ == "__main__":
     print(watermark(packages="torch,lightning,sklearn", python=True))
     print(f"[!] Script start time: {time.ctime()}")
+    os.makedirs(LOGS_FOLDER, exist_ok=True)
 
     seed_everything(SEED)
     TOKENIZER = wordpunct_tokenize
@@ -208,9 +222,14 @@ if __name__ == "__main__":
     # =============================================
 
     assert PREPROCESSING in ["onehot", "sequential"]
+    assert SEQUENTIAL_MODEL in ["CNN", "CLS"]
     if PREPROCESSING == "sequential":
-        target_model_orig = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_len=MAX_LEN, dropout=DROPOUT) # 297 K params
-        target_model_adv = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_len=MAX_LEN, dropout=DROPOUT) # 297 K params
+        if SEQUENTIAL_MODEL == "CNN":
+            target_model_orig = CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[2, 3, 4, 5], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 301 K params
+            target_model_adv = CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[2, 3, 4, 5], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 301 K params
+        if SEQUENTIAL_MODEL == "CLS":
+            target_model_orig = CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) #  335 K params
+            target_model_adv = CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) #  335 K params
         tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE)
         vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}.json")
         if os.path.exists(vocab_file):
@@ -253,7 +272,8 @@ if __name__ == "__main__":
         trainer_orig, lightning_model_orig = load_lit_model(model_file_orig, target_model_orig, "model", LOGS_FOLDER, EPOCHS)
     else:
         print("[*] Training original model...")
-        trainer_orig, lightning_model_orig = train_lit_model(X_train_loader_orig, X_test_loader_orig, target_model_orig, "model_orig", LOGS_FOLDER, epochs=EPOCHS, learning_rate=LEARNING_RATE)
+        budget = EPOCHS * len(X_train_loader_orig)
+        trainer_orig, lightning_model_orig = train_lit_model(X_train_loader_orig, X_test_loader_orig, target_model_orig, "model_orig", LOGS_FOLDER, epochs=EPOCHS, learning_rate=LEARNING_RATE, scheduler_budget=budget)
         trainer_orig.save_checkpoint(model_file_orig)
     
     # ======================================================
@@ -273,7 +293,7 @@ if __name__ == "__main__":
             json.dump(X_test_malicious_cmd_sample, f, indent=4)
     print(f"[!] Size of malicious test set: {len(X_test_malicious_cmd_sample)}")
 
-    X_test_loader_malicious_orig = commands_to_loader(X_test_malicious_cmd_sample, tokenizer)
+    X_test_loader_malicious_orig = commands_to_loader(X_test_malicious_cmd_sample, tokenizer, workers=1)
     y_pred_orig_orig = predict(
         X_test_loader_malicious_orig,
         trainer_orig,
@@ -301,7 +321,7 @@ if __name__ == "__main__":
         with open(adv_file, "w", encoding="utf-8") as f:
             json.dump(X_test_malicious_adv_cmd, f, indent=4)
 
-        X_test_loader_malicious_adv = commands_to_loader(X_test_malicious_adv_cmd, tokenizer)
+        X_test_loader_malicious_adv = commands_to_loader(X_test_malicious_adv_cmd, tokenizer, workers=1)
         X_test_loader_malicious_adv_dict[payload_size] = X_test_loader_malicious_adv
         y_pred_orig_adv = predict(
             X_test_loader_malicious_adv,
@@ -336,12 +356,13 @@ if __name__ == "__main__":
         X_train_cmds_adv, y_train_adv = shuffle(X_train_cmd_adv, y_train_adv, random_state=SEED)
 
         # creating dataloaders -- using original tokenizer (NO tokenizer retraining)
-        X_train_loader_adv = commands_to_loader(X_train_cmds_adv, tokenizer, y_train_adv)
+        X_train_loader_adv = commands_to_loader(X_train_cmds_adv, tokenizer, y_train_adv, workers=1)
         print(f"[!] Sizes of adv train loader: {len(X_train_loader_adv)}")
         
         # Train model
         print("[*] Running robust training...")
-        trainer_adv, lightning_model_adv = train_lit_model(X_train_loader_adv, X_test_loader_orig, target_model_adv, "model_adv", LOGS_FOLDER, epochs=EPOCHS, learning_rate=LEARNING_RATE)
+        budget = EPOCHS * len(X_train_loader_adv)
+        trainer_adv, lightning_model_adv = train_lit_model(X_train_loader_adv, X_test_loader_orig, target_model_adv, "model_adv", LOGS_FOLDER, epochs=EPOCHS, learning_rate=LEARNING_RATE, scheduler_budget=budget)
         trainer_adv.save_checkpoint(model_file_adv)
 
     y_pred_adv_orig = predict(

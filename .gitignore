@@ -1,5 +1,6 @@
 # Skipping data
 data/*
+*pickle
 
 # Model checkpoints
 *.ckpt

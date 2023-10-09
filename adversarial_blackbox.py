@@ -103,7 +103,12 @@ def commands_to_loader(
     return loader
 
 
-def attack_template_prepend(command: str, baseline: List[str], payload_size: int, template: str = None) -> str:
+def attack_template_prepend(
+        command: str,
+        baseline: List[str],
+        payload_size: int,
+        template: str = None
+) -> str:
     """
     This is an adversarial attack on command, that samples from baseline
     and appends to target attack using awk.

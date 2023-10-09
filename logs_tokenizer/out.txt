@@ -923,3 +923,707 @@ Epoch 9: 100%|█| 706/706 [00:43<00:00, 16.09it/s, loss=0.00225, v_num=0, train
 `Trainer.fit` stopped: `max_epochs=10` reached.
 Epoch 9: 100%|█| 706/706 [00:43<00:00, 16.09it/s, loss=0.00225, v_num=0, train_loss=0.00105, val_acc=0.941, val_f1=0.937, val_auc=0.999, val_tpr=0.653, train_acc=   
 [!] Script end time: Mon Aug 14 19:18:25 2023
+
+
+
+
+
+
+C:\Users\dtrizna\Code\Synapse\Linux>python3 ablation_tokenizer.py
+Python implementation: CPython
+Python version       : 3.9.13
+IPython version      : 8.11.0
+
+torch    : 2.0.1+cu117
+lightning: 1.8.6
+sklearn  : 0.0.post1
+
+[!] Script start time: Mon Oct  9 16:04:25 2023
+Global seed set to 33
+Sizes of train and test sets: 533014, 470129
+[!] embedded_bpe_256 already exists, skipping...
+[!] embedded_wordpunct_256 already exists, skipping...
+[!] embedded_whitespace_256 already exists, skipping...
+[!] Working on bpe tokenizer with 512 vocab size...
+[*] Training sentencepiece model: --input=tmp.txt --model_prefix=src\bpe\bpe_512_None --vocab_size=512 --model_type=unigram
+sentencepiece_trainer.cc(177) LOG(INFO) Running command: --input=tmp.txt --model_prefix=src\bpe\bpe_512_None --vocab_size=512 --model_type=unigram
+sentencepiece_trainer.cc(77) LOG(INFO) Starts training with : 
+trainer_spec {
+  input: tmp.txt
+  input_format: 
+  model_prefix: src\bpe\bpe_512_None
+  model_type: UNIGRAM
+  vocab_size: 512
+  self_test_sample_size: 0
+  character_coverage: 0.9995
+  input_sentence_size: 0
+  shuffle_input_sentence: 1
+  seed_sentencepiece_size: 1000000
+  shrinking_factor: 0.75
+  max_sentence_length: 4192
+  num_threads: 16
+  num_sub_iterations: 2
+  max_sentencepiece_length: 16
+  split_by_unicode_script: 1
+  split_by_number: 1
+  split_by_whitespace: 1
+  split_digits: 0
+  treat_whitespace_as_suffix: 0
+  allow_whitespace_only_pieces: 0
+  required_chars:
+  byte_fallback: 0
+  vocabulary_output_piece_score: 1
+  train_extremely_large_corpus: 0
+  hard_vocab_limit: 1
+  use_all_vocab: 0
+  unk_id: 0
+  bos_id: 1
+  eos_id: 2
+  pad_id: -1
+  unk_piece: <unk>
+  bos_piece: <s>
+  eos_piece: </s>
+  pad_piece: <pad>
+  unk_surface:  Γüç
+  enable_differential_privacy: 0
+  differential_privacy_noise_level: 0
+  differential_privacy_clipping_threshold: 0
+}
+normalizer_spec {
+  name: nmt_nfkc
+  add_dummy_prefix: 1
+  remove_extra_whitespaces: 1
+  escape_whitespaces: 1
+  normalization_rule_tsv:
+}
+denormalizer_spec {}
+trainer_interface.cc(350) LOG(INFO) SentenceIterator is not specified. Using MultiFileSentenceIterator.
+trainer_interface.cc(181) LOG(INFO) Loading corpus: tmp.txt
+trainer_interface.cc(406) LOG(INFO) Loaded all 533055 sentences
+trainer_interface.cc(422) LOG(INFO) Adding meta_piece: <unk>
+trainer_interface.cc(422) LOG(INFO) Adding meta_piece: <s>
+trainer_interface.cc(422) LOG(INFO) Adding meta_piece: </s>
+trainer_interface.cc(427) LOG(INFO) Normalizing sentences...
+trainer_interface.cc(536) LOG(INFO) all chars count=54620823
+trainer_interface.cc(547) LOG(INFO) Done: 99.9516% characters are covered.
+trainer_interface.cc(557) LOG(INFO) Alphabet size=84
+trainer_interface.cc(558) LOG(INFO) Final character coverage=0.999516
+trainer_interface.cc(590) LOG(INFO) Done! preprocessed 533055 sentences.
+unigram_model_trainer.cc(146) LOG(INFO) Making suffix array...
+unigram_model_trainer.cc(150) LOG(INFO) Extracting frequent sub strings...
+unigram_model_trainer.cc(201) LOG(INFO) Initialized 1000000 seed sentencepieces
+trainer_interface.cc(596) LOG(INFO) Tokenizing input sentences with whitespace: 533055
+trainer_interface.cc(607) LOG(INFO) Done! 627690
+unigram_model_trainer.cc(491) LOG(INFO) Using 627690 sentences for EM training
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=302617 obj=32.9411 num_tokens=7416735 num_tokens/piece=24.5087
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=266220 obj=27.0317 num_tokens=7433575 num_tokens/piece=27.9227
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=199251 obj=26.9295 num_tokens=7486733 num_tokens/piece=37.5744
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=197039 obj=26.8212 num_tokens=7504327 num_tokens/piece=38.0855
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=147672 obj=26.8821 num_tokens=7561605 num_tokens/piece=51.2054
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=147227 obj=26.8386 num_tokens=7564859 num_tokens/piece=51.3823
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=110394 obj=26.9176 num_tokens=7627935 num_tokens/piece=69.0974
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=110310 obj=26.8886 num_tokens=7627102 num_tokens/piece=69.1424
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=82716 obj=26.973 num_tokens=7685213 num_tokens/piece=92.9108
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=82682 obj=26.9468 num_tokens=7684056 num_tokens/piece=92.9351
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=62005 obj=27.0301 num_tokens=7747726 num_tokens/piece=124.953
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=61992 obj=27.0058 num_tokens=7748973 num_tokens/piece=125
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=46494 obj=27.1016 num_tokens=7826200 num_tokens/piece=168.327
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=46492 obj=27.0762 num_tokens=7827108 num_tokens/piece=168.354
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=34869 obj=27.1818 num_tokens=7912303 num_tokens/piece=226.915
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=34869 obj=27.1545 num_tokens=7913801 num_tokens/piece=226.958
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=26151 obj=27.218 num_tokens=7956991 num_tokens/piece=304.271
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=26150 obj=27.2033 num_tokens=7958601 num_tokens/piece=304.344
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=19612 obj=27.3038 num_tokens=8034115 num_tokens/piece=409.653
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=19612 obj=27.2768 num_tokens=8034541 num_tokens/piece=409.675
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=14709 obj=27.3926 num_tokens=8140913 num_tokens/piece=553.465
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=14709 obj=27.3601 num_tokens=8141450 num_tokens/piece=553.501
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=11031 obj=27.5265 num_tokens=8307360 num_tokens/piece=753.092
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=11031 obj=27.4779 num_tokens=8307482 num_tokens/piece=753.103
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=8273 obj=27.6473 num_tokens=8493575 num_tokens/piece=1026.66
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=8273 obj=27.5944 num_tokens=8494481 num_tokens/piece=1026.77
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=6204 obj=27.7396 num_tokens=8678609 num_tokens/piece=1398.87
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=6204 obj=27.6886 num_tokens=8680588 num_tokens/piece=1399.19
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=4653 obj=27.8083 num_tokens=8842717 num_tokens/piece=1900.43
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=4653 obj=27.7633 num_tokens=8846521 num_tokens/piece=1901.25
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=3489 obj=27.9174 num_tokens=9011566 num_tokens/piece=2582.85
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=3489 obj=27.8664 num_tokens=9013520 num_tokens/piece=2583.41
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=2616 obj=28.0186 num_tokens=9208477 num_tokens/piece=3520.06
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=2616 obj=27.9631 num_tokens=9207973 num_tokens/piece=3519.87
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=1962 obj=28.1226 num_tokens=9370563 num_tokens/piece=4776.03
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=1962 obj=28.0696 num_tokens=9365685 num_tokens/piece=4773.54
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=1471 obj=28.2627 num_tokens=9548844 num_tokens/piece=6491.4
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=1471 obj=28.2033 num_tokens=9543389 num_tokens/piece=6487.69
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=1103 obj=28.4484 num_tokens=9745432 num_tokens/piece=8835.39
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=1103 obj=28.3807 num_tokens=9743427 num_tokens/piece=8833.57
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=827 obj=28.7828 num_tokens=10064883 num_tokens/piece=12170.4
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=827 obj=28.6314 num_tokens=10064303 num_tokens/piece=12169.7
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=620 obj=29.0913 num_tokens=10493722 num_tokens/piece=16925.4
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=620 obj=28.9258 num_tokens=10494156 num_tokens/piece=16926.1
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=563 obj=29.1445 num_tokens=10648003 num_tokens/piece=18913
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=563 obj=29.0777 num_tokens=10648428 num_tokens/piece=18913.7
+trainer_interface.cc(685) LOG(INFO) Saving model: src\bpe\bpe_512_None.model
+trainer_interface.cc(697) LOG(INFO) Saving vocabs: src\bpe\bpe_512_None.vocab
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_bpe_512 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 34.9 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+34.9 K    Trainable params
+_f1=0.947, val_auc=0.990,
+Epoch 5: 100%|█| 706/706 [00:17<00:00, 40.23it/s, loss=0.00278, v_num=0, train_loss=0.00229, val_acc=0.948, val_f1=0.945, val_auc=0.990,
+Epoch 6: 100%|█| 706/706 [00:17<00:00, 39.61it/s, loss=0.00201, v_num=0, train_loss=0.00162, val_acc=0.947, val_f1=0.944, val_auc=0.990,
+Epoch 7:  19%|▏| 134/706 [00:04<00:20, 28.58it/s, loss=0.00201, v_num=0, train_loss=0.00175, val_acc=0.947, val_f1=0.944, val_auc=0.990,
+Epoch 7:  38%|▍| 269/706 [00:08<00:13, 31.30it/s, loss=0.00221, v_num=0, train_loss=0.00235, val_acc=0.948, val_f1=0.946, val_auc=0.990, val_tpr=0.850, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tp
+Validation DataLoader 0:  89%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                | 102/115 [00:02<00:00, 39.57it/s]
+Validation DataLoader 0:  90%|▉| 103                                                                                                                Epoch 7:  38%|▍| 270/706 [00:08<00:1                                                                                                                Epoch 7: 100%|███████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 36.00it/s, loss=0.00153, v_num=0, train_loss=0.0012, val_acc=0.946, val_f1=0.943, val_auc=0.990, val_tpr=0.855, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.989]
+Epoch 8: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:18<00:00, 38.44it/s, loss=0.0012, v_num=0, train_loss=0.000922, val_acc=0.944, val_f1=0.941, val_auc=0.990, val_tpr=0.857, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.992] 
+Epoch 9: 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 36.71it/s, loss=0.000973, v_num=0, train_loss=0.000728, val_acc=0.943, val_f1=0.939, val_auc=0.990, val_tpr=0.860, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.993] 
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 36.70it/s, loss=0.000973, v_num=0, train_loss=0.000728, val_acc=0.943, val_f1=0.939, val_auc=0.990, val_tpr=0.860, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.993]
+[!] Working on wordpunct tokenizer with 512 vocab size...
+[*] Building vocab and encoding...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_wordpunct_512 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 34.9 K
+1  | loss      | BCEWithLogitsLoss      | 0     
+2  | train_acc | BinaryAccuracy         | 0     
+3  | train_f1  | BinaryF1Score          | 0     
+4  | train_auc | BinaryAUROC            | 0     
+5  | val_acc   | BinaryAccuracy         | 0     
+6  | val_f1    | BinaryF1Score          | 0     
+7  | val_auc   | BinaryAUROC            | 0     
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+34.9 K    Trainable params
+0         Non-trainable params
+34.9 K    Total params
+0.140     Total estimated model params size (MB)
+Epoch 0: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:31<00:00, 22.34it/s, loss=0.222, v_num=0, train_loss=0.184, val_acc=0.987, val_f1=0.987, val_auc=0.998, val_tpr=0.539, train_acc=0.782, train_f1=0.722, train_auc=0.988, train_tpr=0.402]
+Epoch 1: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:18<00:00, 38.70it/s, loss=0.0341, v_num=0, train_loss=0.0271, val_acc=0.978, val_f1=0.978, val_auc=0.998, val_tpr=0.742, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.839]
+Epoch 2: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:17<00:00, 39.37it/s, loss=0.013, v_num=0, train_loss=0.00898, val_acc=0.959, val_f1=0.958, val_auc=0.999, val_tpr=0.797, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.969]
+Epoch 3: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:18<00:00, 37.85it/s, loss=0.00684, v_num=0, train_loss=0.00425, val_acc=0.946, val_f1=0.943, val_auc=0.999, val_tpr=0.804, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.984]
+Epoch 4: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 36.02it/s, loss=0.00418, v_num=0, train_loss=0.00244, val_acc=0.937, val_f1=0.933, val_auc=0.999, val_tpr=0.808, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.988]
+Epoch 5: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:22<00:00, 31.80it/s, loss=0.00279, v_num=0, train_loss=0.00154, val_acc=0.933, val_f1=0.928, val_auc=0.999, val_tpr=0.811, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.990]
+Epoch 6: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:22<00:00, 31.59it/s, loss=0.002, v_num=0, train_loss=0.00104, val_acc=0.930, val_f1=0.924, val_auc=0.999, val_tpr=0.813, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.991]
+Epoch 7: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:18<00:00, 38.89it/s, loss=0.00151, v_num=0, train_loss=0.000744, val_acc=0.928, val_f1=0.922, val_auc=0.999, val_tpr=0.815, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.992]
+Epoch 8: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 36.53it/s, loss=0.00118, v_num=0, train_loss=0.000553, val_acc=0.926, val_f1=0.920, val_auc=0.998, val_tpr=0.817, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.993]
+Epoch 9: 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:22<00:00, 32.00it/s, loss=0.000947, v_num=0, train_loss=0.000425, val_acc=0.925, val_f1=0.918, val_auc=0.998, val_tpr=0.819, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.994]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:22<00:00, 31.99it/s, loss=0.000947, v_num=0, train_loss=0.000425, val_acc=0.925, val_f1=0.918, val_auc=0.998, val_tpr=0.819, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.994] 
+[!] Working on whitespace tokenizer with 512 vocab size...
+[*] Building vocab and encoding...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_whitespace_512 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 34.9 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+34.9 K    Trainable params
+0         Non-trainable params
+34.9 K    Total params
+0.140     Total estimated model params size (MB)
+Epoch 0: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:28<00:00, 25.13it/s, loss=0.596, v_num=0, train_loss=0.575, val_acc=0.978, val_f1=0.978, val_auc=0.993, val_tpr=0.00214, train_acc=0.793, train_f1=0.784, train_auc=0.888, train_tpr=0.0577]
+Epoch 1: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:15<00:00, 44.95it/s, loss=0.232, v_num=0, train_loss=0.209, val_acc=0.983, val_f1=0.983, val_auc=0.996, val_tpr=0.0195, train_acc=0.992, train_f1=0.992, train_auc=0.997, train_tpr=0.098]
+Epoch 2: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:16<00:00, 42.48it/s, loss=0.073, v_num=0, train_loss=0.0621, val_acc=0.986, val_f1=0.987, val_auc=0.997, val_tpr=0.161, train_acc=0.996, train_f1=0.996, train_auc=0.999, train_tpr=0.238]
+Epoch 3: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:16<00:00, 42.98it/s, loss=0.0282, v_num=0, train_loss=0.0221, val_acc=0.990, val_f1=0.990, val_auc=0.997, val_tpr=0.524, train_acc=0.997, train_f1=0.997, train_auc=1.000, train_tpr=0.706]
+Epoch 4: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:17<00:00, 40.82it/s, loss=0.0132, v_num=0, train_loss=0.00967, val_acc=0.940, val_f1=0.937, val_auc=0.998, val_tpr=0.609, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.976]
+Epoch 5: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:16<00:00, 43.60it/s, loss=0.00801, v_num=0, train_loss=0.00534, val_acc=0.922, val_f1=0.916, val_auc=0.998, val_tpr=0.603, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.994]
+Epoch 6: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:16<00:00, 43.33it/s, loss=0.00553, v_num=0, train_loss=0.00339, val_acc=0.920, val_f1=0.913, val_auc=0.998, val_tpr=0.593, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.996]
+Epoch 7: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:16<00:00, 42.24it/s, loss=0.00415, v_num=0, train_loss=0.00235, val_acc=0.920, val_f1=0.913, val_auc=0.998, val_tpr=0.587, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.998]
+Epoch 8: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:16<00:00, 42.60it/s, loss=0.00327, v_num=0, train_loss=0.00175, val_acc=0.866, val_f1=0.846, val_auc=0.999, val_tpr=0.579, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.998]
+Epoch 9: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:17<00:00, 39.79it/s, loss=0.00267, v_num=0, train_loss=0.00137, val_acc=0.861, val_f1=0.840, val_auc=0.999, val_tpr=0.574, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.998]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:17<00:00, 39.78it/s, loss=0.00267, v_num=0, train_loss=0.00137, val_acc=0.861, val_f1=0.840, val_auc=0.999, val_tpr=0.574, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.998] 
+[!] embedded_bpe_1024 already exists, skipping...
+[!] embedded_wordpunct_1024 already exists, skipping...
+[!] embedded_whitespace_1024 already exists, skipping...
+[!] Working on bpe tokenizer with 2048 vocab size...
+[*] Training sentencepiece model: --input=tmp.txt --model_prefix=src\bpe\bpe_2048_None --vocab_size=2048 --model_type=unigram
+sentencepiece_trainer.cc(177) LOG(INFO) Running command: --input=tmp.txt --model_prefix=src\bpe\bpe_2048_None --vocab_size=2048 --model_type=unigram
+sentencepiece_trainer.cc(77) LOG(INFO) Starts training with :
+trainer_spec {
+  input: tmp.txt
+  input_format:
+  model_prefix: src\bpe\bpe_2048_None
+  model_type: UNIGRAM
+  vocab_size: 2048
+  self_test_sample_size: 0
+  character_coverage: 0.9995
+  input_sentence_size: 0
+  shuffle_input_sentence: 1
+  seed_sentencepiece_size: 1000000
+  shrinking_factor: 0.75
+  max_sentence_length: 4192
+  num_threads: 16
+  num_sub_iterations: 2
+  max_sentencepiece_length: 16
+  split_by_unicode_script: 1
+  split_by_number: 1
+  split_by_whitespace: 1
+  split_digits: 0
+  treat_whitespace_as_suffix: 0
+  allow_whitespace_only_pieces: 0
+  required_chars:
+  byte_fallback: 0
+  vocabulary_output_piece_score: 1
+  train_extremely_large_corpus: 0
+  hard_vocab_limit: 1
+  use_all_vocab: 0
+  unk_id: 0
+  bos_id: 1
+  eos_id: 2
+  pad_id: -1
+  unk_piece: <unk>
+  bos_piece: <s>
+  eos_piece: </s>
+  pad_piece: <pad>
+  unk_surface:  Γüç
+  enable_differential_privacy: 0
+  differential_privacy_noise_level: 0
+  differential_privacy_clipping_threshold: 0
+}
+normalizer_spec {
+  name: nmt_nfkc
+  add_dummy_prefix: 1
+  remove_extra_whitespaces: 1
+  escape_whitespaces: 1
+  normalization_rule_tsv:
+}
+denormalizer_spec {}
+trainer_interface.cc(350) LOG(INFO) SentenceIterator is not specified. Using MultiFileSentenceIterator.
+trainer_interface.cc(181) LOG(INFO) Loading corpus: tmp.txt
+trainer_interface.cc(406) LOG(INFO) Loaded all 533055 sentences
+trainer_interface.cc(422) LOG(INFO) Adding meta_piece: <unk>
+trainer_interface.cc(422) LOG(INFO) Adding meta_piece: <s>
+trainer_interface.cc(422) LOG(INFO) Adding meta_piece: </s>
+trainer_interface.cc(427) LOG(INFO) Normalizing sentences...
+trainer_interface.cc(536) LOG(INFO) all chars count=54620823
+trainer_interface.cc(547) LOG(INFO) Done: 99.9516% characters are covered.
+trainer_interface.cc(557) LOG(INFO) Alphabet size=84
+trainer_interface.cc(558) LOG(INFO) Final character coverage=0.999516
+trainer_interface.cc(590) LOG(INFO) Done! preprocessed 533055 sentences.
+unigram_model_trainer.cc(146) LOG(INFO) Making suffix array...
+unigram_model_trainer.cc(150) LOG(INFO) Extracting frequent sub strings...
+unigram_model_trainer.cc(201) LOG(INFO) Initialized 1000000 seed sentencepieces
+trainer_interface.cc(596) LOG(INFO) Tokenizing input sentences with whitespace: 533055
+trainer_interface.cc(607) LOG(INFO) Done! 627690
+unigram_model_trainer.cc(491) LOG(INFO) Using 627690 sentences for EM training
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=302617 obj=32.9411 num_tokens=7416735 num_tokens/piece=24.5087
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=266220 obj=27.0317 num_tokens=7433575 num_tokens/piece=27.9227
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=199251 obj=26.9295 num_tokens=7486733 num_tokens/piece=37.5744
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=197039 obj=26.8212 num_tokens=7504327 num_tokens/piece=38.0855
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=147672 obj=26.8821 num_tokens=7561605 num_tokens/piece=51.2054
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=147227 obj=26.8386 num_tokens=7564859 num_tokens/piece=51.3823
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=110394 obj=26.9176 num_tokens=7627935 num_tokens/piece=69.0974
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=110310 obj=26.8886 num_tokens=7627102 num_tokens/piece=69.1424
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=82716 obj=26.973 num_tokens=7685213 num_tokens/piece=92.9108
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=82682 obj=26.9468 num_tokens=7684056 num_tokens/piece=92.9351
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=62005 obj=27.0301 num_tokens=7747726 num_tokens/piece=124.953
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=61992 obj=27.0058 num_tokens=7748973 num_tokens/piece=125
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=46494 obj=27.1016 num_tokens=7826200 num_tokens/piece=168.327
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=46492 obj=27.0762 num_tokens=7827108 num_tokens/piece=168.354
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=34869 obj=27.1818 num_tokens=7912303 num_tokens/piece=226.915
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=34869 obj=27.1545 num_tokens=7913801 num_tokens/piece=226.958
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=26151 obj=27.218 num_tokens=7956991 num_tokens/piece=304.271
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=26150 obj=27.2033 num_tokens=7958601 num_tokens/piece=304.344
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=19612 obj=27.3038 num_tokens=8034115 num_tokens/piece=409.653
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=19612 obj=27.2768 num_tokens=8034541 num_tokens/piece=409.675
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=14709 obj=27.3926 num_tokens=8140913 num_tokens/piece=553.465
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=14709 obj=27.3601 num_tokens=8141450 num_tokens/piece=553.501
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=11031 obj=27.5265 num_tokens=8307360 num_tokens/piece=753.092
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=11031 obj=27.4779 num_tokens=8307482 num_tokens/piece=753.103
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=8273 obj=27.6473 num_tokens=8493575 num_tokens/piece=1026.66
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=8273 obj=27.5944 num_tokens=8494481 num_tokens/piece=1026.77
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=6204 obj=27.7396 num_tokens=8678609 num_tokens/piece=1398.87
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=6204 obj=27.6886 num_tokens=8680588 num_tokens/piece=1399.19
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=4653 obj=27.8083 num_tokens=8842717 num_tokens/piece=1900.43
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=4653 obj=27.7633 num_tokens=8846521 num_tokens/piece=1901.25
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=3489 obj=27.9174 num_tokens=9011566 num_tokens/piece=2582.85
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=3489 obj=27.8664 num_tokens=9013520 num_tokens/piece=2583.41
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=2616 obj=28.0186 num_tokens=9208477 num_tokens/piece=3520.06
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=2616 obj=27.9631 num_tokens=9207973 num_tokens/piece=3519.87
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=2252 obj=28.0389 num_tokens=9296846 num_tokens/piece=4128.26
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=2252 obj=28.0139 num_tokens=9296037 num_tokens/piece=4127.9
+trainer_interface.cc(685) LOG(INFO) Saving model: src\bpe\bpe_2048_None.model
+trainer_interface.cc(697) LOG(INFO) Saving vocabs: src\bpe\bpe_2048_None.vocab
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_bpe_2048 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 133 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+133 K     Trainable params
+0         Non-trainable params
+133 K     Total params
+0.533     Total estimated model params size (MB)
+Epoch 0: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:27<00:00, 25.94it/s, loss=0.3, v_num=0, train_loss=0.257, val_acc=0.957, val_f1=0.956, val_auc=0.994, val_tpr=0.404, train_acc=0.741, train_f1=0.655, train_auc=0.945, train_tpr=0.160]
+Epoch 1: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:15<00:00, 46.85it/s, loss=0.0459, v_num=0, train_loss=0.0369, val_acc=0.987, val_f1=0.987, val_auc=0.999, val_tpr=0.751, train_acc=0.991, train_f1=0.991, train_auc=0.999, train_tpr=0.630]
+Epoch 2: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:14<00:00, 49.21it/s, loss=0.0136, v_num=0, train_loss=0.0104, val_acc=0.972, val_f1=0.971, val_auc=0.997, val_tpr=0.816, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.920]
+Epoch 3: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:16<00:00, 42.63it/s, loss=0.00644, v_num=0, train_loss=0.00461, val_acc=0.963, val_f1=0.962, val_auc=0.996, val_tpr=0.831, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.962]
+Epoch 4: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 35.73it/s, loss=0.00382, v_num=0, train_loss=0.00258, val_acc=0.960, val_f1=0.958, val_auc=0.995, val_tpr=0.842, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.976]
+Epoch 5: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:17<00:00, 40.60it/s, loss=0.00254, v_num=0, train_loss=0.00168, val_acc=0.957, val_f1=0.955, val_auc=0.994, val_tpr=0.852, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.984]
+Epoch 6: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:17<00:00, 40.68it/s, loss=0.00181, v_num=0, train_loss=0.00118, val_acc=0.955, val_f1=0.953, val_auc=0.993, val_tpr=0.859, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.990]
+Epoch 7: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:16<00:00, 43.17it/s, loss=0.00136, v_num=0, train_loss=0.000863, val_acc=0.954, val_f1=0.951, val_auc=0.993, val_tpr=0.864, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.993]
+Epoch 8: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:16<00:00, 42.13it/s, loss=0.00105, v_num=0, train_loss=0.000659, val_acc=0.952, val_f1=0.950, val_auc=0.993, val_tpr=0.868, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.995]
+Epoch 9: 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:17<00:00, 40.41it/s, loss=0.000837, v_num=0, train_loss=0.000519, val_acc=0.951, val_f1=0.949, val_auc=0.993, val_tpr=0.873, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:17<00:00, 40.40it/s, loss=0.000837, v_num=0, train_loss=0.000519, val_acc=0.951, val_f1=0.949, val_auc=0.993, val_tpr=0.873, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.997] 
+[!] Working on wordpunct tokenizer with 2048 vocab size...
+[*] Building vocab and encoding...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_wordpunct_2048 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 133 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+133 K     Trainable params
+0         Non-trainable params
+133 K     Total params
+0.533     Total estimated model params size (MB)
+Epoch 0: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:26<00:00, 26.38it/s, loss=0.25, v_num=0, train_loss=0.214, val_acc=0.972, val_f1=0.972, val_auc=0.998, val_tpr=0.522, train_acc=0.762, train_f1=0.691, train_auc=0.970, train_tpr=0.265]
+Epoch 1: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:15<00:00, 45.33it/s, loss=0.0362, v_num=0, train_loss=0.0301, val_acc=0.982, val_f1=0.982, val_auc=0.999, val_tpr=0.728, train_acc=0.997, train_f1=0.997, train_auc=1.000, train_tpr=0.785]
+Epoch 2: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:17<00:00, 40.32it/s, loss=0.0123, v_num=0, train_loss=0.00933, val_acc=0.974, val_f1=0.974, val_auc=0.999, val_tpr=0.815, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.950]
+Epoch 3: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:18<00:00, 38.19it/s, loss=0.00596, v_num=0, train_loss=0.0043, val_acc=0.974, val_f1=0.973, val_auc=1.000, val_tpr=0.850, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.976]
+Epoch 4: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:18<00:00, 37.57it/s, loss=0.0034, v_num=0, train_loss=0.00245, val_acc=0.972, val_f1=0.971, val_auc=1.000, val_tpr=0.865, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.982]
+Epoch 5: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:17<00:00, 39.53it/s, loss=0.00215, v_num=0, train_loss=0.00154, val_acc=0.970, val_f1=0.969, val_auc=1.000, val_tpr=0.873, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.986]
+Epoch 6: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:18<00:00, 37.44it/s, loss=0.00147, v_num=0, train_loss=0.00105, val_acc=0.969, val_f1=0.968, val_auc=1.000, val_tpr=0.879, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.988]
+Epoch 7: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:18<00:00, 38.38it/s, loss=0.00106, v_num=0, train_loss=0.000752, val_acc=0.968, val_f1=0.967, val_auc=1.000, val_tpr=0.883, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.989]
+Epoch 8:  27%|██████████████████████████                                                                      | 192/706 [00:05<00:14, 35.89it/s, loss=0.00118, v_num=0, train_loss=0.0011, val_acc=0.968, val_f1=0.967, val_auc=1.000, val_tpr=0.883, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.989]
+Validation DataLoader 0:  22%|██████████████████████████████████████████████████████▏                                                                                                                                                                                                  | 25/115 [00:00<00:02, 32.56it/s]
+Epoch 8:  27%|▎| 193/706 [00:05<00:14, 35.83it/s, loss=0.00118, v_num=0, train_loss=0.0011, val_acc=0.968, val_f1=0.967, val_auc=1.000, val_tpr=0.883, train_acc=1.00 
+Epoch 8: 100%|█| 706/706 [00:21<00:00, 32.67it/s, loss=0.000803, v_num=0, train_loss=0.000564, val_acc=0.967, val_f1=0.966, val_auc=1.000, val_tpr=0.885, train_acc=1
+Epoch 9: 100%|█| 706/706 [00:21<00:00, 32.28it/s, loss=0.000627, v_num=0, train_loss=0.000436, val_acc=0.966, val_f1=0.965, val_auc=1.000, val_tpr=0.888, train_acc=1 
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█| 706/706 [00:21<00:00, 32.26it/s, loss=0.000627, v_num=0, train_loss=0.000436, val_acc=0.966, val_f1=0.965, val_auc=1.000, val_tpr=0.888, train_acc=1
+[!] Working on whitespace tokenizer with 2048 vocab size...
+[*] Building vocab and encoding...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_whitespace_2048 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 133 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+133 K     Trainable params
+0         Non-trainable params
+133 K     Total params
+0.533     Total estimated model params size (MB)
+Epoch 0: 100%|█| 706/706 [00:36<00:00, 19.19it/s, loss=0.579, v_num=0, train_loss=0.552, val_acc=0.944, val_f1=0.942, val_auc=0.994, val_tpr=0.0953, train_acc=0.808,
+Epoch 1: 100%|█| 706/706 [42:21<00:00,  3.60s/it, loss=0.19, v_num=0, train_loss=0.169, val_acc=0.986, val_f1=0.986, val_auc=0.996, val_tpr=0.167, train_acc=0.997, t
+Epoch 2: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:29<00:00, 24.22it/s, loss=0.0567, v_num=0, train_loss=0.048, val_acc=0.987, val_f1=0.987, val_auc=0.997, val_tpr=0.230, train_acc=0.997, train_f1=0.997, train_auc=0.999, train_tpr=0.304]
+Epoch 3: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 34.43it/s, loss=0.0259, v_num=0, train_loss=0.0204, val_acc=0.977, val_f1=0.977, val_auc=0.997, val_tpr=0.317, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.455]
+Epoch 4: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:18<00:00, 38.27it/s, loss=0.0152, v_num=0, train_loss=0.0111, val_acc=0.923, val_f1=0.917, val_auc=0.998, val_tpr=0.422, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.604]
+Epoch 5: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:16<00:00, 43.29it/s, loss=0.01, v_num=0, train_loss=0.00694, val_acc=0.909, val_f1=0.901, val_auc=0.998, val_tpr=0.532, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.775]
+Epoch 6: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:17<00:00, 41.41it/s, loss=0.0071, v_num=0, train_loss=0.00478, val_acc=0.899, val_f1=0.889, val_auc=0.998, val_tpr=0.599, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.906]
+Epoch 7: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:16<00:00, 42.27it/s, loss=0.00532, v_num=0, train_loss=0.0035, val_acc=0.902, val_f1=0.892, val_auc=0.998, val_tpr=0.626, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.971]
+Epoch 8: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:16<00:00, 43.09it/s, loss=0.00417, v_num=0, train_loss=0.00265, val_acc=0.902, val_f1=0.892, val_auc=0.998, val_tpr=0.633, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.984]
+Epoch 9: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:18<00:00, 38.21it/s, loss=0.00329, v_num=0, train_loss=0.00202, val_acc=0.903, val_f1=0.892, val_auc=0.999, val_tpr=0.640, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.988]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:18<00:00, 38.19it/s, loss=0.00329, v_num=0, train_loss=0.00202, val_acc=0.903, val_f1=0.892, val_auc=0.999, val_tpr=0.640, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.988] 
+[!] embedded_bpe_4096 already exists, skipping...
+[!] embedded_wordpunct_4096 already exists, skipping...
+[!] embedded_whitespace_4096 already exists, skipping...
+[!] Working on bpe tokenizer with 8192 vocab size...
+[*] Training sentencepiece model: --input=tmp.txt --model_prefix=src\bpe\bpe_8192_None --vocab_size=8192 --model_type=unigram
+sentencepiece_trainer.cc(177) LOG(INFO) Running command: --input=tmp.txt --model_prefix=src\bpe\bpe_8192_None --vocab_size=8192 --model_type=unigram
+sentencepiece_trainer.cc(77) LOG(INFO) Starts training with :
+trainer_spec {
+  input: tmp.txt
+  input_format:
+  model_prefix: src\bpe\bpe_8192_None
+  model_type: UNIGRAM
+  vocab_size: 8192
+  self_test_sample_size: 0
+  character_coverage: 0.9995
+  input_sentence_size: 0
+  shuffle_input_sentence: 1
+  seed_sentencepiece_size: 1000000
+  shrinking_factor: 0.75
+  max_sentence_length: 4192
+  num_threads: 16
+  num_sub_iterations: 2
+  max_sentencepiece_length: 16
+  split_by_unicode_script: 1
+  split_by_number: 1
+  split_by_whitespace: 1
+  split_digits: 0
+  treat_whitespace_as_suffix: 0
+  allow_whitespace_only_pieces: 0
+  required_chars:
+  byte_fallback: 0
+  vocabulary_output_piece_score: 1
+  train_extremely_large_corpus: 0
+  hard_vocab_limit: 1
+  use_all_vocab: 0
+  unk_id: 0
+  bos_id: 1
+  eos_id: 2
+  pad_id: -1
+  unk_piece: <unk>
+  bos_piece: <s>
+  eos_piece: </s>
+  pad_piece: <pad>
+  unk_surface:  Γüç
+  enable_differential_privacy: 0
+  differential_privacy_noise_level: 0
+  differential_privacy_clipping_threshold: 0
+}
+normalizer_spec {
+  name: nmt_nfkc
+  add_dummy_prefix: 1
+  remove_extra_whitespaces: 1
+  escape_whitespaces: 1
+  normalization_rule_tsv:
+}
+denormalizer_spec {}
+trainer_interface.cc(350) LOG(INFO) SentenceIterator is not specified. Using MultiFileSentenceIterator.
+trainer_interface.cc(181) LOG(INFO) Loading corpus: tmp.txt
+trainer_interface.cc(406) LOG(INFO) Loaded all 533055 sentences
+trainer_interface.cc(422) LOG(INFO) Adding meta_piece: <unk>
+trainer_interface.cc(422) LOG(INFO) Adding meta_piece: <s>
+trainer_interface.cc(422) LOG(INFO) Adding meta_piece: </s>
+trainer_interface.cc(427) LOG(INFO) Normalizing sentences...
+trainer_interface.cc(536) LOG(INFO) all chars count=54620823
+trainer_interface.cc(547) LOG(INFO) Done: 99.9516% characters are covered.
+trainer_interface.cc(557) LOG(INFO) Alphabet size=84
+trainer_interface.cc(558) LOG(INFO) Final character coverage=0.999516
+trainer_interface.cc(590) LOG(INFO) Done! preprocessed 533055 sentences.
+unigram_model_trainer.cc(146) LOG(INFO) Making suffix array...
+unigram_model_trainer.cc(150) LOG(INFO) Extracting frequent sub strings...
+unigram_model_trainer.cc(201) LOG(INFO) Initialized 1000000 seed sentencepieces
+trainer_interface.cc(596) LOG(INFO) Tokenizing input sentences with whitespace: 533055
+trainer_interface.cc(607) LOG(INFO) Done! 627690
+unigram_model_trainer.cc(491) LOG(INFO) Using 627690 sentences for EM training
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=302617 obj=32.9411 num_tokens=7416735 num_tokens/piece=24.5087
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=266220 obj=27.0317 num_tokens=7433575 num_tokens/piece=27.9227
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=199251 obj=26.9295 num_tokens=7486733 num_tokens/piece=37.5744
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=197039 obj=26.8212 num_tokens=7504327 num_tokens/piece=38.0855
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=147672 obj=26.8821 num_tokens=7561605 num_tokens/piece=51.2054
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=147227 obj=26.8386 num_tokens=7564859 num_tokens/piece=51.3823
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=110394 obj=26.9176 num_tokens=7627935 num_tokens/piece=69.0974
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=110310 obj=26.8886 num_tokens=7627102 num_tokens/piece=69.1424
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=82716 obj=26.973 num_tokens=7685213 num_tokens/piece=92.9108
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=82682 obj=26.9468 num_tokens=7684056 num_tokens/piece=92.9351
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=62005 obj=27.0301 num_tokens=7747726 num_tokens/piece=124.953
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=61992 obj=27.0058 num_tokens=7748973 num_tokens/piece=125
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=46494 obj=27.1016 num_tokens=7826200 num_tokens/piece=168.327
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=46492 obj=27.0762 num_tokens=7827108 num_tokens/piece=168.354
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=34869 obj=27.1818 num_tokens=7912303 num_tokens/piece=226.915
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=34869 obj=27.1545 num_tokens=7913801 num_tokens/piece=226.958
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=26151 obj=27.218 num_tokens=7956991 num_tokens/piece=304.271
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=26150 obj=27.2033 num_tokens=7958601 num_tokens/piece=304.344
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=19612 obj=27.3038 num_tokens=8034115 num_tokens/piece=409.653
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=19612 obj=27.2768 num_tokens=8034541 num_tokens/piece=409.675
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=14709 obj=27.3926 num_tokens=8140913 num_tokens/piece=553.465
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=14709 obj=27.3601 num_tokens=8141450 num_tokens/piece=553.501
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=11031 obj=27.5265 num_tokens=8307360 num_tokens/piece=753.092
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=11031 obj=27.4779 num_tokens=8307482 num_tokens/piece=753.103
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=0 size=9011 obj=27.5959 num_tokens=8437423 num_tokens/piece=936.347
+unigram_model_trainer.cc(507) LOG(INFO) EM sub_iter=1 size=9011 obj=27.5615 num_tokens=8438329 num_tokens/piece=936.448
+trainer_interface.cc(685) LOG(INFO) Saving model: src\bpe\bpe_8192_None.model
+trainer_interface.cc(697) LOG(INFO) Saving vocabs: src\bpe\bpe_8192_None.vocab
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_bpe_8192 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 526 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+526 K     Trainable params
+0         Non-trainable params
+526 K     Total params
+2.106     Total estimated model params size (MB)
+Epoch 0: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:30<00:00, 23.38it/s, loss=0.281, v_num=0, train_loss=0.245, val_acc=0.949, val_f1=0.947, val_auc=0.994, val_tpr=0.426, train_acc=0.763, train_f1=0.692, train_auc=0.966, train_tpr=0.256]
+Epoch 1: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:18<00:00, 39.17it/s, loss=0.0504, v_num=0, train_loss=0.0421, val_acc=0.981, val_f1=0.981, val_auc=0.997, val_tpr=0.702, train_acc=0.990, train_f1=0.990, train_auc=0.999, train_tpr=0.631]
+Epoch 2: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 36.26it/s, loss=0.016, v_num=0, train_loss=0.013, val_acc=0.981, val_f1=0.981, val_auc=0.998, val_tpr=0.759, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.855]
+Epoch 3: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 35.91it/s, loss=0.00777, v_num=0, train_loss=0.00598, val_acc=0.981, val_f1=0.980, val_auc=0.998, val_tpr=0.811, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.935]
+Epoch 4: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 34.46it/s, loss=0.00468, v_num=0, train_loss=0.00348, val_acc=0.981, val_f1=0.981, val_auc=0.999, val_tpr=0.848, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.957]
+Epoch 5: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 35.87it/s, loss=0.00314, v_num=0, train_loss=0.00228, val_acc=0.982, val_f1=0.982, val_auc=0.999, val_tpr=0.875, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.970]
+Epoch 6: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 34.38it/s, loss=0.00224, v_num=0, train_loss=0.00161, val_acc=0.983, val_f1=0.983, val_auc=0.999, val_tpr=0.896, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.979]
+Epoch 7: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 35.15it/s, loss=0.00168, v_num=0, train_loss=0.00118, val_acc=0.984, val_f1=0.984, val_auc=0.999, val_tpr=0.912, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.985]
+Epoch 8: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 36.27it/s, loss=0.00131, v_num=0, train_loss=0.000888, val_acc=0.985, val_f1=0.984, val_auc=0.999, val_tpr=0.925, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.989]
+Epoch 9: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 33.84it/s, loss=0.00105, v_num=0, train_loss=0.00069, val_acc=0.985, val_f1=0.985, val_auc=0.999, val_tpr=0.934, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.992]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 33.83it/s, loss=0.00105, v_num=0, train_loss=0.00069, val_acc=0.985, val_f1=0.985, val_auc=0.999, val_tpr=0.934, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.992] 
+[!] Working on wordpunct tokenizer with 8192 vocab size...
+[*] Building vocab and encoding...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_wordpunct_8192 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 526 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+526 K     Trainable params
+0         Non-trainable params
+526 K     Total params
+2.106     Total estimated model params size (MB)
+Epoch 0: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:48<00:00, 14.54it/s, loss=0.249, v_num=0, train_loss=0.206, val_acc=0.972, val_f1=0.972, val_auc=0.997, val_tpr=0.543, train_acc=0.765, train_f1=0.697, train_auc=0.971, train_tpr=0.294]
+Epoch 1: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:22<00:00, 30.88it/s, loss=0.0361, v_num=0, train_loss=0.0291, val_acc=0.977, val_f1=0.977, val_auc=0.999, val_tpr=0.725, train_acc=0.997, train_f1=0.997, train_auc=1.000, train_tpr=0.802]
+Epoch 2: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 35.10it/s, loss=0.0132, v_num=0, train_loss=0.00977, val_acc=0.975, val_f1=0.975, val_auc=0.999, val_tpr=0.808, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.955]
+Epoch 3: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 34.56it/s, loss=0.00671, v_num=0, train_loss=0.00471, val_acc=0.978, val_f1=0.978, val_auc=1.000, val_tpr=0.836, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.976]
+Epoch 4: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:21<00:00, 32.87it/s, loss=0.00396, v_num=0, train_loss=0.00276, val_acc=0.978, val_f1=0.978, val_auc=1.000, val_tpr=0.854, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.982]
+Epoch 5: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 35.47it/s, loss=0.00258, v_num=0, train_loss=0.00179, val_acc=0.978, val_f1=0.977, val_auc=1.000, val_tpr=0.867, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.985]
+Epoch 6: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 34.91it/s, loss=0.0018, v_num=0, train_loss=0.00124, val_acc=0.977, val_f1=0.977, val_auc=1.000, val_tpr=0.876, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.987]
+Epoch 7: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 35.93it/s, loss=0.00132, v_num=0, train_loss=0.00091, val_acc=0.976, val_f1=0.976, val_auc=1.000, val_tpr=0.882, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.988]
+Epoch 8: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 34.51it/s, loss=0.00101, v_num=0, train_loss=0.000692, val_acc=0.976, val_f1=0.975, val_auc=1.000, val_tpr=0.886, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.989]
+Epoch 9: 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 34.95it/s, loss=0.000791, v_num=0, train_loss=0.000541, val_acc=0.975, val_f1=0.975, val_auc=1.000, val_tpr=0.889, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.990]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 34.94it/s, loss=0.000791, v_num=0, train_loss=0.000541, val_acc=0.975, val_f1=0.975, val_auc=1.000, val_tpr=0.889, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.990] 
+[!] Working on whitespace tokenizer with 8192 vocab size...
+[*] Building vocab and encoding...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training embedded_whitespace_8192 model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name      | Type                   | Params
+------------------------------------------------------
+0  | model     | SimpleMLPWithEmbedding | 526 K
+1  | loss      | BCEWithLogitsLoss      | 0
+2  | train_acc | BinaryAccuracy         | 0
+3  | train_f1  | BinaryF1Score          | 0
+4  | train_auc | BinaryAUROC            | 0
+5  | val_acc   | BinaryAccuracy         | 0
+6  | val_f1    | BinaryF1Score          | 0
+7  | val_auc   | BinaryAUROC            | 0
+8  | test_acc  | BinaryAccuracy         | 0
+9  | test_f1   | BinaryF1Score          | 0
+10 | test_auc  | BinaryAUROC            | 0
+------------------------------------------------------
+526 K     Trainable params
+0         Non-trainable params
+526 K     Total params
+2.106     Total estimated model params size (MB)
+Epoch 0: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:37<00:00, 18.69it/s, loss=0.589, v_num=0, train_loss=0.568, val_acc=0.900, val_f1=0.897, val_auc=0.980, val_tpr=0.343, train_acc=0.808, train_f1=0.786, train_auc=0.877, train_tpr=0.208]
+Epoch 1: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 35.25it/s, loss=0.214, v_num=0, train_loss=0.195, val_acc=0.931, val_f1=0.927, val_auc=0.995, val_tpr=0.432, train_acc=0.995, train_f1=0.995, train_auc=0.999, train_tpr=0.594]
+Epoch 2: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 35.92it/s, loss=0.0641, v_num=0, train_loss=0.0573, val_acc=0.937, val_f1=0.934, val_auc=0.997, val_tpr=0.447, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.697]
+Epoch 3: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 34.27it/s, loss=0.028, v_num=0, train_loss=0.0241, val_acc=0.938, val_f1=0.934, val_auc=0.997, val_tpr=0.455, train_acc=0.998, train_f1=0.998, train_auc=1.000, train_tpr=0.739]
+Epoch 4: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 35.60it/s, loss=0.0159, v_num=0, train_loss=0.0129, val_acc=0.932, val_f1=0.928, val_auc=0.997, val_tpr=0.478, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.764]
+Epoch 5: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 35.06it/s, loss=0.0105, v_num=0, train_loss=0.00803, val_acc=0.932, val_f1=0.927, val_auc=0.997, val_tpr=0.498, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.793]
+Epoch 6: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:20<00:00, 33.94it/s, loss=0.00757, v_num=0, train_loss=0.00546, val_acc=0.912, val_f1=0.904, val_auc=0.997, val_tpr=0.527, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.829]
+Epoch 7: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:19<00:00, 36.14it/s, loss=0.00575, v_num=0, train_loss=0.00394, val_acc=0.898, val_f1=0.887, val_auc=0.998, val_tpr=0.547, train_acc=0.999, train_f1=0.999, train_auc=1.000, train_tpr=0.860]
+Epoch 8: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:21<00:00, 33.07it/s, loss=0.00453, v_num=0, train_loss=0.00299, val_acc=0.893, val_f1=0.881, val_auc=0.998, val_tpr=0.562, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.891]
+Epoch 9: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:22<00:00, 32.08it/s, loss=0.00367, v_num=0, train_loss=0.00234, val_acc=0.893, val_f1=0.881, val_auc=0.998, val_tpr=0.583, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.916]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 706/706 [00:22<00:00, 32.07it/s, loss=0.00367, v_num=0, train_loss=0.00234, val_acc=0.893, val_f1=0.881, val_auc=0.998, val_tpr=0.583, train_acc=1.000, train_f1=1.000, train_auc=1.000, train_tpr=0.916]
+[!] embedded_bpe_16384 already exists, skipping...
+[!] embedded_wordpunct_16384 already exists, skipping...
+[!] embedded_whitespace_16384 already exists, skipping...
+[!] Script end time: Mon Oct  9 17:43:07 2023

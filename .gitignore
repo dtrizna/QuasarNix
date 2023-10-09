@@ -55,7 +55,6 @@ jspm_packages/
 .DS_Store
 
 # Compiled LaTeX files
-*.pdf
 *.dvi
 *.aux
 *.log

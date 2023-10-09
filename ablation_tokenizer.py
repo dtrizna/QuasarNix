@@ -20,6 +20,7 @@ from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 from lightning.lite.utilities.seed import seed_everything
 
 sys.path.append("Linux/")
+sys.path.append(".")
 from src.models import SimpleMLP, SimpleMLPWithEmbedding, PyTorchLightningModel
 from src.lit_utils import LitProgressBar
 from src.preprocessors import CommandTokenizer
@@ -47,31 +48,31 @@ def embedding_training(X_train_loader, X_test_loader, name, positional, epochs=1
     training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epochs=epochs)
 
 
-def training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epochs=10):
+def training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epochs=10, early_stop=False):
     lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=1e-3)
 
     # ensure folders for logging exist
     os.makedirs(f"{log_folder}/{name}_csv", exist_ok=True)
     os.makedirs(f"{log_folder}/{name}_tb", exist_ok=True)
 
-    early_stop = EarlyStopping(
-        monitor="val_f1",
-        patience=3,
-        min_delta=0.001,
-        verbose=True,
-        mode="max"
-    )
+    callbacks = [LitProgressBar()]
+    if early_stop:
+        early_stop = EarlyStopping(
+            monitor="val_f1",
+            patience=3,
+            min_delta=0.001,
+            verbose=True,
+            mode="max"
+        )
+        callbacks.append(early_stop)
 
     trainer = L.Trainer(
         num_sanity_val_steps=LIT_SANITY_STEPS,
         max_epochs=epochs,
-        accelerator="cpu",#"gpu",
+        accelerator="gpu",
         devices=1,
-        callbacks=[
-            LitProgressBar(),
-            #early_stop,
-        ],
-        val_check_interval=0.2, # log validation scores five times per epoch
+        callbacks=callbacks,
+        val_check_interval=1/5, # validation scores five times per epoch
         log_every_n_steps=100,
         logger=[
             CSVLogger(save_dir=log_folder, name=f"{name}_csv"),
@@ -85,7 +86,7 @@ def training(pytorch_model, X_train_loader, X_test_loader, name, log_folder, epo
 
 SEED = 33
 
-VOCAB_SIZES = [256, 1024, 4096, 16384]
+VOCAB_SIZES = [256, 512, 1024, 2048, 4096, 8192, 16384]
 MAX_LEN = 128
 HIDDEN = 32
 EMBEDDING_DIM = 64
@@ -157,6 +158,11 @@ if __name__ == "__main__":
 
     for VOCAB_SIZE in VOCAB_SIZES:
         for t_name, TOKENIZER in TOKENIZERS.items():
+            run_name = f"embedded_{t_name}_{VOCAB_SIZE}"
+            if os.path.exists(os.path.join(LOGS_FOLDER, f"{run_name}_csv")):
+                print(f"[!] {run_name} already exists, skipping...")
+                continue
+
             print(f"[!] Working on {t_name} tokenizer with {VOCAB_SIZE} vocab size...")
             # =============================================
             # PREPING DATA FOR EMBEDDING ANALYSIS
@@ -194,6 +200,6 @@ if __name__ == "__main__":
             # EMBEDDED
             # ===========================================
             
-            embedding_training(X_train_loader, X_test_loader, name=f"embedded_{t_name}_{VOCAB_SIZE}", positional=False, log_folder=LOGS_FOLDER, epochs=EPOCHS)
+            embedding_training(X_train_loader, X_test_loader, name=run_name, positional=False, log_folder=LOGS_FOLDER, epochs=EPOCHS)
 
     print(f"[!] Script end time: {time.ctime()}")

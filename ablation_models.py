@@ -339,7 +339,7 @@ if __name__ == "__main__":
                     y_train,
                     y_test,
                     logs_folder=LOGS_FOLDER
-                )        
+                )
         else:
             _ = train_lit_model(
                 X_train_loader,

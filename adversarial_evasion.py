@@ -10,6 +10,7 @@ from sklearn.utils import shuffle
 from sklearn.metrics import roc_curve, f1_score, accuracy_score, roc_auc_score
 from watermark import watermark
 from typing import List
+from shutil import copyfile
 
 # tokenizers
 from nltk.tokenize import wordpunct_tokenize, WhitespaceTokenizer
@@ -326,8 +327,8 @@ if __name__ == "__main__":
     mlp_tab_model_onehot_adv = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
     
     target_models = {
-        "cnn": (cnn_model, cnn_model_adv),
-        "mlp_onehot": (mlp_tab_model_onehot, mlp_tab_model_onehot_adv),
+        # "cnn": (cnn_model, cnn_model_adv),
+        # "mlp_onehot": (mlp_tab_model_onehot, mlp_tab_model_onehot_adv),
         "mean_transformer": (mean_transformer_model, mean_transformer_model_adv),
         #"mlp_seq": (mlp_seq_model, mlp_seq_model_adv),
     }
@@ -390,7 +391,12 @@ if __name__ == "__main__":
                 scheduler=SCHEDULER,
                 scheduler_budget= EPOCHS * len(X_train_loader)
             )
-            trainer_orig.save_checkpoint(model_file_orig)
+            # copy best checkpoint to the LOGS_DIR for further tests
+            checkpoint_path = os.path.join(LOGS_FOLDER, run_name, "version_0", "checkpoints")
+            best_checkpoint_name = [x for x in os.listdir(checkpoint_path) if x != "last.ckpt"][0]
+            best_checkpoint_path = os.path.join(checkpoint_path, best_checkpoint_name)
+            copyfile(best_checkpoint_path, model_file_orig)
+
             print(f"[!] Training of {run_name} ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")
 
         # ======================================================
@@ -403,19 +409,26 @@ if __name__ == "__main__":
         else:
             X_test_malicious_without_attack_loader = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1, max_len=MAX_LEN)
         
+        # =======================================================
+        # ORIG MODEL ADVERSARIAL SCORES
+        # =======================================================
+
+        accuracies = {}
+        evasives = {}
+
         y_pred_orig_orig = predict(
             X_test_malicious_without_attack_loader,
             trainer_orig,
             lightning_model_orig,
             decision_threshold=0.5
         )
-        print(f"[!] Orig train | Orig test |  Evasive:", len(y_pred_orig_orig[y_pred_orig_orig == 0]))
+        evasive = len(y_pred_orig_orig[y_pred_orig_orig == 0])
+        print(f"[!] Orig train | Orig test |  Evasive:", evasive)
+        evasives[0] = evasive
+
         acc = accuracy_score(np.ones_like(y_pred_orig_orig), y_pred_orig_orig)
         print(f"[!] Orig train | Orig test | Accuracy: {acc:.3f}")
-
-        # =======================================================
-        # ORIG MODEL ADVERSARIAL SCORES
-        # =======================================================
+        accuracies[0] = acc
 
         for payload_size, X_test_malicious_with_attack_cmd in X_test_malicious_with_attack_cmd_dict.items():
             if name == "mlp_onehot":
@@ -429,11 +442,22 @@ if __name__ == "__main__":
                 trainer_orig,
                 lightning_model_orig,
                 decision_threshold=0.5,
-                dump_logits=os.path.join(LOGS_FOLDER, f"{run_name}_y_pred_with_attack_logits_{payload_size}.pkl")
+                dump_logits=os.path.join(LOGS_FOLDER, f"{run_name}_y_pred_with_attack_logits_payload_{payload_size}_sample_{ADV_ATTACK_SUBSAMPLE}.pkl")
             )
-            print(f"[!] Orig train | Adv test | Payload {payload_size} |  Evasive:" , len(y_pred_orig_adv[y_pred_orig_adv == 0]))
+            evasive = len(y_pred_orig_adv[y_pred_orig_adv == 0])
+            print(f"[!] Orig train | Adv test | Payload {payload_size} |  Evasive:" , evasive)
+            evasives[payload_size] = evasive
+
             acc = accuracy_score(np.ones_like(y_pred_orig_adv), y_pred_orig_adv)
             print(f"[!] Orig train | Adv test | Payload {payload_size} | Accuracy: {acc:.3f}")
+            accuracies[payload_size] = acc
+        
+        accuracies = {int(key): value for key, value in accuracies.items()}
+        evasives = {int(key): value for key, value in evasives.items()}
+        results_dict = {'Accuracy': accuracies, 'Evasive Samples': evasives}
+        results_json = json.dumps(results_dict, indent=4)
+        with open(os.path.join(LOGS_FOLDER, f"adversarial_scores_{run_name}.json"), 'w') as f:
+            f.write(results_json)
 
     # ===== END LOOP ======
     print(f"[!] Script end time: {time.ctime()}")

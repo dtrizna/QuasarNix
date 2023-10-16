@@ -107,7 +107,7 @@ def configure_trainer(name, log_folder, epochs):
             #early_stop,
             model_checkpoint
         ],
-        val_check_interval=0.2,
+        val_check_interval=1/5, # check val set 5 times per epoch
         log_every_n_steps=10,
         logger=[
             CSVLogger(save_dir=log_folder, name=f"{name}_csv"),
@@ -185,7 +185,7 @@ BATCH_SIZE = 1024
 DROPOUT = 0.5
 
 # TEST
-# DEVICE = "cpu"
+# DEVICE = "gpu"
 # EPOCHS = 1
 # LIT_SANITY_STEPS = 0
 # LIMIT = 15000

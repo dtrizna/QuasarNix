@@ -1,5 +1,6 @@
 # Skipping data
 data/*
+notes*
 *pickle
 
 # Model checkpoints

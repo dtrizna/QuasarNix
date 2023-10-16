@@ -12,7 +12,7 @@
       2. with tokens from sparse regions
       3. hybrid
    2. Evasion (black box):
-      > NOTE: Black box with NL2Bash coded: `adversarial_blackbox.py`
+      > NOTE: Black box with NL2Bash coded: `adversarial_evasion.py`
       - run `adversarial_blackbox.py` with PROD config: (a) ~~one-hot~~ (b) sequential: CNN | CLS_Transformer
       - consider alternative manipulations, e.g. simple evasions (e.g. `bash -i` -> `bash -li` or `bash -c` -> `bash -ci`)
    3. Rerun experiments for different architectures.

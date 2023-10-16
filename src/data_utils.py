@@ -5,6 +5,9 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 from scipy.sparse import csr_matrix
 
+from .preprocessors import CommandTokenizer
+from typing import List, Tuple, Union
+
 
 class CSRTensorDataset(Dataset):
     def __init__(self, csr_data, labels=None):
@@ -53,3 +56,15 @@ def create_dataloader(X, y=None, batch_size=1024, shuffle=False, workers=4):
         raise ValueError("Unsupported type for X. Supported types are numpy arrays, torch tensors, and scipy CSR matrices.")
     
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=workers, persistent_workers=True, pin_memory=True)
+
+
+def commands_to_loader(cmd: List[str], tokenizer: CommandTokenizer, workers: int, batch_size: int, y: np.ndarray = None, max_len: int = 128) -> DataLoader:
+    """Convert a list of commands to a DataLoader."""
+    tokens = tokenizer.tokenize(cmd)
+    ints = tokenizer.encode(tokens)
+    padded = tokenizer.pad(ints, max_len)
+    if y is None:
+        loader = create_dataloader(padded, batch_size=batch_size, workers=workers)
+    else:
+        loader = create_dataloader(padded, y, batch_size=batch_size, workers=workers)
+    return loader

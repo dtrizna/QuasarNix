@@ -46,7 +46,7 @@ def configure_trainer(name, log_folder, epochs) -> Tuple:
         accelerator=DEVICE,
         devices=1,
         callbacks=[LitProgressBar(), early_stop],
-        val_check_interval=0.5,
+        val_check_interval=1/2,
         log_every_n_steps=10,
         logger=[CSVLogger(save_dir=log_folder, name=f"{name}_csv"), TensorBoardLogger(save_dir=log_folder, name=f"{name}_tb")]
     )
@@ -64,8 +64,7 @@ def load_lit_model(model_file, pytorch_model, name, log_folder, epochs):
     return trainer, lightning_model
 
 
-def train_lit_model(X_train_loader, X_test_loader, pytorch_model, name, log_folder, epochs=10, learning_rate=1e-3, scheduler_budget=None):
-    scheduler = "onecycle" if scheduler_budget is not None else None
+def train_lit_model(X_train_loader, X_test_loader, pytorch_model, name, log_folder, epochs=10, learning_rate=1e-3, scheduler=None, scheduler_budget=None):
     lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=learning_rate, scheduler=scheduler, scheduler_step_budget=scheduler_budget)
     trainer = configure_trainer(name, log_folder, epochs)
 
@@ -135,6 +134,44 @@ def load_nl2bash():
     return baseline
 
 
+# def load_data():
+#     """
+#     NOTE: 
+#         First shuffle the data -- to take random elements from each class.
+#         LIMIT//2 -- since there are 2 classes, so full data size is LIMIT.
+#         Second shuffle the data -- to mix the two classes.
+#     """
+#     train_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_baseline.parquet/')) if x.endswith('.parquet')][0]
+#     test_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_baseline.parquet/')) if x.endswith('.parquet')][0]
+#     train_rvrs_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_rvrs.parquet/')) if x.endswith('.parquet')][0]
+#     test_rvrs_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_rvrs.parquet/')) if x.endswith('.parquet')][0]
+
+#     train_baseline_df = pd.read_parquet(os.path.join(ROOT,'data/train_baseline.parquet/', train_base_parquet_file))
+#     test_baseline_df = pd.read_parquet(os.path.join(ROOT,'data/test_baseline.parquet/', test_base_parquet_file))
+#     train_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/train_rvrs.parquet/', train_rvrs_parquet_file))
+#     test_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/test_rvrs.parquet/', test_rvrs_parquet_file))
+
+#     if LIMIT is not None:
+#         X_train_baseline_cmd = shuffle(train_baseline_df['cmd'].values.tolist(), random_state=SEED)[:LIMIT//2]
+#         X_train_malicious_cmd = shuffle(train_malicious_df['cmd'].values.tolist(), random_state=SEED)[:LIMIT//2]
+#         X_test_baseline_cmd = shuffle(test_baseline_df['cmd'].values.tolist(), random_state=SEED)[:LIMIT//2]
+#         X_test_malicious_cmd = shuffle(test_malicious_df['cmd'].values.tolist(), random_state=SEED)[:LIMIT//2]
+#     else:
+#         X_train_baseline_cmd = train_baseline_df['cmd'].values.tolist()
+#         X_train_malicious_cmd = train_malicious_df['cmd'].values.tolist()
+#         X_test_baseline_cmd = test_baseline_df['cmd'].values.tolist()
+#         X_test_malicious_cmd = test_malicious_df['cmd'].values.tolist()
+
+#     X_train_non_shuffled = X_train_baseline_cmd + X_train_malicious_cmd
+#     y_train = np.array([0] * len(X_train_baseline_cmd) + [1] * len(X_train_malicious_cmd), dtype=np.int8)
+#     X_train_cmds, y_train = shuffle(X_train_non_shuffled, y_train, random_state=SEED)
+
+#     X_test_non_shuffled = X_test_baseline_cmd + X_test_malicious_cmd
+#     y_test = np.array([0] * len(X_test_baseline_cmd) + [1] * len(X_test_malicious_cmd), dtype=np.int8)
+#     X_test_cmds, y_test = shuffle(X_test_non_shuffled, y_test, random_state=SEED)
+
+#     return X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd
+
 def load_data():
     train_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_baseline.parquet/')) if x.endswith('.parquet')][0]
     test_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_baseline.parquet/')) if x.endswith('.parquet')][0]
@@ -147,43 +184,54 @@ def load_data():
     train_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/train_rvrs.parquet/', train_rvrs_parquet_file))
     test_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/test_rvrs.parquet/', test_rvrs_parquet_file))
 
-    X_train_baseline_cmd = train_baseline_df['cmd'].values.tolist()[:LIMIT]
-    X_train_malicious_cmd = train_malicious_df['cmd'].values.tolist()[:LIMIT]
+    X_train_malicious_cmd = train_malicious_df['cmd'].values.tolist()
+    X_train_baseline_cmd = train_baseline_df['cmd'].values.tolist()
+    X_test_malicious_cmd = test_malicious_df['cmd'].values.tolist()
+    X_test_baseline_cmd = test_baseline_df['cmd'].values.tolist()
+
     X_train_non_shuffled = X_train_baseline_cmd + X_train_malicious_cmd
-    y_train = np.array([0] * len(train_baseline_df) + [1] * len(train_malicious_df), dtype=np.int8)
+    y_train = np.array([0] * len(X_train_baseline_cmd) + [1] * len(X_train_malicious_cmd), dtype=np.int8)
     X_train_cmds, y_train = shuffle(X_train_non_shuffled, y_train, random_state=SEED)
 
-    X_test_baseline_cmd = test_baseline_df['cmd'].values.tolist()[:LIMIT]
-    X_test_malicious_cmd = test_malicious_df['cmd'].values.tolist()[:LIMIT]
     X_test_non_shuffled = X_test_baseline_cmd + X_test_malicious_cmd
-    y_test = np.array([0] * len(test_baseline_df) + [1] * len(test_malicious_df), dtype=np.int8)
+    y_test = np.array([0] * len(X_test_baseline_cmd) + [1] * len(X_test_malicious_cmd), dtype=np.int8)
     X_test_cmds, y_test = shuffle(X_test_non_shuffled, y_test, random_state=SEED)
 
-    return X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd
+    # ===========================================
+    # DATASET LIMITS FOR TESTING
+    # ===========================================
+    X_train_cmds = X_train_cmds[:LIMIT]
+    y_train = y_train[:LIMIT]
+    
+    X_test_cmds = X_test_cmds[:LIMIT]
+    y_test = y_test[:LIMIT]
+
+    return X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd
 
 
 SEED = 33
 
 VOCAB_SIZE = 4096
 EMBEDDED_DIM = 64
-MAX_LEN = 256
+MAX_LEN = 128
 BATCH_SIZE = 1024
 DROPOUT = 0.5
 LEARNING_RATE = 1e-3
+SCHEDULER = "onecycle"
 
 DECISION_THRESHOLD = 0.5
 
 ATTACK = attack_template_prepend
 BASELINE = load_nl2bash()
 
-PREPROCESSING = "sequential"
-SEQUENTIAL_MODEL = "CLS" # TODO: "CNN" ?
+PREPROCESSING = "sequential" # "onehot"
+SEQUENTIAL_MODEL = "CNN" # TODO: "CLS" ? # NOTE: irrelevant if PREPROCESSING == "onehot"
 
 # NOTE: Sequential experiments are weird
 # Accuracy is low even on orig set: full ~0.74 / subsample ~0.5
 # Adversarial attack with payload of any size drop accuracy to 0.0
 # It is for both CLS and CNN
-# Why not getting good scores as in `ablation_models.oy`?
+# Why not getting good scores as in `ablation_models.py`?
 
 # TEST
 # DEVICE = "cpu"
@@ -219,7 +267,7 @@ if __name__ == "__main__":
     # LOADING DATA
     # ===========================================
     ROOT = os.path.dirname(os.path.abspath(__file__))
-    X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd = load_data()
+    X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd = load_data()
     print(f"Sizes of train and test sets: {len(X_train_cmds)}, {len(X_test_cmds)}")
 
     # =============================================
@@ -235,6 +283,7 @@ if __name__ == "__main__":
         if SEQUENTIAL_MODEL == "CLS":
             target_model_orig = CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) #  335 K params
             target_model_adv = CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) #  335 K params
+        
         tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE)
         vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}.json")
         if os.path.exists(vocab_file):
@@ -277,8 +326,17 @@ if __name__ == "__main__":
         trainer_orig, lightning_model_orig = load_lit_model(model_file_orig, target_model_orig, "model", LOGS_FOLDER, EPOCHS)
     else:
         print("[*] Training original model...")
-        budget = EPOCHS * len(X_train_loader_orig)
-        trainer_orig, lightning_model_orig = train_lit_model(X_train_loader_orig, X_test_loader_orig, target_model_orig, "model_orig", LOGS_FOLDER, epochs=EPOCHS, learning_rate=LEARNING_RATE, scheduler_budget=budget)
+        trainer_orig, lightning_model_orig = train_lit_model(
+            X_train_loader_orig,
+            X_test_loader_orig,
+            target_model_orig,
+            "model_orig",
+            LOGS_FOLDER,
+            epochs=EPOCHS,
+            learning_rate=LEARNING_RATE,
+            scheduler=SCHEDULER,
+            scheduler_budget=EPOCHS * len(X_train_loader_orig)
+        )
         trainer_orig.save_checkpoint(model_file_orig)
     
     # ======================================================

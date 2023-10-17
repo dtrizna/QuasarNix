@@ -196,6 +196,18 @@ def load_nl2bash():
 # ATTACK FUNCTIONS
 # =============================
 
+def attack_hybrid(
+        command: str,
+        baseline: List[str],
+        attack_parameter: int, # payload_size
+        template: str = None,
+        threshold: float = 0.5
+) -> str:
+    command_adv = attack_template_prepend(command, baseline, attack_parameter, template)
+    command_adv = attack_evasive_tricks(command_adv, baseline, threshold)
+    return command_adv
+
+
 def attack_template_prepend(
         command: str,
         baseline: List[str],
@@ -345,15 +357,23 @@ MAX_LEN = 256
 # Therefore, needed to reduce batch size to 512 so transformer fits on GPU
 
 BASELINE = load_nl2bash()
+
+# ATTACK NR.1:
 #ATTACK = attack_template_prepend
 # ATTACK_PARAMETERS = [16, 32, 48, 64, 80, 96, 112, 128] # PAYLOAD_SIZES
 # NOTE: Total size of injected characters: PAYLOAD_SIZE + 23
 # since len(template) = 23 (w/o PAYLOAD) when template = """python3 -c "print('PAYLOAD')" """
 # LOGS_FOLDER = f"{PREFIX}logs_adversarial_evasion_nl2bash"
 
-ATTACK = attack_evasive_tricks
-ATTACK_PARAMETERS = [0.1, 0.3, 0.5, 0.7, 0.9]
-LOGS_FOLDER = f"{PREFIX}logs_adversarial_evasion_tricks"
+# ATTACK NR.2:
+# ATTACK = attack_evasive_tricks
+# ATTACK_PARAMETERS = [0.1, 0.3, 0.5, 0.7, 0.9]
+# LOGS_FOLDER = f"{PREFIX}logs_adversarial_evasion_tricks"
+
+# ATTACK NR.3:
+ATTACK = attack_hybrid # loop over payload sizes, evasive tricks attack threshold fixed: 0.5
+ATTACK_PARAMETERS = [16, 32, 48, 64, 80, 96, 112, 128] # PAYLOAD_SIZES
+LOGS_FOLDER = f"{PREFIX}logs_adversarial_evasion_hybrid"
 
 os.makedirs(LOGS_FOLDER, exist_ok=True)
 
@@ -432,7 +452,7 @@ if __name__ == "__main__":
             cmd_a = cmd + ";" + random_baseline_command
             X_train_malicious_cmd_adv.append(cmd_a)
         
-        # NOTE: this results in ~57 MB size JSON (not for git)
+        # NOTE: this results in ~57 MB size JSON: not for git
         # with open(X_train_malicious_cmd_adv_file, "w", encoding="utf-8") as f:
         #     json.dump(X_train_malicious_cmd_adv, f, indent=4)
 
@@ -575,7 +595,7 @@ if __name__ == "__main__":
                     trainer_orig,
                     lightning_model_orig,
                     decision_threshold=0.5,
-                    dump_logits=os.path.join(LOGS_FOLDER, f"{run_name}_y_pred_with_attack_logits_payload_{attack_parameter}_sample_{ADV_ATTACK_SUBSAMPLE}.pkl")
+                    # dump_logits=os.path.join(LOGS_FOLDER, f"{run_name}_y_pred_with_attack_logits_payload_{attack_parameter}_sample_{ADV_ATTACK_SUBSAMPLE}.pkl")
                 )
                 evasive = len(y_pred_orig_adv[y_pred_orig_adv == 0])
                 print(f"[!] Orig train | Adv test | Payload {attack_parameter} |  Evasive:" , evasive)
@@ -600,7 +620,7 @@ if __name__ == "__main__":
         model_file_adv = os.path.join(LOGS_FOLDER, f"{run_name}.ckpt")
         if os.path.exists(model_file_adv):
             print(f"[*] Loading adversarially trained model from {model_file_adv}...")
-            trainer_adv, lightning_model_adv = load_lit_model(model_file_adv, target_model_adv, "model_adv", LOGS_FOLDER, EPOCHS)
+            trainer_adv, lightning_model_adv = load_lit_model(model_file_adv, target_model_adv, run_name, LOGS_FOLDER, EPOCHS)
         else:
             # X_train_cmd_adv, y_train_adv
             if name == "mlp_onehot":
@@ -674,7 +694,7 @@ if __name__ == "__main__":
                     trainer_adv,
                     lightning_model_adv,
                     decision_threshold=0.5,
-                    dump_logits=os.path.join(LOGS_FOLDER, f"{run_name}_y_pred_with_attack_logits_payload_{attack_parameter}_sample_{ADV_ATTACK_SUBSAMPLE}.pkl")
+                    # dump_logits=os.path.join(LOGS_FOLDER, f"{run_name}_y_pred_with_attack_logits_payload_{attack_parameter}_sample_{ADV_ATTACK_SUBSAMPLE}.pkl")
                 )
                 evasive = len(y_pred_adv_adv[y_pred_adv_adv == 0])
                 print(f"[!] Adv train | Adv test | Payload {attack_parameter} |  Evasive:" , evasive)

@@ -2,6 +2,7 @@
 data/*
 notes*
 *pickle
+*pkl
 
 # Model checkpoints
 *.ckpt

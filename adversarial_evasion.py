@@ -199,12 +199,11 @@ def load_nl2bash():
 def attack_hybrid(
         command: str,
         baseline: List[str],
-        attack_parameter: int, # payload_size
-        template: str = None,
-        threshold: float = 0.5
+        attack_parameter: int,
+        template: str = None
 ) -> str:
-    command_adv = attack_template_prepend(command, baseline, attack_parameter, template)
-    command_adv = attack_evasive_tricks(command_adv, baseline, threshold)
+    command_adv = attack_template_prepend(command, baseline, int(attack_parameter * 128), template)
+    command_adv = attack_evasive_tricks(command_adv, baseline, attack_parameter)
     return command_adv
 
 
@@ -275,20 +274,32 @@ def attack_evasive_tricks(
     command_adv = command
 
     # replaces
+    python_renames = [
+            "cp /usr/bin/python /tmp/test; /tmp/test ",
+            "cp /usr/bin/python /tmp/python; /tmp/python ",
+        ]
     replace_maps = {
         # bash tricks
-        "sh -i": "sh -li",
-        ";exec": [";id;exec", ";find /home 2>/dev/null;exec"],
-        ";cat": [";id;cat", ";readlink;cat"],
+        "sh -i": [
+            "sh -li",
+            "sh -i -l",
+            "sh -a -i",
+            "sh -avi"
+        ],
+        # ";exec": [";id;exec", ";find /home 2>/dev/null;exec", ""], # not in templates
+        ";cat": [";id;cat", ";readlink;cat", ";whoami;cat", ";find /home 2>/dev/null;cat"],
 
         # nc tricks
-        "nc -e": ["nc -ne", "nc -v -e"],
+        "nc -e": ["nc -ne", "nc -v -e", "nc -env"],
         "nc ": ["ncat ", "nc.traditional "],
         
         # perl swaps
         "use Socket;": "use warnings; use Socket;",
         "perl -e": ["perl -S -e", "perl -t -e"],
-        "perl ": "cp /usr/bin/perl /tmp/test; /tmp/test ",
+        "perl ": [
+            "cp /usr/bin/perl /tmp/test; /tmp/test ",
+            "cp /usr/bin/perl /tmp/perl; /tmp/perl ",
+        ],
 
         # php swaps
         "php -r": "php -e -r",
@@ -301,15 +312,18 @@ def attack_evasive_tricks(
         ],
         "-rsocket -e": "-rsocket -a -e",
         "-e'spawn": """-e'puts"test".inspect;spawn""",
-        "ruby ": "cp /usr/bin/ruby /tmp/test; /tmp/test ",
+        "ruby ": [
+            "cp /usr/bin/ruby /tmp/test; /tmp/test ",
+            "cp /usr/bin/ruby /tmp/ruby; /tmp/ruby "
+        ],
 
         # python swaps
         "python -c": "python -b -c",
         "python3 -c": "python3 -b -c",
         "python ": "python2.7 ",
-        "python ": "cp /usr/bin/python /tmp/test; /tmp/test ",
-        "python3 ": "cp /usr/bin/python3 /tmp/test; /tmp/test ",
-        "python2.7 ": "cp /usr/bin/python2.7 /tmp/test; /tmp/test ",
+        "python ": python_renames,
+        "python3 ": python_renames,
+        "python2.7 ": python_renames,
         "import os": "import sys,os",
         "import socket": "import sys,socket",
         "os.system": "import os as bs;bs.system"
@@ -324,7 +338,9 @@ def attack_evasive_tricks(
                     command_adv = command_adv.replace(replace_src, random.choice(replace_dst))
     
     # ip manipulation
-    command_adv = replace_ip_with_decimal(command_adv)
+    chance = random.random()
+    if chance <= attack_parameter:
+        command_adv = replace_ip_with_decimal(command_adv)
 
     return command_adv
 
@@ -350,30 +366,29 @@ ADV_ATTACK_SUBSAMPLE = 5000
 EPOCHS = 10
 LIMIT = None
 
-PREFIX = "TEST_" if LIMIT is not None else ""
-
 MAX_LEN = 256 
 # NOTE: increased max len 128 -> 256 if compared to model architecture tests
 # Therefore, needed to reduce batch size to 512 so transformer fits on GPU
 
 BASELINE = load_nl2bash()
+PREFIX = "TEST_" if LIMIT is not None else ""
 
 # ATTACK NR.1:
-#ATTACK = attack_template_prepend
+# ATTACK = attack_template_prepend
 # ATTACK_PARAMETERS = [16, 32, 48, 64, 80, 96, 112, 128] # PAYLOAD_SIZES
 # NOTE: Total size of injected characters: PAYLOAD_SIZE + 23
 # since len(template) = 23 (w/o PAYLOAD) when template = """python3 -c "print('PAYLOAD')" """
-# LOGS_FOLDER = f"{PREFIX}logs_adversarial_evasion_nl2bash"
+# LOGS_FOLDER = os.path.join(f"{PREFIX}logs_adversarial_evasion", "nl2bash_prepend")
 
 # ATTACK NR.2:
 # ATTACK = attack_evasive_tricks
-# ATTACK_PARAMETERS = [0.1, 0.3, 0.5, 0.7, 0.9]
-# LOGS_FOLDER = f"{PREFIX}logs_adversarial_evasion_tricks"
+# ATTACK_PARAMETERS = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
+# LOGS_FOLDER = os.path.join(f"{PREFIX}logs_adversarial_evasion", "domain_knowledge")
 
 # ATTACK NR.3:
-ATTACK = attack_hybrid # loop over payload sizes, evasive tricks attack threshold fixed: 0.5
-ATTACK_PARAMETERS = [16, 32, 48, 64, 80, 96, 112, 128] # PAYLOAD_SIZES
-LOGS_FOLDER = f"{PREFIX}logs_adversarial_evasion_hybrid"
+ATTACK = attack_hybrid
+ATTACK_PARAMETERS = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
+LOGS_FOLDER = os.path.join(f"{PREFIX}logs_adversarial_evasion", "hybrid")
 
 os.makedirs(LOGS_FOLDER, exist_ok=True)
 

@@ -1,4 +1,3 @@
-# %%
 import os
 import time
 import torch
@@ -24,7 +23,7 @@ ROOT = os.path.dirname(os.path.abspath('__file__'))
 VOCAB_SIZE = 4096
 MAX_LEN = 128
 
-LOGS_FOLDER = "logs_models_one_class"
+LOGS_FOLDER = "logs_models_one_class_v2"
 os.makedirs(LOGS_FOLDER, exist_ok=True)
 
 TOKENIZER = wordpunct_tokenize
@@ -91,15 +90,10 @@ if LIMIT is not None:
 print('X_train_cmds: ', len(X_train_cmds))
 print('X_test_cmds: ', len(X_test_cmds))
 
-# %% [markdown]
-# ### Since these are one-class models -- preserving only malicious samples in the training set
+train_mask = y_train == 0
+X_train_cmds_one_class = np.array(X_train_cmds)[train_mask]
+y_train_one_class = np.array(y_train)[train_mask]
 
-# %%
-train_malicious_mask = y_train == 1
-X_train_cmds_malicous = np.array(X_train_cmds)[train_malicious_mask]
-y_train_malicous = np.array(y_train)[train_malicious_mask]
-
-# %%
 def fit_one_hot(X):
     oh = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
     print("[*] Fitting One-Hot encoder...")
@@ -114,7 +108,7 @@ if os.path.exists(oh_vectorizer_file):
     print("[*] Loading One-Hot vectorizer...")
     oh = pickle.load(open(oh_vectorizer_file, "rb"))
 else:
-    oh = fit_one_hot(X_train_cmds_malicous)
+    oh = fit_one_hot(X_train_cmds_one_class)
     with open(oh_vectorizer_file, "wb") as f:
         pickle.dump(oh, f)
 
@@ -122,16 +116,16 @@ else:
 print("[*] Transforming train and test sets...")
 
 now = time.time()
-X_train_onehot_malicious = oh.transform(X_train_cmds_malicous)
+X_train_onehot_one_class = oh.transform(X_train_cmds_one_class)
 print(f"[!] Finished transforming train set in {time.time() - now:.2f} seconds")
 
 now = time.time()
 X_test_onehot = oh.transform(X_test_cmds)
 print(f"[!] Finished transforming test set in {time.time() - now:.2f} seconds")
 
-print(f"[!] Shapes: X_train_onehot_malicious: {X_train_onehot_malicious.shape}, X_test_onehot: {X_test_onehot.shape}")
+print(f"[!] Shapes: X_train_onehot_one_class: {X_train_onehot_one_class.shape}, X_test_onehot: {X_test_onehot.shape}")
 
-# %%
+
 def train_and_predict(model, X_train, X_test, y_test, name=""):
     # training
     print("[*] Training model...")
@@ -161,39 +155,27 @@ def train_and_predict(model, X_train, X_test, y_test, name=""):
 
     return model_tpr, model_f1, model_acc, model_auc
 
-# %% [markdown]
 # ### OneClassSVM is really slow model:
 #   - takes 30 sec (optimal speed, nu='0.1') / 2 mins (best scores, nu=0.5) per 50k samples 
 #   - takes ~2h 30 min (optimal speed, nu='0.1') / ?? h (best scores, nu=0.5) per full dataset
-
-# %%
 # oc svm
 # for nu in [0.1, 0.3, 0.5, 0.7, 0.9]:
 #     print(f"\n[!] Nu: {nu}")
 #     oc_svm = OneClassSVM(kernel='rbf', gamma='auto', nu=nu)
 #     _ = train_and_predict(oc_svm, X_train_onehot_malicious, X_test_onehot, y_test, name=f"oc_svm_nu_{nu}")
 
-# %% [markdown]
 # ### SGD implementation of OneClassSVM is much faster
-
-# %%
 # oc svm sgd version
 for nu in [0.5, 0.9]:
     for tol in [1e-3, 1e-4, 1e-5]:
         print(f"\n[!] Nu: {nu} | tol: {tol}")
         oc_svm_sgd = SGDOneClassSVM(nu=nu, random_state=SEED, learning_rate='constant', eta0=0.1, tol=tol, max_iter=1000)
-        _ = train_and_predict(oc_svm_sgd, X_train_onehot_malicious, X_test_onehot, y_test, name=f"oc_svm_sgd_nu_{nu}_tol_{tol}")
+        _ = train_and_predict(oc_svm_sgd, X_train_onehot_one_class, X_test_onehot, y_test, name=f"oc_svm_sgd_nu_{nu}_tol_{tol}")
 
-# %%
-# isolation forest
+### Isolation Forest
 for contamination in ["auto", 0.1, 0.3, 0.5]:
     for max_samples in ['auto', 0.01, 0.05, 0.1, 0.3]:
         print(f"\n[!] Contamination: {contamination} | Max samples: {max_samples}")
         isolation_forest = IsolationForest(n_estimators=100, max_samples=0.1, contamination=contamination, 
                                     max_features=1.0, bootstrap=False, n_jobs=-1, random_state=SEED)
-        _ = train_and_predict(isolation_forest, X_train_onehot_malicious, X_test_onehot, y_test, name=f"isolation_forest_cont_{contamination}_max_samples_{max_samples}")
-
-# %%
-
-
-
+        _ = train_and_predict(isolation_forest, X_train_onehot_one_class, X_test_onehot, y_test, name=f"isolation_forest_cont_{contamination}_max_samples_{max_samples}")

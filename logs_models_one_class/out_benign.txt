@@ -1,0 +1,217 @@
+C:\Users\dtrizna\Code\Synapse\Linux>python3 ablation_models_one_class.py
+X_train_cmds:  533014
+X_test_cmds:  470129
+[*] Fitting One-Hot encoder...
+[!] Finished fitting One-Hot encoder in 4.58 seconds
+[*] Transforming train and test sets...
+[!] Finished transforming train set in 14.03 seconds
+[!] Finished transforming test set in 30.60 seconds
+[!] Shapes: X_train_onehot_one_class: (266513, 4096), X_test_onehot: (470129, 4096)
+
+[!] Nu: 0.5 | tol: 0.001
+[*] Training model...
+[*] Training model took 0.31 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 82.8729%
+Accuracy: 79.3338%
+AUC: 79.3342%
+
+[!] Nu: 0.5 | tol: 0.0001
+[*] Training model...
+[*] Training model took 0.31 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 82.8729%
+Accuracy: 79.3338%
+AUC: 79.3342%
+
+[!] Nu: 0.5 | tol: 1e-05
+[*] Training model...
+[*] Training model took 0.32 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 82.8729%
+Accuracy: 79.3338%
+AUC: 79.3342%
+
+[!] Nu: 0.9 | tol: 0.001
+[*] Training model...
+[*] Training model took 0.33 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 66.6658%
+Accuracy: 49.9990%
+AUC: 50.0000%
+
+[!] Nu: 0.9 | tol: 0.0001
+[*] Training model...
+[*] Training model took 0.33 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 66.6658%
+Accuracy: 49.9990%
+AUC: 50.0000%
+
+[!] Nu: 0.9 | tol: 1e-05
+[*] Training model...
+[*] Training model took 0.32 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 66.6658%
+Accuracy: 49.9990%
+AUC: 50.0000%
+
+[!] Contamination: auto | Max samples: auto
+[*] Training model...
+[*] Training model took 2.21 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 0.0000%
+Accuracy: 50.0010%
+AUC: 50.0000%
+
+[!] Contamination: auto | Max samples: 0.01
+[*] Training model...
+[*] Training model took 2.18 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 0.0000%
+Accuracy: 50.0010%
+AUC: 50.0000%
+
+[!] Contamination: auto | Max samples: 0.05
+[*] Training model...
+[*] Training model took 2.12 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 0.0000%
+Accuracy: 50.0010%
+AUC: 50.0000%
+
+[!] Contamination: auto | Max samples: 0.1
+[*] Training model...
+[*] Training model took 2.13 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 0.0000%
+Accuracy: 50.0010%
+AUC: 50.0000%
+
+[!] Contamination: auto | Max samples: 0.3
+[*] Training model...
+[*] Training model took 2.15 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 0.0000%
+Accuracy: 50.0010%
+AUC: 50.0000%
+
+[!] Contamination: 0.1 | Max samples: auto
+[*] Training model...
+[*] Training model took 8.91 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 64.8418%
+Accuracy: 69.9178%
+AUC: 69.9176%
+
+[!] Contamination: 0.1 | Max samples: 0.01
+[*] Training model...
+[*] Training model took 8.18 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 64.8418%
+Accuracy: 69.9178%
+AUC: 69.9176%
+
+[!] Contamination: 0.1 | Max samples: 0.05
+[*] Training model...
+[*] Training model took 8.24 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 64.8418%
+Accuracy: 69.9178%
+AUC: 69.9176%
+
+[!] Contamination: 0.1 | Max samples: 0.1
+[*] Training model...
+[*] Training model took 7.93 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 64.8418%
+Accuracy: 69.9178%
+AUC: 69.9176%
+
+[!] Contamination: 0.1 | Max samples: 0.3
+[*] Training model...
+[*] Training model took 7.65 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 64.8418%
+Accuracy: 69.9178%
+AUC: 69.9176%
+
+[!] Contamination: 0.3 | Max samples: auto
+[*] Training model...
+[*] Training model took 7.52 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 82.7988%
+Accuracy: 79.2257%
+AUC: 79.2261%
+
+[!] Contamination: 0.3 | Max samples: 0.01
+[*] Training model...
+[*] Training model took 7.66 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 82.7988%
+Accuracy: 79.2257%
+AUC: 79.2261%
+
+[!] Contamination: 0.3 | Max samples: 0.05
+[*] Training model...
+[*] Training model took 7.90 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 82.7988%
+Accuracy: 79.2257%
+AUC: 79.2261%
+
+[!] Contamination: 0.3 | Max samples: 0.1
+[*] Training model...
+[*] Training model took 7.70 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 82.7988%
+Accuracy: 79.2257%
+AUC: 79.2261%
+
+[!] Contamination: 0.3 | Max samples: 0.3
+[*] Training model...
+[*] Training model took 7.81 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 82.7988%
+Accuracy: 79.2257%
+AUC: 79.2261%
+
+[!] Contamination: 0.5 | Max samples: auto
+[*] Training model...
+[*] Training model took 7.82 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 82.7988%
+Accuracy: 79.2257%
+AUC: 79.2261%
+
+[!] Contamination: 0.5 | Max samples: 0.01
+[*] Training model...
+[*] Training model took 7.87 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 82.7988%
+Accuracy: 79.2257%
+AUC: 79.2261%
+
+[!] Contamination: 0.5 | Max samples: 0.05
+[*] Training model...
+[*] Training model took 7.77 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 82.7988%
+Accuracy: 79.2257%
+AUC: 79.2261%
+
+[!] Contamination: 0.5 | Max samples: 0.1
+[*] Training model...
+[*] Training model took 7.84 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 82.7988%
+Accuracy: 79.2257%
+AUC: 79.2261%
+
+[!] Contamination: 0.5 | Max samples: 0.3
+[*] Training model...
+[*] Training model took 7.63 seconds.
+TPR at FPR=1e-4: 0.0000%
+F1 score: 82.7988%
+Accuracy: 79.2257%
+AUC: 79.2261%

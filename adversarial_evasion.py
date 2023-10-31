@@ -392,7 +392,6 @@ LOGS_FOLDER = os.path.join(f"{PREFIX}logs_adversarial_evasion", "hybrid")
 
 os.makedirs(LOGS_FOLDER, exist_ok=True)
 
-
 if __name__ == "__main__":
     # ===========================================
     print(f"[!] Script start time: {time.ctime()}")
@@ -508,7 +507,7 @@ if __name__ == "__main__":
         if name == "mlp_onehot":
             # # ========== ONE-HOT TABULAR ENCODING ===========
             oh = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
-            print("[*] Fitting one-hot encoder...")
+            print("[*] Fitting One-Hot encoder...")
             now = time.time()
             X_train_onehot = oh.fit_transform(X_train_cmds)
             X_test_onehot = oh.transform(X_test_cmds)
@@ -555,7 +554,7 @@ if __name__ == "__main__":
                 epochs=EPOCHS,
                 learning_rate=LEARNING_RATE,
                 scheduler=SCHEDULER,
-                scheduler_budget= EPOCHS * len(Xy_train_loader)
+                scheduler_budget=EPOCHS * len(Xy_train_loader)
             )
             # copy best checkpoint to the LOGS_DIR for further tests
             checkpoint_path = os.path.join(LOGS_FOLDER, run_name + "_csv", "version_0", "checkpoints")

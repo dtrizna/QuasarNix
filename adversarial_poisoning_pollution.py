@@ -1,3 +1,5 @@
+# NOTE: CODE IS HORRIBLE -- BLOBS OF REPEATED SECTIONS, ETC.
+# DONE AS PoC, FOR FAST PROTOTYPING, NOT FOR SYSTEMATIC REPRODUCIBILITY
 import os
 import re
 import time
@@ -27,7 +29,7 @@ from lightning.lite.utilities.seed import seed_everything
 from src.models import SimpleMLPWithEmbedding, CNN1DGroupedModel, MeanTransformerEncoder, SimpleMLP, PyTorchLightningModel
 from src.lit_utils import LitProgressBar
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
-from src.data_utils import create_dataloader, commands_to_loader
+from src.data_utils import commands_to_loader
 
 
 def sigmoid(x):
@@ -79,7 +81,7 @@ def configure_trainer(name, log_folder, epochs, val_check_times=2):
     """Configure the PyTorch Lightning Trainer."""
 
     early_stop = EarlyStopping(
-        monitor="val_acc",
+        monitor="val_tpr",
         patience=5,
         min_delta=0.0001,
         verbose=True,
@@ -230,8 +232,8 @@ if __name__ == "__main__":
 
     ROOT = os.path.dirname(os.path.abspath(__file__))
     X_train_cmd, y_train, X_test_cmd, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd = load_data()
-    print(f"Sizes of train and test sets: {len(X_train_cmd)}, {len(X_test_cmd)}")
-    
+    print(f"[!] Sizes of train and test sets: {len(X_train_cmd)}, {len(X_test_cmd)}")
+
     # =============================================
     # DEFINING MODELS
     # =============================================
@@ -240,12 +242,11 @@ if __name__ == "__main__":
     cnn_model = CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[2, 3, 4, 5], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 301 K params
     mean_transformer_model = MeanTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
     mlp_tab_model_onehot = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
-    
+
     target_models = {
         "cnn": cnn_model,
         "mlp_onehot": mlp_tab_model_onehot,
-        "mean_transformer": mean_transformer_model,
-        #"mlp_seq": mlp_seq_model,
+        # "mean_transformer": mean_transformer_model, # keeps blue-screenning my laptop on inference
     }
 
     # ===========================================
@@ -254,6 +255,7 @@ if __name__ == "__main__":
 
     # NOTE: have to make separate test set for each case since 
     # encoding may differ because of training set poisoning
+    # ergo tokenization / encoding may change
     Xy_train_loader_poisoned = {}
     Xy_test_loader = {}
 
@@ -284,36 +286,38 @@ if __name__ == "__main__":
         if os.path.exists(oh_file):
             print(f"[!] Loading One-Hot encoder from '{oh_file}'...")
             with open(oh_file, "rb") as f:
-                oh = pickle.load(f)
+                tokenizer_oh = pickle.load(f)
         else:
-            oh = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
+            tokenizer_oh = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
             print("[*] Fitting One-Hot encoder...")
             now = time.time()
-            oh.fit(X_train_cmd_poisoned)
+            tokenizer_oh.fit(X_train_cmd_poisoned)
             print(f"[!] Fitting One-Hot encoder took: {time.time() - now:.2f}s") # ~90s
             with open(oh_file, "wb") as f:
-                pickle.dump(oh, f)
+                pickle.dump(tokenizer_oh, f)
         
-        X_train_onehot_poisoned = oh.transform(X_train_cmd_poisoned)
-        X_test_onehot = oh.transform(X_test_cmd)
-        
-        Xy_train_loader_poisoned[f'onehot'] = create_dataloader(X_train_onehot_poisoned, y=y_train_poisoned, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-        Xy_test_loader[f'onehot'] = create_dataloader(X_test_onehot, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+        # X_train_onehot_poisoned = oh.transform(X_train_cmd_poisoned)
+        # Xy_train_loader_poisoned[f'onehot'] = create_dataloader(X_train_onehot_poisoned, y=y_train_poisoned, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+        Xy_train_loader_poisoned[f'onehot'] = commands_to_loader(X_train_cmd_poisoned, tokenizer_oh, y=y_train_poisoned, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+
+        # X_test_onehot = oh.transform(X_test_cmd)
+        # Xy_test_loader[f'onehot'] = create_dataloader(X_test_onehot, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+        Xy_test_loader[f'onehot'] = commands_to_loader(X_test_cmd, tokenizer_oh, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
 
         # 5b. Embedding
-        tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE)
+        tokenizer_seq = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
         vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}_poison_ratio_{poisoning_ratio}.json")
         if os.path.exists(vocab_file):
                 print(f"[!] Loading vocab from '{vocab_file}'...")
-                tokenizer.load_vocab(vocab_file)
+                tokenizer_seq.load_vocab(vocab_file)
         else:
             print("[*] Building Tokenizer for Embedding vocab and encoding...")
-            X_train_tokens_poisoned = tokenizer.tokenize(X_train_cmd_poisoned)
-            tokenizer.build_vocab(X_train_tokens_poisoned)
-            tokenizer.dump_vocab(vocab_file)
+            X_train_tokens_poisoned = tokenizer_seq.tokenize(X_train_cmd_poisoned)
+            tokenizer_seq.build_vocab(X_train_tokens_poisoned)
+            tokenizer_seq.dump_vocab(vocab_file)
 
-        Xy_train_loader_poisoned[f'embed'] = commands_to_loader(X_train_cmd_poisoned, tokenizer, y=y_train_poisoned, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS, max_len=MAX_LEN)
-        Xy_test_loader[f'embed'] = commands_to_loader(X_test_cmd, tokenizer, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS, max_len=MAX_LEN)
+        Xy_train_loader_poisoned[f'embed'] = commands_to_loader(X_train_cmd_poisoned, tokenizer_seq, y=y_train_poisoned, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+        Xy_test_loader[f'embed'] = commands_to_loader(X_test_cmd, tokenizer_seq, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
 
         # ===========================================
         for name, target_model_poisoned in target_models.items():
@@ -373,7 +377,6 @@ if __name__ == "__main__":
             acc_test_poisoned = accuracy_score(y_test, y_test_pred_poisoned)
             auc_test_poisoned = roc_auc_score(y_test, y_test_pred_poisoned)
             misclassified_test_poisoned = np.where(y_test != y_test_pred_poisoned)[0]
-            # separate for malicious and benign
             misclassified_test_poisoned_malicious = np.where(y_test[misclassified_test_poisoned] == 1)[0]
             misclassified_test_poisoned_benign = np.where(y_test[misclassified_test_poisoned] == 0)[0]
             scores = {

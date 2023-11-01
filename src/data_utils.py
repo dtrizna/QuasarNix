@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 from scipy.sparse import csr_matrix
 
-from .preprocessors import CommandTokenizer
+from .preprocessors import CommandTokenizer, OneHotCustomVectorizer
 from typing import List, Tuple, Union
 
 
@@ -58,13 +58,11 @@ def create_dataloader(X, y=None, batch_size=1024, shuffle=False, workers=4):
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=workers, persistent_workers=True, pin_memory=True)
 
 
-def commands_to_loader(cmd: List[str], tokenizer: CommandTokenizer, workers: int, batch_size: int, y: np.ndarray = None, max_len: int = 128) -> DataLoader:
+def commands_to_loader(cmd: List[str], tokenizer: Union[CommandTokenizer, OneHotCustomVectorizer], workers: int, batch_size: int, y: np.ndarray = None) -> DataLoader:
     """Convert a list of commands to a DataLoader."""
-    tokens = tokenizer.tokenize(cmd)
-    ints = tokenizer.encode(tokens)
-    padded = tokenizer.pad(ints, max_len)
+    array = tokenizer.transform(cmd)
     if y is None:
-        loader = create_dataloader(padded, batch_size=batch_size, workers=workers)
+        loader = create_dataloader(array, batch_size=batch_size, workers=workers)
     else:
-        loader = create_dataloader(padded, y, batch_size=batch_size, workers=workers)
+        loader = create_dataloader(array, y, batch_size=batch_size, workers=workers)
     return loader

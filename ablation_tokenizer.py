@@ -167,7 +167,7 @@ if __name__ == "__main__":
             # =============================================
             # PREPING DATA FOR EMBEDDING ANALYSIS
             # =============================================
-            tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE)
+            tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
 
             # Build vocab and encode
             if t_name == "bpe":
@@ -189,8 +189,8 @@ if __name__ == "__main__":
                 X_test_ints = tokenizer.encode(X_test_tokens)
 
             # Pad sequences
-            X_train_padded = tokenizer.pad(X_train_ints, MAX_LEN)
-            X_test_padded = tokenizer.pad(X_test_ints, MAX_LEN)
+            X_train_padded = tokenizer.pad(X_train_ints)
+            X_test_padded = tokenizer.pad(X_test_ints)
 
             # creating dataloaders
             X_train_loader = create_dataloader(X_train_padded, y_train, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)

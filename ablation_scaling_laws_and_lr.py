@@ -24,7 +24,7 @@ from lightning.lite.utilities.seed import seed_everything
 from src.models import *
 from src.lit_utils import LitProgressBar
 from src.preprocessors import CommandTokenizer
-from src.data_utils import create_dataloader
+from src.data_utils import create_dataloader, commands_to_loader
 
 from typing import List
 from torch.utils.data import DataLoader
@@ -121,18 +121,6 @@ def train_lit_model(X_train_loader, X_test_loader, pytorch_model, name, log_fold
     return trainer, lightning_model
 
 
-def commands_to_loader(cmd: List[str], tokenizer: CommandTokenizer, y: np.ndarray = None) -> DataLoader:
-    """Convert a list of commands to a DataLoader."""
-    tokens = tokenizer.tokenize(cmd)
-    ints = tokenizer.encode(tokens)
-    padded = tokenizer.pad(ints, MAX_LEN)
-    if y is None:
-        loader = create_dataloader(padded, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-    else:
-        loader = create_dataloader(padded, y, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-    return loader
-
-
 def load_data():
     train_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_baseline.parquet/')) if x.endswith('.parquet')][0]
     test_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_baseline.parquet/')) if x.endswith('.parquet')][0]
@@ -214,7 +202,7 @@ if __name__ == "__main__":
     # =============================================
     # PREPING DATA
     # =============================================
-    tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE)
+    tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
 
     # ========== EMBEDDING ==========
     print("[*] Building vocab and encoding...")

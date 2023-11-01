@@ -27,7 +27,7 @@ LOGS_FOLDER = "logs_models_one_class_v2"
 os.makedirs(LOGS_FOLDER, exist_ok=True)
 
 TOKENIZER = wordpunct_tokenize
-tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE)
+tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
 
 def load_data():
     train_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_baseline.parquet/')) if x.endswith('.parquet')][0]

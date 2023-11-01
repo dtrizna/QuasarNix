@@ -504,21 +504,22 @@ if __name__ == "__main__":
         # PREPING DATA
         # =============================================
 
-        if name == "mlp_onehot":
+        if "onehot" in name:
             # # ========== ONE-HOT TABULAR ENCODING ===========
-            oh = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
-            print("[*] Fitting One-Hot encoder...")
-            now = time.time()
-            X_train_onehot = oh.fit_transform(X_train_cmds)
-            X_test_onehot = oh.transform(X_test_cmds)
-            print(f"[!] Fitting One-Hot encoder took: {time.time() - now:.2f}s") # ~90s
-
-            Xy_train_loader = create_dataloader(X_train_onehot, y=y_train, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-            Xy_test_loader = create_dataloader(X_test_onehot, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-
+            oh_tokenizer_file = os.path.join(LOGS_FOLDER, f"onehot_tokenizer_{VOCAB_SIZE}.pkl")
+            if os.path.exists(oh_tokenizer_file):
+                print(f"[!] Loading One-Hot tokenizer from '{oh_tokenizer_file}'...")
+                with open(oh_tokenizer_file, "rb") as f:
+                    tokenizer = pickle.load(f)
+            else:
+                tokenizer = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
+                print("[*] Fitting One-Hot encoder...")
+                now = time.time()
+                X_train_onehot = tokenizer.fit(X_train_cmds)
+                print(f"[!] Fitting One-Hot encoder took: {time.time() - now:.2f}s") # ~90s
         else:
             # ========== EMBEDDING ==========
-            tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE)
+            tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
             vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}.json")
             if os.path.exists(vocab_file):
                 print(f"[!] Loading vocab from '{vocab_file}'...")
@@ -529,9 +530,9 @@ if __name__ == "__main__":
                 tokenizer.build_vocab(X_train_tokens)
                 tokenizer.dump_vocab(vocab_file)
 
-            # creating dataloaders
-            Xy_train_loader = commands_to_loader(X_train_cmds, tokenizer, y=y_train, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS, max_len=MAX_LEN)
-            Xy_test_loader = commands_to_loader(X_test_cmds, tokenizer, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS, max_len=MAX_LEN)
+        # creating dataloaders
+        Xy_train_loader = commands_to_loader(X_train_cmds, tokenizer, y=y_train, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+        Xy_test_loader = commands_to_loader(X_test_cmds, tokenizer, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
 
         # =============================================
         # ORIGINAL MODEL TRAINING
@@ -576,12 +577,7 @@ if __name__ == "__main__":
             evasive_orig = {}
 
             # ORIG MODEL SCORES ON TEST SET W/O ATTACK
-            if name == "mlp_onehot":
-                X_test_malicious_without_attack_onehot = oh.transform(X_test_malicious_without_attack_cmd)
-                X_test_malicious_without_attack_loader = create_dataloader(X_test_malicious_without_attack_onehot, batch_size=BATCH_SIZE, workers=1)
-            else:
-                X_test_malicious_without_attack_loader = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1, max_len=MAX_LEN)
-            
+            X_test_malicious_without_attack_loader = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
             y_pred_orig_orig = predict(
                 X_test_malicious_without_attack_loader,
                 trainer_orig,
@@ -598,12 +594,7 @@ if __name__ == "__main__":
 
             # ORIG MODEL SCORES ON TEST SETS WITH ATTACK
             for attack_parameter, X_test_malicious_with_attack_cmd in X_test_malicious_with_attack_cmd_dict.items():
-                if name == "mlp_onehot":
-                    X_test_onehot_malicious_adv = oh.transform(X_test_malicious_with_attack_cmd)
-                    X_test_loader_malicious_adv = create_dataloader(X_test_onehot_malicious_adv, batch_size=BATCH_SIZE, workers=1)
-                else:
-                    X_test_loader_malicious_adv = commands_to_loader(X_test_malicious_with_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1, max_len=MAX_LEN)
-
+                X_test_loader_malicious_adv = commands_to_loader(X_test_malicious_with_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
                 y_pred_orig_adv = predict(
                     X_test_loader_malicious_adv,
                     trainer_orig,
@@ -636,13 +627,7 @@ if __name__ == "__main__":
             print(f"[*] Loading adversarially trained model from {model_file_adv}...")
             trainer_adv, lightning_model_adv = load_lit_model(model_file_adv, target_model_adv, run_name, LOGS_FOLDER, EPOCHS)
         else:
-            # X_train_cmd_adv, y_train_adv
-            if name == "mlp_onehot":
-                X_train_onehot_adv = oh.transform(X_train_cmd_adv)
-                Xy_train_loader_adv = create_dataloader(X_train_onehot_adv, y=y_train_adv, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-            else:
-                Xy_train_loader_adv = commands_to_loader(X_train_cmd_adv, tokenizer, y=y_train_adv, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS, max_len=MAX_LEN)
-
+            Xy_train_loader_adv = commands_to_loader(X_train_cmd_adv, tokenizer, y=y_train_adv, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
             # Train adversarial model
             print(f"[!] Training of adversarial model '{run_name}' started: {time.ctime()}")
             now = time.time()
@@ -675,12 +660,7 @@ if __name__ == "__main__":
             evasive_adv = {}
 
             # ADVERSARIAL MODEL SCORES ON TEST SET W/O ATTACK       
-            if name == "mlp_onehot":
-                X_test_malicious_without_attack_onehot = oh.transform(X_test_malicious_without_attack_cmd)
-                X_test_malicious_without_attack_loader = create_dataloader(X_test_malicious_without_attack_onehot, batch_size=BATCH_SIZE, workers=1)
-            else:
-                X_test_malicious_without_attack_loader = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1, max_len=MAX_LEN)
-            
+            X_test_malicious_without_attack_loader = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
             y_pred_adv_orig = predict(
                 X_test_malicious_without_attack_loader,
                 trainer_adv,
@@ -697,12 +677,7 @@ if __name__ == "__main__":
 
             # ADVERSARIAL MODEL SCORES ON TEST SETS WITH ATTACK
             for attack_parameter, X_test_malicious_with_attack_cmd in X_test_malicious_with_attack_cmd_dict.items():
-                if name == "mlp_onehot":
-                    X_test_onehot_malicious_adv = oh.transform(X_test_malicious_with_attack_cmd)
-                    X_test_loader_malicious_adv = create_dataloader(X_test_onehot_malicious_adv, batch_size=BATCH_SIZE, workers=1)
-                else:
-                    X_test_loader_malicious_adv = commands_to_loader(X_test_malicious_with_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1, max_len=MAX_LEN)
-
+                X_test_loader_malicious_adv = commands_to_loader(X_test_malicious_with_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
                 y_pred_adv_adv = predict(
                     X_test_loader_malicious_adv,
                     trainer_adv,

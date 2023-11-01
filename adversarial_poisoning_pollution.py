@@ -30,52 +30,8 @@ from src.models import SimpleMLPWithEmbedding, CNN1DGroupedModel, MeanTransforme
 from src.lit_utils import LitProgressBar
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
 from src.data_utils import commands_to_loader
+from src.scoring import collect_scores
 
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-
-def get_tpr_at_fpr(predicted_logits, true_labels, fprNeeded=1e-4):
-    if isinstance(predicted_logits, torch.Tensor):
-        predicted_probs = torch.sigmoid(predicted_logits).cpu().detach().numpy()
-    else:
-        predicted_probs = sigmoid(predicted_logits)
-    
-    if isinstance(true_labels, torch.Tensor):
-        true_labels = true_labels.cpu().detach().numpy()
-    
-    fpr, tpr, thresholds = roc_curve(true_labels, predicted_probs)
-    if all(np.isnan(fpr)):
-        return np.nan#, np.nan
-    else:
-        tpr_at_fpr = tpr[fpr <= fprNeeded][-1]
-        #threshold_at_fpr = thresholds[fpr <= fprNeeded][-1]
-        return tpr_at_fpr#, threshold_at_fpr
-
-
-def training_tabular(model, name, X_train_minhash, X_test_minhash, y_train, y_test, logs_folder):
-    print(f"[*] Training {name} model...")
-    model.fit(X_train_minhash, y_train)
-
-    # save trained model to LOGS_FOLDER/name
-    os.makedirs(f"{logs_folder}/{name}", exist_ok=True)
-    with open(f"{logs_folder}/{name}/model.pkl", "wb") as f:
-        pickle.dump(model, f)
-    
-    y_test_preds = model.predict_proba(X_test_minhash)[:,1]
-
-    tpr = get_tpr_at_fpr(y_test_preds, y_test)
-    f1 = f1_score(y_test, y_test_preds.round())
-    acc = accuracy_score(y_test, y_test_preds.round())
-    auc = roc_auc_score(y_test, y_test_preds)
-    
-    print(f"[!] {name} model scores: tpr={tpr:.4f}, f1={f1:.4f}, acc={acc:.4f}, auc={auc:.4f}")
-    
-    metrics_csv = pd.DataFrame({"tpr": [tpr], "f1": [f1], "acc": [acc], "auc": [auc]})
-    with open(f"{logs_folder}/{name}/metrics.csv", "w") as f:
-        metrics_csv.to_csv(f, index=False)
-    
 
 def configure_trainer(name, log_folder, epochs, val_check_times=2):
     """Configure the PyTorch Lightning Trainer."""
@@ -136,17 +92,6 @@ def train_lit_model(X_train_loader, X_test_loader, pytorch_model, name, log_fold
     trainer.fit(lightning_model, X_train_loader, X_test_loader)
 
     return trainer, lightning_model
-
-
-def predict(loader, trainer, lightning_model, decision_threshold=0.5, dump_logits=False):
-    """Get scores out of a loader."""
-    y_pred_logits = trainer.predict(model=lightning_model, dataloaders=loader)
-    y_pred = torch.sigmoid(torch.cat(y_pred_logits, dim=0)).numpy()
-    y_pred = np.array([1 if x > decision_threshold else 0 for x in y_pred])
-    if dump_logits:
-        assert isinstance(dump_logits, str), "Please provide a path to dump logits: dump_logits='path/to/logits.pkl'"
-        pickle.dump(y_pred_logits, open(dump_logits, "wb"))
-    return y_pred
 
 
 def load_data():
@@ -214,7 +159,7 @@ LEARNING_RATE = 1e-3
 SCHEDULER = "onecycle"
 
 PREFIX = "TEST_" if LIMIT is not None else ""
-LOGS_FOLDER = f"{PREFIX}logs_adversarial_poisoning"
+LOGS_FOLDER = f"{PREFIX}logs_adversarial_poisoning_pollution"
 os.makedirs(LOGS_FOLDER, exist_ok=True)
 
 
@@ -246,7 +191,7 @@ if __name__ == "__main__":
     target_models = {
         "cnn": cnn_model,
         "mlp_onehot": mlp_tab_model_onehot,
-        # "mean_transformer": mean_transformer_model, # keeps blue-screenning my laptop on inference
+        "mean_transformer": mean_transformer_model, # keeps blue-screenning my laptop on inference
     }
 
     # ===========================================
@@ -281,44 +226,6 @@ if __name__ == "__main__":
         # 4. Shuffle the dataset
         X_train_cmd_poisoned, y_train_poisoned = shuffle(X_train_non_shuffled_poisoned, y_train_non_shuffled_poisoned, random_state=SEED)
 
-        # 5a. One-Hot Encoding
-        oh_file = os.path.join(LOGS_FOLDER, f"onehot_vocab_{VOCAB_SIZE}_poison_ratio_{poisoning_ratio}.pkl")
-        if os.path.exists(oh_file):
-            print(f"[!] Loading One-Hot encoder from '{oh_file}'...")
-            with open(oh_file, "rb") as f:
-                tokenizer_oh = pickle.load(f)
-        else:
-            tokenizer_oh = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
-            print("[*] Fitting One-Hot encoder...")
-            now = time.time()
-            tokenizer_oh.fit(X_train_cmd_poisoned)
-            print(f"[!] Fitting One-Hot encoder took: {time.time() - now:.2f}s") # ~90s
-            with open(oh_file, "wb") as f:
-                pickle.dump(tokenizer_oh, f)
-        
-        # X_train_onehot_poisoned = oh.transform(X_train_cmd_poisoned)
-        # Xy_train_loader_poisoned[f'onehot'] = create_dataloader(X_train_onehot_poisoned, y=y_train_poisoned, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-        Xy_train_loader_poisoned[f'onehot'] = commands_to_loader(X_train_cmd_poisoned, tokenizer_oh, y=y_train_poisoned, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-
-        # X_test_onehot = oh.transform(X_test_cmd)
-        # Xy_test_loader[f'onehot'] = create_dataloader(X_test_onehot, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-        Xy_test_loader[f'onehot'] = commands_to_loader(X_test_cmd, tokenizer_oh, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-
-        # 5b. Embedding
-        tokenizer_seq = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
-        vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}_poison_ratio_{poisoning_ratio}.json")
-        if os.path.exists(vocab_file):
-                print(f"[!] Loading vocab from '{vocab_file}'...")
-                tokenizer_seq.load_vocab(vocab_file)
-        else:
-            print("[*] Building Tokenizer for Embedding vocab and encoding...")
-            X_train_tokens_poisoned = tokenizer_seq.tokenize(X_train_cmd_poisoned)
-            tokenizer_seq.build_vocab(X_train_tokens_poisoned)
-            tokenizer_seq.dump_vocab(vocab_file)
-
-        Xy_train_loader_poisoned[f'embed'] = commands_to_loader(X_train_cmd_poisoned, tokenizer_seq, y=y_train_poisoned, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-        Xy_test_loader[f'embed'] = commands_to_loader(X_test_cmd, tokenizer_seq, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-
         # ===========================================
         for name, target_model_poisoned in target_models.items():
             # ===========================================
@@ -333,12 +240,34 @@ if __name__ == "__main__":
                 continue
 
             if "onehot" in name:
-                Xy_train = Xy_train_loader_poisoned[f'onehot']
-                Xy_test = Xy_test_loader[f'onehot']
+                oh_file = os.path.join(LOGS_FOLDER, f"onehot_vocab_{VOCAB_SIZE}_poison_ratio_{poisoning_ratio}.pkl")
+                if os.path.exists(oh_file):
+                    print(f"[!] Loading One-Hot encoder from '{oh_file}'...")
+                    with open(oh_file, "rb") as f:
+                        tokenizer = pickle.load(f)
+                else:
+                    tokenizer = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
+                    print("[*] Fitting One-Hot encoder...")
+                    now = time.time()
+                    tokenizer.fit(X_train_cmd_poisoned)
+                    print(f"[!] Fitting One-Hot encoder took: {time.time() - now:.2f}s") # ~90s
+                    with open(oh_file, "wb") as f:
+                        pickle.dump(tokenizer, f)
             else:
-                Xy_train = Xy_train_loader_poisoned[f'embed']
-                Xy_test = Xy_test_loader[f'embed']
-            
+                tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
+                vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}_poison_ratio_{poisoning_ratio}.json")
+                if os.path.exists(vocab_file):
+                        print(f"[!] Loading vocab from '{vocab_file}'...")
+                        tokenizer.load_vocab(vocab_file)
+                else:
+                    print("[*] Building Tokenizer for Embedding vocab and encoding...")
+                    X_train_tokens_poisoned = tokenizer.tokenize(X_train_cmd_poisoned)
+                    tokenizer.build_vocab(X_train_tokens_poisoned)
+                    tokenizer.dump_vocab(vocab_file)
+
+            Xy_train_loader_poisoned = commands_to_loader(X_train_cmd_poisoned, tokenizer, y=y_train_poisoned, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+            Xy_test_loader = commands_to_loader(X_test_cmd, tokenizer, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+
             model_file_poisoned = os.path.join(LOGS_FOLDER, f"{run_name}.ckpt")
             if os.path.exists(model_file_poisoned):
                 print(f"[!] Loading original model from '{model_file_poisoned}'")
@@ -347,15 +276,15 @@ if __name__ == "__main__":
                 print(f"[!] Training original model '{run_name}' started: {time.ctime()}")
                 now = time.time()
                 trainer_poisoned, lightning_model_poisoned = train_lit_model(
-                    Xy_train,
-                    Xy_test,
+                    Xy_train_loader_poisoned,
+                    Xy_test_loader,
                     target_model_poisoned,
                     run_name,
                     log_folder=LOGS_FOLDER,
                     epochs=EPOCHS,
                     learning_rate=LEARNING_RATE,
                     scheduler=SCHEDULER,
-                    scheduler_budget=EPOCHS * len(Xy_train)
+                    scheduler_budget=EPOCHS * len(Xy_train_loader_poisoned)
                 )
                 # copy best checkpoint to the LOGS_DIR for further tests
                 last_version = [x for x in os.listdir(os.path.join(LOGS_FOLDER, run_name + "_csv")) if "version" in x][-1]
@@ -369,26 +298,12 @@ if __name__ == "__main__":
             # ===========================================
             # TESTING
             # ===========================================
-
             print(f"[*] Testing '{run_name}' model...")
-            y_test_pred_poisoned = predict(Xy_test, trainer_poisoned, lightning_model_poisoned, decision_threshold=0.5)
-            tpr_test_poisoned = get_tpr_at_fpr(y_test_pred_poisoned, y_test)
-            f1_test_poisoned = f1_score(y_test, y_test_pred_poisoned)
-            acc_test_poisoned = accuracy_score(y_test, y_test_pred_poisoned)
-            auc_test_poisoned = roc_auc_score(y_test, y_test_pred_poisoned)
-            misclassified_test_poisoned = np.where(y_test != y_test_pred_poisoned)[0]
-            misclassified_test_poisoned_malicious = np.where(y_test[misclassified_test_poisoned] == 1)[0]
-            misclassified_test_poisoned_benign = np.where(y_test[misclassified_test_poisoned] == 0)[0]
-            scores = {
-                "tpr": tpr_test_poisoned,
-                "f1": f1_test_poisoned,
-                "acc": acc_test_poisoned,
-                "auc": auc_test_poisoned,
-                "misclassified": len(misclassified_test_poisoned),
-                "misclassified_malicious": len(misclassified_test_poisoned_malicious),
-                "misclassified_benign": len(misclassified_test_poisoned_benign),
-            }
+            scores = collect_scores(
+                    Xy_test_loader,
+                    y_test,
+                    trainer_poisoned,
+                    lightning_model_poisoned,
+                    run_name = run_name)
             with open(scores_json_file, "w") as f:
                 json.dump(scores, f, indent=4)
-            print(f"[!] Scores for '{run_name}' model: f1={f1_test_poisoned:.4f}, acc={acc_test_poisoned:.4f}, tpr={tpr_test_poisoned:.4f}")
-            print(f"{35*' '}misclassified={len(misclassified_test_poisoned)}: malicious={len(misclassified_test_poisoned_malicious)} | benign={len(misclassified_test_poisoned_benign)}")

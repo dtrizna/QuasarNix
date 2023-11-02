@@ -1,20 +1,14 @@
 # NOTE: CODE IS HORRIBLE -- BLOBS OF REPEATED SECTIONS, ETC.
 # DONE AS PoC, FOR FAST PROTOTYPING, NOT FOR SYSTEMATIC REPRODUCIBILITY
 import os
-import re
 import time
 import json
 import pickle
-import torch
-import random
 import pandas as pd
 import numpy as np
-from tqdm import tqdm
 from sklearn.utils import shuffle
-from sklearn.metrics import roc_curve, f1_score, accuracy_score, roc_auc_score
 from watermark import watermark
 from typing import List, Union
-from shutil import copyfile
 from collections import Counter
 
 # tokenizers
@@ -22,86 +16,15 @@ from nltk.tokenize import wordpunct_tokenize, WhitespaceTokenizer
 whitespace_tokenize = WhitespaceTokenizer().tokenize
 
 # modeling
-import lightning as L
-from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
-from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 from lightning.lite.utilities.seed import seed_everything
-
-from src.models import CNN1DGroupedModel, MeanTransformerEncoder, SimpleMLP, PyTorchLightningModel
-from src.lit_utils import LitProgressBar
+from src.models import CNN1DGroupedModel, MeanTransformerEncoder, SimpleMLP
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
+from src.lit_utils import load_lit_model, train_lit_model
 from src.data_utils import commands_to_loader
 from src.scoring import collect_scores
 
 
-def configure_trainer(
-        name: str,
-        log_folder: str,
-        epochs: int,
-        # how many times to check val set within a single epoch
-        val_check_times: int = 2,
-        log_every_n_steps: int = 10,
-        monitor_metric: str = "val_tpr",
-        early_stop_patience: Union[None, int] = 5
-):
-    model_checkpoint = ModelCheckpoint(
-        monitor=monitor_metric,
-        save_top_k=1,
-        mode="max",
-        verbose=False,
-        save_last=True,
-        filename="{epoch}-tpr{val_tpr:.4f}-f1{val_f1:.4f}-acc{val_cc:.4f}"
-    )
-    callbacks = [ LitProgressBar(), model_checkpoint]
-
-    if early_stop_patience is not None:
-        early_stop = EarlyStopping(
-            monitor=monitor_metric,
-            patience=early_stop_patience,
-            min_delta=0.0001,
-            verbose=True,
-            mode="max"
-        )
-        callbacks.append(early_stop)
-
-    trainer = L.Trainer(
-        num_sanity_val_steps=LIT_SANITY_STEPS,
-        max_epochs=epochs,
-        accelerator=DEVICE,
-        devices=1,
-        callbacks=callbacks,
-        val_check_interval=1/val_check_times,
-        log_every_n_steps=log_every_n_steps,
-        logger=[
-            CSVLogger(save_dir=log_folder, name=f"{name}_csv"),
-            TensorBoardLogger(save_dir=log_folder, name=f"{name}_tb")
-        ]
-    )
-
-    # Ensure folders for logging exist
-    os.makedirs(os.path.join(log_folder, f"{name}_tb"), exist_ok=True)
-    os.makedirs(os.path.join(log_folder, f"{name}_csv"), exist_ok=True)
-
-    return trainer
-
-
-def load_lit_model(model_file, pytorch_model, name, log_folder, epochs):
-    lightning_model = PyTorchLightningModel.load_from_checkpoint(checkpoint_path=model_file, model=pytorch_model)
-    trainer = configure_trainer(name, log_folder, epochs)
-    return trainer, lightning_model
-
-
-def train_lit_model(X_train_loader, X_test_loader, pytorch_model, name, log_folder, epochs=10, learning_rate=1e-3, scheduler=None, scheduler_budget=None):
-    lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=learning_rate, scheduler=scheduler, scheduler_step_budget=scheduler_budget)
-    trainer = configure_trainer(name, log_folder, epochs)
-
-    print(f"[*] Training '{name}' model...")
-    trainer.fit(lightning_model, X_train_loader, X_test_loader)
-
-    return trainer, lightning_model
-
-
-def load_data():
+def load_data(seed):
     """
     NOTE: 
         First shuffle the data -- to take random elements from each class.
@@ -119,10 +42,10 @@ def load_data():
     test_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/test_rvrs.parquet/', test_rvrs_parquet_file))
 
     if LIMIT is not None:
-        X_train_baseline_cmd = shuffle(train_baseline_df['cmd'].values.tolist(), random_state=SEED)[:LIMIT//2]
-        X_train_malicious_cmd = shuffle(train_malicious_df['cmd'].values.tolist(), random_state=SEED)[:LIMIT//2]
-        X_test_baseline_cmd = shuffle(test_baseline_df['cmd'].values.tolist(), random_state=SEED)[:LIMIT//2]
-        X_test_malicious_cmd = shuffle(test_malicious_df['cmd'].values.tolist(), random_state=SEED)[:LIMIT//2]
+        X_train_baseline_cmd = shuffle(train_baseline_df['cmd'].values.tolist(), random_state=seed)[:LIMIT//2]
+        X_train_malicious_cmd = shuffle(train_malicious_df['cmd'].values.tolist(), random_state=seed)[:LIMIT//2]
+        X_test_baseline_cmd = shuffle(test_baseline_df['cmd'].values.tolist(), random_state=seed)[:LIMIT//2]
+        X_test_malicious_cmd = shuffle(test_malicious_df['cmd'].values.tolist(), random_state=seed)[:LIMIT//2]
     else:
         X_train_baseline_cmd = train_baseline_df['cmd'].values.tolist()
         X_train_malicious_cmd = train_malicious_df['cmd'].values.tolist()
@@ -131,11 +54,11 @@ def load_data():
 
     X_train_non_shuffled = X_train_baseline_cmd + X_train_malicious_cmd
     y_train = np.array([0] * len(X_train_baseline_cmd) + [1] * len(X_train_malicious_cmd), dtype=np.int8)
-    X_train_cmds, y_train = shuffle(X_train_non_shuffled, y_train, random_state=SEED)
+    X_train_cmds, y_train = shuffle(X_train_non_shuffled, y_train, random_state=seed)
 
     X_test_non_shuffled = X_test_baseline_cmd + X_test_malicious_cmd
     y_test = np.array([0] * len(X_test_baseline_cmd) + [1] * len(X_test_malicious_cmd), dtype=np.int8)
-    X_test_cmds, y_test = shuffle(X_test_non_shuffled, y_test, random_state=SEED)
+    X_test_cmds, y_test = shuffle(X_test_non_shuffled, y_test, random_state=seed)
 
     return X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd
 
@@ -145,6 +68,35 @@ def load_nl2bash():
         baseline = f.readlines()
     return baseline
 
+
+def load_tokenizer(tokenizer_type, train_cmd, suffix="", logs_folder="./"):
+    if "onehot" in tokenizer_type:
+        oh_file = os.path.join(logs_folder, f"onehot_vocab_{VOCAB_SIZE}{suffix}.pkl")
+        if os.path.exists(oh_file):
+            print(f"[!] Loading One-Hot encoder from '{oh_file}'...")
+            with open(oh_file, "rb") as f:
+                tokenizer = pickle.load(f)
+        else:
+            tokenizer = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
+            print("[*] Fitting One-Hot encoder...")
+            now = time.time()
+            tokenizer.fit(train_cmd)
+            print(f"[!] Fitting One-Hot encoder took: {time.time() - now:.2f}s") # ~90s
+            with open(oh_file, "wb") as f:
+                pickle.dump(tokenizer, f)
+    else:
+        tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
+        vocab_file = os.path.join(logs_folder, f"wordpunct_vocab_{VOCAB_SIZE}{suffix}.json")
+        if os.path.exists(vocab_file):
+                print(f"[!] Loading vocab from '{vocab_file}'...")
+                tokenizer.load_vocab(vocab_file)
+        else:
+            print("[*] Building Tokenizer for Embedding vocab and encoding...")
+            X_train_tokens_poisoned = tokenizer.tokenize(train_cmd)
+            tokenizer.build_vocab(X_train_tokens_poisoned)
+            tokenizer.dump_vocab(vocab_file)
+    
+    return tokenizer
 
 # ==================
 # BACKDOOR CODE
@@ -196,63 +148,61 @@ def backdoor_command(backdoor: Union[str, List], command: str = None, template: 
         return payload + ";" + command
 
 
-SEED = 33
-
 MAX_LEN = 256
 VOCAB_SIZE = 4096
 EMBEDDED_DIM = 64
-BATCH_SIZE = 256
+BATCH_SIZE = 2048 # 256/512 if training transformer
 DROPOUT = 0.5
+TOKENIZER = wordpunct_tokenize
 
 BASELINE = load_nl2bash()
 
 # TEST
-TEST_SET_SUBSAMPLE = 50
-EPOCHS = 2
-LIMIT = 1000
-POISONING_RATIOS = [0, 0.1, 0.5] # percentage from baseline
-BACKDOOR_TOKENS = [2, 32]
-LIT_SANITY_STEPS = 0
-DATALOADER_WORKERS = 1
-DEVICE = "cpu"
+# EPOCHS = 2
+# LIMIT = 1000
+# TEST_SET_SUBSAMPLE = 50
+# POISONING_RATIOS = [0, 0.01, 0.1] # percentage from baseline
+# BACKDOOR_TOKENS = [2, 32]
+# LIT_SANITY_STEPS = 0
+# DATALOADER_WORKERS = 1
+# DEVICE = "cpu"
 
 # PROD
-# TEST_SET_SUBSAMPLE = 5000
-# EPOCHS = 10
-# LIMIT = None
-# # POISONING_RATIOS = [0, 0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.3, 0.5] # percentage from baseline
-# POISONING_RATIOS = [0, 0.001, 0.01, 0.1, 0.5] # percentage smaller
-# BACKDOOR_TOKENS = [2, 4, 8, 16, 32]
-# LIT_SANITY_STEPS = 1
-# DATALOADER_WORKERS = 4
-# DEVICE = "gpu"
+EPOCHS = 10
+LIMIT = 100000
+TEST_SET_SUBSAMPLE = 5000
+POISONING_RATIOS = [0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1] # percentage from baseline
+BACKDOOR_TOKENS = [2, 4, 8, 16, 32]
+LIT_SANITY_STEPS = 1
+DATALOADER_WORKERS = 4
+DEVICE = "gpu"
 
 LEARNING_RATE = 1e-3
 SCHEDULER = "onecycle"
 
-PREFIX = "TEST_" if LIMIT is not None else ""
-LOGS_FOLDER = f"{PREFIX}logs_adversarial_poisoning_watermark"
-os.makedirs(LOGS_FOLDER, exist_ok=True)
+ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT_LOG_FOLDER = os.path.join(ROOT, f"logs_adversarial_poisoning_backdoor")
 
 
-if __name__ == "__main__":
+def main(seed):
+    subfolder = f"seed_{seed}_lim_{LIMIT}"
+    log_folder = os.path.join(ROOT_LOG_FOLDER, subfolder)
+    os.makedirs(log_folder, exist_ok=True)
+
     # ===========================================
     print(f"[!] Script start time: {time.ctime()}")
     print(watermark(packages="torch,lightning,sklearn", python=True))
-
-    TOKENIZER = wordpunct_tokenize
-    seed_everything(SEED)
+    seed_everything(seed)
 
     # ============================================
     # LOADING DATA
     # ============================================
 
-    ROOT = os.path.dirname(os.path.abspath(__file__))
-    X_train_cmd, y_train, X_test_cmd, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd = load_data()
+    X_train_cmd, y_train, X_test_cmd, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, _ = load_data(seed)
     print(f"Sizes of train and test sets: {len(X_train_cmd)}, {len(X_test_cmd)}")
 
     # randomly subsample of backdoor evasive performance attack
-    sample_file = os.path.join(LOGS_FOLDER, f"X_test_malicious_without_attack_cmd_sample_{TEST_SET_SUBSAMPLE}.json")
+    sample_file = os.path.join(log_folder, f"X_test_malicious_without_attack_cmd_sample_{TEST_SET_SUBSAMPLE}.json")
     if os.path.exists(sample_file):
         print(f"[*] Loading malicious test set sample from '{sample_file}'")
         with open(sample_file, "r", encoding="utf-8") as f:
@@ -268,9 +218,34 @@ if __name__ == "__main__":
     # DEFINING MODELS
     # =============================================
 
-    cnn_model = CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[2, 3, 4, 5], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 301 K params
-    mean_transformer_model = MeanTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
-    mlp_tab_model_onehot = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
+    cnn_model = CNN1DGroupedModel(
+        vocab_size=VOCAB_SIZE,
+        embed_dim=EMBEDDED_DIM,
+        num_channels=32,
+        kernel_sizes=[2, 3, 4, 5],
+        mlp_hidden_dims=[64, 32],
+        output_dim=1,
+        dropout=DROPOUT
+    ) # 301 K params
+
+    mlp_tab_model_onehot = SimpleMLP(
+        input_dim=VOCAB_SIZE,
+        output_dim=1,
+        hidden_dim=[64, 32],
+        dropout=DROPOUT
+    ) # 264 K params
+
+    mean_transformer_model = MeanTransformerEncoder(
+        vocab_size=VOCAB_SIZE,
+        d_model=EMBEDDED_DIM,
+        nhead=4,
+        num_layers=2,
+        dim_feedforward=128,
+        max_len=MAX_LEN,
+        dropout=DROPOUT,
+        mlp_hidden_dims=[64,32],
+        output_dim=1
+    ) # 335 K params
     
     target_models = {
         "cnn": cnn_model,
@@ -278,80 +253,76 @@ if __name__ == "__main__":
         # "mean_transformer": mean_transformer_model,
     }
 
-    # ===========================================
-    # BACKDOOR SCENARIO
-    # ===========================================
-
     X_train_baseline_nr = len(X_train_baseline_cmd)
     for poisoning_ratio in POISONING_RATIOS:
-        poisoned_samples = int(X_train_baseline_nr * (poisoning_ratio/100))
-        print(f"[*] Poisoning train set... Ratio: {poisoning_ratio:.3f}% | Poisoned samples: {poisoned_samples}")
+        nr_of_poisoned_samples = int(X_train_baseline_nr * (poisoning_ratio/100))
+        print(f"[*] Run for Poisoning Ratio: {poisoning_ratio:.3f}% | Poisoned samples: {nr_of_poisoned_samples}")
 
-        # ================= One-Hot Encoding =================
-        oh_file = os.path.join(LOGS_FOLDER, f"onehot_vocab_{VOCAB_SIZE}_poison_ratio_{poisoning_ratio}.pkl")
-        if os.path.exists(oh_file):
-            print(f"[!] Loading One-Hot encoder from '{oh_file}'...")
-            with open(oh_file, "rb") as f:
-                tokenizer_oh = pickle.load(f)
-        else:
-            tokenizer_oh = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
-            print("[*] Fitting One-Hot encoder...")
-            now = time.time()
-            tokenizer_oh.fit(X_train_cmd)
-            print(f"[!] Fitting One-Hot encoder took: {time.time() - now:.2f}s") # ~90s
-            with open(oh_file, "wb") as f:
-                pickle.dump(tokenizer_oh, f)
-        
-        # ================= Embedding =================
-        tokenizer_seq = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
-        vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}_poison_ratio_{poisoning_ratio}.json")
-        if os.path.exists(vocab_file):
-                print(f"[!] Loading vocab from '{vocab_file}'...")
-                tokenizer_seq.load_vocab(vocab_file)
-        else:
-            print("[*] Building Tokenizer for Embedding vocab and encoding...")
-            X_train_tokens = tokenizer_seq.tokenize(X_train_cmd)
-            tokenizer_seq.build_vocab(X_train_tokens)
-            tokenizer_seq.dump_vocab(vocab_file)
-        
         # =======================================
         # BACKDOORING TRAINING SET FOR EACH MODEL
         # ======================================
-        for backdoor_tokens in BACKDOOR_TOKENS:
-            if poisoning_ratio == 0 and backdoor_tokens != BACKDOOR_TOKENS[0]:
+
+        for nr_of_backdoor_tokens in BACKDOOR_TOKENS:
+            if poisoning_ratio == 0 and nr_of_backdoor_tokens != BACKDOOR_TOKENS[0]:
                 continue # do this only once for non-polluted dataset to get score baseline
             for name, model in target_models.items():
-                print(f"[*] Poisoning train set of '{name}' model | Backdoor tokens: {backdoor_tokens}")
+                print(f"[*] Poisoning train set of '{name}' model | Backdoor tokens: {nr_of_backdoor_tokens}")
                 run_name = f"{name}_poison_ratio_{poisoning_ratio}"
-                run_name = run_name if poisoning_ratio == 0 else run_name + f"_backdoor_tokens_{backdoor_tokens}"
+                run_name = run_name if poisoning_ratio == 0 else run_name + f"_backdoor_tokens_{nr_of_backdoor_tokens}"
 
-                poisoned_sample_file = os.path.join(LOGS_FOLDER, f"poisoned_samples_{TEST_SET_SUBSAMPLE}_{run_name}.json")
-                scores_json_file = os.path.join(LOGS_FOLDER, f"poisoned_scores_{run_name}.json")
+                poisoned_sample_file = os.path.join(log_folder, f"poisoned_samples_{TEST_SET_SUBSAMPLE}_{run_name}.json")
+                scores_json_file = os.path.join(log_folder, f"poisoned_scores_{run_name}.json")
                 if os.path.exists(scores_json_file):
                     print(f"[!] Scores already calculated for '{run_name}'! Skipping...")
                     continue
 
-                tokenizer = tokenizer_oh if "onehot" in name else tokenizer_seq
-
-                # TRAINING SET -- single backdoor, placed into baseline 'poisoned_samples' times
-                backdoor = create_backdoor(X_train_baseline_cmd, tokenizer, backdoor_tokens)
+                tokenizer = load_tokenizer(
+                    tokenizer_type=name,
+                    train_cmd=X_train_cmd,
+                    suffix=f"_poisoned_samples_{nr_of_poisoned_samples}_ratio_{poisoning_ratio}",
+                    logs_folder=log_folder
+                )
+                
+                # TRAINING SET -- single backdoor, placed into baseline 'nr_of_poisoned_samples' times
+                # ATTACKER DOESN'T KNOW TRUE BASELINE, CAN INFER FROM MALICIOUS TRAIN SET + PUBLIC SOURCES
+                backdoor_cmd_space = X_train_malicious_cmd + BASELINE
+                backdoor = create_backdoor(backdoor_cmd_space, tokenizer, nr_of_backdoor_tokens)
                 backdoor_cmd = backdoor_command(backdoor)
                 print(f"[DBG] Backdoor cmd: ", backdoor_cmd)
 
-                X_train_cmd_backdoor = [backdoor_cmd] * poisoned_samples
-                y_train_backdoor = np.zeros(poisoned_samples, dtype=np.int8)
+                X_train_cmd_backdoor = [backdoor_cmd] * nr_of_poisoned_samples
+                y_train_backdoor = np.zeros(nr_of_poisoned_samples, dtype=np.int8)
 
                 X_train_cmd_poisoned = X_train_cmd_backdoor + X_train_cmd
                 y_train_poisoned = np.concatenate([y_train_backdoor, y_train])
-                X_train_cmd_poisoned, y_train_poisoned = shuffle(X_train_cmd_poisoned, y_train_poisoned, random_state=SEED)
+                X_train_cmd_poisoned, y_train_poisoned = shuffle(X_train_cmd_poisoned, y_train_poisoned, random_state=seed)
 
-                Xy_train_loader_poisoned = commands_to_loader(X_train_cmd_poisoned, tokenizer, y=y_train_poisoned, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-                Xy_test_loader_orig_full = commands_to_loader(X_test_cmd, tokenizer, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+                Xy_train_loader_poisoned = commands_to_loader(
+                    X_train_cmd_poisoned,
+                    tokenizer,
+                    y=y_train_poisoned,
+                    batch_size=BATCH_SIZE,
+                    workers=DATALOADER_WORKERS
+                )
+                Xy_test_loader_orig_full = commands_to_loader(
+                    X_test_cmd,
+                    tokenizer,
+                    y=y_test,
+                    batch_size=BATCH_SIZE,
+                    workers=DATALOADER_WORKERS
+                )
 
-                model_file_poisoned = os.path.join(LOGS_FOLDER, f"{run_name}.ckpt")
+                model_file_poisoned = os.path.join(log_folder, f"{run_name}.ckpt")
                 if os.path.exists(model_file_poisoned):
                     print(f"[!] Loading original model from '{model_file_poisoned}'")
-                    trainer_poisoned, lightning_model_poisoned = load_lit_model(model_file_poisoned, model, run_name, LOGS_FOLDER, EPOCHS)
+                    trainer_poisoned, lightning_model_poisoned = load_lit_model(
+                        model_file_poisoned,
+                        model,
+                        run_name,
+                        log_folder,
+                        EPOCHS,
+                        DEVICE,
+                        LIT_SANITY_STEPS)
                 else:
                     print(f"[!] Training original model '{run_name}' started: {time.ctime()}")
                     now = time.time()
@@ -360,18 +331,14 @@ if __name__ == "__main__":
                         Xy_test_loader_orig_full,
                         model,
                         run_name,
-                        log_folder=LOGS_FOLDER,
+                        log_folder=log_folder,
                         epochs=EPOCHS,
                         learning_rate=LEARNING_RATE,
                         scheduler=SCHEDULER,
-                        scheduler_budget=EPOCHS * len(Xy_train_loader_poisoned)
-                    )
-                    # copy best checkpoint to the LOGS_DIR for further tests
-                    last_version = [x for x in os.listdir(os.path.join(LOGS_FOLDER, run_name + "_csv")) if "version" in x][-1]
-                    checkpoint_path = os.path.join(LOGS_FOLDER, run_name + "_csv", last_version, "checkpoints")
-                    best_checkpoint_name = [x for x in os.listdir(checkpoint_path) if x != "last.ckpt"][0]
-                    best_checkpoint_path = os.path.join(checkpoint_path, best_checkpoint_name)
-                    copyfile(best_checkpoint_path, model_file_poisoned)
+                        scheduler_budget=EPOCHS * len(Xy_train_loader_poisoned),
+                        model_file = model_file_poisoned,
+                        device=DEVICE,
+                        lit_sanity_steps=LIT_SANITY_STEPS)
                     print(f"[!] Training of '{run_name}' ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")
 
                 # ===========================================
@@ -385,24 +352,36 @@ if __name__ == "__main__":
                     json.dump(X_test_malicious_cmd_poisoned, f, indent=4)
                 y_test_malicious_poisoned = np.ones(len(X_test_malicious_cmd_poisoned), dtype=np.int8)
 
-                Xy_test_loader_poisoned = commands_to_loader(X_test_malicious_cmd_poisoned, tokenizer, y=y_test_malicious_poisoned, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+                Xy_test_loader_poisoned = commands_to_loader(
+                    X_test_malicious_cmd_poisoned,
+                    tokenizer,
+                    y=y_test_malicious_poisoned,
+                    batch_size=BATCH_SIZE,
+                    workers=DATALOADER_WORKERS
+                )
                 scores = collect_scores(
                     Xy_test_loader_poisoned,
                     y_test_malicious_poisoned,
                     trainer_poisoned,
                     lightning_model_poisoned,
-                    scores = None,
+                    scores=None,
                     score_suffix="_backdoor",
                     run_name=run_name
                 )
 
-                Xy_test_loader_orig = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer, y=y_test_malicious_poisoned, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+                Xy_test_loader_orig = commands_to_loader(
+                    X_test_malicious_without_attack_cmd,
+                    tokenizer,
+                    y=y_test_malicious_poisoned,
+                    batch_size=BATCH_SIZE,
+                    workers=DATALOADER_WORKERS
+                )
                 scores = collect_scores(
                     Xy_test_loader_orig,
                     y_test_malicious_poisoned,
                     trainer_poisoned,
                     lightning_model_poisoned,
-                    scores = scores,
+                    scores=scores,
                     score_suffix="_orig",
                     run_name=run_name
                 )
@@ -413,7 +392,7 @@ if __name__ == "__main__":
                     y_test,
                     trainer_poisoned,
                     lightning_model_poisoned,
-                    scores = scores,
+                    scores=scores,
                     score_suffix="_orig_full",
                     run_name=run_name
                 )
@@ -421,3 +400,8 @@ if __name__ == "__main__":
                 # dump
                 with open(scores_json_file, "w") as f:
                     json.dump(scores, f, indent=4)
+
+if __name__ == "__main__":
+    seeds = [0, 33, 42]
+    for seed in seeds:
+        main(seed)

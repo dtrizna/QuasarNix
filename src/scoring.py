@@ -16,30 +16,32 @@ def sigmoid(x):
 def predict(loader, trainer, lightning_model, decision_threshold=0.5, dump_logits=False):
     """Get scores out of a loader."""
     y_pred_logits = trainer.predict(model=lightning_model, dataloaders=loader)
-    y_pred = torch.sigmoid(torch.cat(y_pred_logits, dim=0)).numpy()
-    y_pred = np.array([1 if x > decision_threshold else 0 for x in y_pred])
+    y_pred_logits = torch.cat(y_pred_logits, dim=0)
+    y_pred_probs = torch.sigmoid(y_pred_logits).numpy()
+    y_pred = np.array([1 if x > decision_threshold else 0 for x in y_pred_probs])
     if dump_logits:
         assert isinstance(dump_logits, str), "Please provide a path to dump logits: dump_logits='path/to/logits.pkl'"
         pickle.dump(y_pred_logits, open(dump_logits, "wb"))
-    return y_pred
+    return y_pred, y_pred_logits.numpy()
 
 
-def get_tpr_at_fpr(true_labels, predicted_logits, fprNeeded=1e-4, logits=True):
-    if isinstance(predicted_logits, torch.Tensor):
-        predicted_probs = torch.sigmoid(predicted_logits).cpu().detach().numpy()
-    else:
-        predicted_probs = sigmoid(predicted_logits)
+def get_tpr_at_fpr(true_labels, predicted_labels, fprNeeded=1e-4, logits=True, include_thresholds=False):
+    if logits:
+        if isinstance(predicted_labels, torch.Tensor):
+            predicted_labels = torch.sigmoid(predicted_labels).cpu().detach().numpy()
+        else:
+            predicted_labels = sigmoid(predicted_labels)
     
     if isinstance(true_labels, torch.Tensor):
         true_labels = true_labels.cpu().detach().numpy()
     
-    fpr, tpr, thresholds = roc_curve(true_labels, predicted_probs)
+    fpr, tpr, thresholds = roc_curve(true_labels, predicted_labels)
     if all(np.isnan(fpr)):
-        return np.nan#, np.nan
+        return (0, 0) if include_thresholds else 0
     else:
         tpr_at_fpr = tpr[fpr <= fprNeeded][-1]
-        #threshold_at_fpr = thresholds[fpr <= fprNeeded][-1]
-        return tpr_at_fpr#, threshold_at_fpr
+        threshold_at_fpr = thresholds[fpr <= fprNeeded][-1]
+        return (tpr_at_fpr, threshold_at_fpr) if include_thresholds else tpr_at_fpr
 
 
 def collect_scores(
@@ -51,8 +53,8 @@ def collect_scores(
         score_suffix: str = "",
         run_name: str = "",
         verbose: bool = True) -> dict:
-    y_test_pred = predict(Xy_test_loader, trainer, lightning_model, decision_threshold=0.5)
-    tpr_test_poisoned = get_tpr_at_fpr(y_test, y_test_pred)
+    y_test_pred, y_test_pred_logits = predict(Xy_test_loader, trainer, lightning_model, decision_threshold=0.5)
+    tpr_test_poisoned = get_tpr_at_fpr(y_test, y_test_pred_logits, logits=True)
     f1_test_poisoned = f1_score(y_test, y_test_pred)
     acc_test_poisoned = accuracy_score(y_test, y_test_pred)
     misclassified_test_poisoned_idxs = np.where(y_test != y_test_pred)[0]

@@ -279,7 +279,7 @@ def main(seed):
                 tokenizer = load_tokenizer(
                     tokenizer_type=name,
                     train_cmd=X_train_cmd,
-                    suffix=f"_poison_samples_{nr_of_poisoned_samples}_ratio_{poisoning_ratio}",
+                    suffix=f"_train_set_poison_samples_{nr_of_poisoned_samples}_ratio_{poisoning_ratio}",
                     logs_folder=log_folder
                 )
                 

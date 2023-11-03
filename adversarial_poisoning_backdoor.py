@@ -161,7 +161,7 @@ BASELINE = load_nl2bash()
 # EPOCHS = 2
 # LIMIT = 1000
 # TEST_SET_SUBSAMPLE = 50
-# POISONING_RATIOS = [0, 0.01, 0.1] # percentage from baseline
+# POISONING_RATIOS = [0, 0.01, 0.1]
 # BACKDOOR_TOKENS = [2, 32]
 # LIT_SANITY_STEPS = 0
 # DATALOADER_WORKERS = 1
@@ -171,7 +171,7 @@ BASELINE = load_nl2bash()
 EPOCHS = 10
 LIMIT = 100000
 TEST_SET_SUBSAMPLE = 5000
-POISONING_RATIOS = [0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1] # percentage from baseline
+POISONING_RATIOS = [0, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3]
 BACKDOOR_TOKENS = [2, 4, 8, 16, 32]
 LIT_SANITY_STEPS = 1
 DATALOADER_WORKERS = 4
@@ -202,7 +202,7 @@ def main(seed):
     print(f"Sizes of train and test sets: {len(X_train_cmd)}, {len(X_test_cmd)}")
 
     # randomly subsample of backdoor evasive performance attack
-    sample_file = os.path.join(log_folder, f"X_test_malicious_without_attack_cmd_sample_{TEST_SET_SUBSAMPLE}.json")
+    sample_file = os.path.join(log_folder, f"test_set_subsample_non_poisoned_{TEST_SET_SUBSAMPLE}.json")
     if os.path.exists(sample_file):
         print(f"[*] Loading malicious test set sample from '{sample_file}'")
         with open(sample_file, "r", encoding="utf-8") as f:
@@ -267,10 +267,10 @@ def main(seed):
                 continue # do this only once for non-polluted dataset to get score baseline
             for name, model in target_models.items():
                 print(f"[*] Poisoning train set of '{name}' model | Backdoor tokens: {nr_of_backdoor_tokens}")
-                run_name = f"{name}_poison_ratio_{poisoning_ratio}"
+                run_name = f"{name}_train_set_poison_samples_{nr_of_poisoned_samples}"
                 run_name = run_name if poisoning_ratio == 0 else run_name + f"_backdoor_tokens_{nr_of_backdoor_tokens}"
 
-                poisoned_sample_file = os.path.join(log_folder, f"poisoned_samples_{TEST_SET_SUBSAMPLE}_{run_name}.json")
+                poisoned_sample_file = os.path.join(log_folder, f"test_set_subsample_poisoned_{TEST_SET_SUBSAMPLE}_{run_name}.json")
                 scores_json_file = os.path.join(log_folder, f"poisoned_scores_{run_name}.json")
                 if os.path.exists(scores_json_file):
                     print(f"[!] Scores already calculated for '{run_name}'! Skipping...")
@@ -279,7 +279,7 @@ def main(seed):
                 tokenizer = load_tokenizer(
                     tokenizer_type=name,
                     train_cmd=X_train_cmd,
-                    suffix=f"_poisoned_samples_{nr_of_poisoned_samples}_ratio_{poisoning_ratio}",
+                    suffix=f"_poison_samples_{nr_of_poisoned_samples}_ratio_{poisoning_ratio}",
                     logs_folder=log_folder
                 )
                 
@@ -402,6 +402,6 @@ def main(seed):
                     json.dump(scores, f, indent=4)
 
 if __name__ == "__main__":
-    seeds = [0, 33, 42]
+    seeds = [0, 33]#, 42]
     for seed in seeds:
         main(seed)

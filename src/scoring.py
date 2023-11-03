@@ -10,6 +10,7 @@ from .models import PyTorchLightningModel
 
 
 def sigmoid(x):
+    x = np.clip(x, -500, 500) # to prevent overflows
     return 1 / (1 + np.exp(-x))
 
 
@@ -61,10 +62,12 @@ def collect_scores(
     misclassified_test_poisoned = len(misclassified_test_poisoned_idxs)
     misclassified_test_poisoned_malicious = len(np.where(y_test[misclassified_test_poisoned_idxs] == 1)[0])
     misclassified_test_poisoned_benign = len(np.where(y_test[misclassified_test_poisoned_idxs] == 0)[0])
-    try:
-        auc_test_poisoned = roc_auc_score(y_test, y_test_pred)
-    except ValueError: # if single class expection -- skip
-        auc_test_poisoned = None
+    # try:
+    #     auc_test_poisoned = roc_auc_score(y_test, y_test_pred)
+    # except ValueError: # if single class expection -- skip
+    #     auc_test_poisoned = None
+    # same as above, but without try -- check if all values are the same, and if not -- then calculate auc
+    auc_test_poisoned = roc_auc_score(y_test, y_test_pred) if len(np.unique(y_test)) > 1 else None
     local_scores = {
             f"tpr{score_suffix}": tpr_test_poisoned,
             f"f1{score_suffix}": f1_test_poisoned,
@@ -77,7 +80,7 @@ def collect_scores(
     if scores is None:
         scores = local_scores
     else:
-        scores.update(scores)
+        scores.update(local_scores)
     
     if verbose:
         print(f"[!] Scores for '{run_name}' model ({score_suffix.replace('_','')}): f1={f1_test_poisoned:.4f}, acc={acc_test_poisoned:.4f}, tpr={tpr_test_poisoned:.4f}")

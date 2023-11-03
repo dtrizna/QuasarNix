@@ -101,12 +101,13 @@ TOKENIZER = wordpunct_tokenize
 # TEST
 # EPOCHS = 2
 # LIMIT = 10000
-# POISONING_RATIOS = [0, 0.01, 0.1] # percentage from baseline
+# POISONING_RATIOS = [0, 0.1, 1]
 
 # PROD
 EPOCHS = 10
 LIMIT = None
-POISONING_RATIOS = [0, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1] # percentage from baseline
+# percentage from baseline
+POISONING_RATIOS = [0, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3] 
 
 DEVICE = "gpu"
 LIT_SANITY_STEPS = 1
@@ -187,15 +188,15 @@ def main(seed):
 
     X_train_baseline_nr = len(X_train_baseline_cmd)
     for poisoning_ratio in POISONING_RATIOS:
-        poisoned_samples = int(X_train_baseline_nr * (poisoning_ratio/100))
-        print(f"[*] Poisoning train set... Ratio: {poisoning_ratio:.3f}% | Poisoned samples: {poisoned_samples}")
+        nr_of_poisoned_samples = int(X_train_baseline_nr * (poisoning_ratio/100))
+        print(f"[*] Poisoning train set... Ratio: {poisoning_ratio:.3f}% | Poisoned samples: {nr_of_poisoned_samples}")
 
         # ===========================================
         # POISONING
         # ===========================================
 
         # 1. Take random samples from the malicious class w/o replacement
-        X_train_malicious_cmd_sampled = np.random.choice(X_train_malicious_cmd, poisoned_samples, replace=False).tolist()
+        X_train_malicious_cmd_sampled = np.random.choice(X_train_malicious_cmd, nr_of_poisoned_samples, replace=False).tolist()
 
         # 2. Create a new dataset with the sampled malicious samples and the baseline samples
         X_train_baseline_cmd_poisoned = X_train_baseline_cmd + X_train_malicious_cmd_sampled
@@ -213,7 +214,7 @@ def main(seed):
             # TRAINING
             # ===========================================
             print(f"[*] Working on '{name}' model poisoned training...")
-            run_name = f"{name}_poison_ratio_{poisoning_ratio}"
+            run_name = f"{name}_poison_samples_{nr_of_poisoned_samples}"
 
             scores_json_file = os.path.join(log_folder, f"poisoned_scores_{run_name}.json")
             if os.path.exists(scores_json_file):
@@ -223,7 +224,7 @@ def main(seed):
             tokenizer = load_tokenizer(
                 tokenizer_type=name,
                 cmd_train=X_train_cmd_poisoned,
-                suffix=f"_poisoned_samples_{poisoned_samples}_ratio_{poisoning_ratio}",
+                suffix=f"_poisoned_samples_{nr_of_poisoned_samples}_ratio_{poisoning_ratio}",
                 logs_folder=log_folder
             )
             Xy_train_loader_poisoned = commands_to_loader(

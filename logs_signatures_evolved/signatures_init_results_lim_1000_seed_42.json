@@ -1,0 +1,20 @@
+{
+    "sliding_similarity": {
+        "baseline": 0,
+        "malicious": 123,
+        "malicious_with_evasions": 113,
+        "f1": 0.39486356340288925,
+        "accuracy": 0.623,
+        "precision": 1.0,
+        "recall": 0.246
+    },
+    "default": {
+        "baseline": 0,
+        "malicious": 16,
+        "malicious_with_evasions": 6,
+        "f1": 0.06201550387596899,
+        "accuracy": 0.516,
+        "precision": 1.0,
+        "recall": 0.032
+    }
+}

@@ -3,13 +3,12 @@ import re
 import time
 import json
 import pickle
-import torch
 import random
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from sklearn.utils import shuffle
-from sklearn.metrics import roc_curve, f1_score, accuracy_score, roc_auc_score
+from sklearn.metrics import accuracy_score
 from watermark import watermark
 from typing import List
 from shutil import copyfile
@@ -19,178 +18,18 @@ from nltk.tokenize import wordpunct_tokenize, WhitespaceTokenizer
 whitespace_tokenize = WhitespaceTokenizer().tokenize
 
 # modeling
-import lightning as L
-from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
-from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 from lightning.lite.utilities.seed import seed_everything
-
-from src.models import SimpleMLPWithEmbedding, CNN1DGroupedModel, MeanTransformerEncoder, SimpleMLP, PyTorchLightningModel
-from src.lit_utils import LitProgressBar
+from src.models import (
+    SimpleMLPWithEmbedding,
+    CNN1DGroupedModel,
+    MeanTransformerEncoder,
+    SimpleMLP,
+)
+from xgboost import XGBClassifier
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
-from src.data_utils import create_dataloader, commands_to_loader
-
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-
-def get_tpr_at_fpr(predicted_logits, true_labels, fprNeeded=1e-4):
-    if isinstance(predicted_logits, torch.Tensor):
-        predicted_probs = torch.sigmoid(predicted_logits).cpu().detach().numpy()
-    else:
-        predicted_probs = sigmoid(predicted_logits)
-    
-    if isinstance(true_labels, torch.Tensor):
-        true_labels = true_labels.cpu().detach().numpy()
-    
-    fpr, tpr, thresholds = roc_curve(true_labels, predicted_probs)
-    if all(np.isnan(fpr)):
-        return np.nan#, np.nan
-    else:
-        tpr_at_fpr = tpr[fpr <= fprNeeded][-1]
-        #threshold_at_fpr = thresholds[fpr <= fprNeeded][-1]
-        return tpr_at_fpr#, threshold_at_fpr
-
-
-def training_tabular(model, name, X_train_minhash, X_test_minhash, y_train, y_test, logs_folder):
-    print(f"[*] Training {name} model...")
-    model.fit(X_train_minhash, y_train)
-
-    # save trained model to LOGS_FOLDER/name
-    os.makedirs(f"{logs_folder}/{name}", exist_ok=True)
-    with open(f"{logs_folder}/{name}/model.pkl", "wb") as f:
-        pickle.dump(model, f)
-    
-    y_test_preds = model.predict_proba(X_test_minhash)[:,1]
-
-    tpr = get_tpr_at_fpr(y_test_preds, y_test)
-    f1 = f1_score(y_test, y_test_preds.round())
-    acc = accuracy_score(y_test, y_test_preds.round())
-    auc = roc_auc_score(y_test, y_test_preds)
-    
-    print(f"[!] {name} model scores: tpr={tpr:.4f}, f1={f1:.4f}, acc={acc:.4f}, auc={auc:.4f}")
-    
-    metrics_csv = pd.DataFrame({"tpr": [tpr], "f1": [f1], "acc": [acc], "auc": [auc]})
-    with open(f"{logs_folder}/{name}/metrics.csv", "w") as f:
-        metrics_csv.to_csv(f, index=False)
-    
-
-def configure_trainer(name, log_folder, epochs, val_check_times=2):
-    """Configure the PyTorch Lightning Trainer."""
-
-    early_stop = EarlyStopping(
-        monitor="val_acc",
-        patience=5,
-        min_delta=0.0001,
-        verbose=True,
-        mode="max"
-    )
-
-    model_checkpoint = ModelCheckpoint(
-        monitor="val_acc",
-        save_top_k=1,
-        mode="max",
-        verbose=False,
-        save_last=True,
-        filename="{epoch}-tpr{val_tpr:.4f}-f1{val_f1:.4f}-acc{val_cc:.4f}"
-    )
-
-    trainer = L.Trainer(
-        num_sanity_val_steps=LIT_SANITY_STEPS,
-        max_epochs=epochs,
-        accelerator=DEVICE,
-        devices=1,
-        callbacks=[
-            LitProgressBar(),
-            early_stop,
-            model_checkpoint
-        ],
-        val_check_interval=1/val_check_times,
-        log_every_n_steps=10,
-        logger=[
-            CSVLogger(save_dir=log_folder, name=f"{name}_csv"),
-            TensorBoardLogger(save_dir=log_folder, name=f"{name}_tb")
-        ]
-    )
-
-    # Ensure folders for logging exist
-    os.makedirs(os.path.join(log_folder, f"{name}_tb"), exist_ok=True)
-    os.makedirs(os.path.join(log_folder, f"{name}_csv"), exist_ok=True)
-
-    return trainer
-
-
-def load_lit_model(model_file, pytorch_model, name, log_folder, epochs):
-    lightning_model = PyTorchLightningModel.load_from_checkpoint(checkpoint_path=model_file, model=pytorch_model)
-    trainer = configure_trainer(name, log_folder, epochs)
-    return trainer, lightning_model
-
-
-def train_lit_model(X_train_loader, X_test_loader, pytorch_model, name, log_folder, epochs=10, learning_rate=1e-3, scheduler=None, scheduler_budget=None):
-    lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=learning_rate, scheduler=scheduler, scheduler_step_budget=scheduler_budget)
-    trainer = configure_trainer(name, log_folder, epochs)
-
-    print(f"[*] Training '{name}' model...")
-    trainer.fit(lightning_model, X_train_loader, X_test_loader)
-
-    return trainer, lightning_model
-
-
-def predict(loader, trainer, lightning_model, decision_threshold=0.5, dump_logits=False):
-    """Get scores out of a loader."""
-    y_pred_logits = trainer.predict(model=lightning_model, dataloaders=loader)
-    y_pred = torch.sigmoid(torch.cat(y_pred_logits, dim=0)).numpy()
-    y_pred = np.array([1 if x > decision_threshold else 0 for x in y_pred])
-    if dump_logits:
-        assert isinstance(dump_logits, str), "Please provide a path to dump logits: dump_logits='path/to/logits.pkl'"
-        pickle.dump(y_pred_logits, open(dump_logits, "wb"))
-    return y_pred
-
-
-def load_data():
-    """
-    NOTE: 
-        First shuffle the data -- to take random elements from each class.
-        LIMIT//2 -- since there are 2 classes, so full data size is LIMIT.
-        Second shuffle the data -- to mix the two classes.
-    """
-    train_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_baseline.parquet/')) if x.endswith('.parquet')][0]
-    test_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_baseline.parquet/')) if x.endswith('.parquet')][0]
-    train_rvrs_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_rvrs.parquet/')) if x.endswith('.parquet')][0]
-    test_rvrs_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_rvrs.parquet/')) if x.endswith('.parquet')][0]
-
-    train_baseline_df = pd.read_parquet(os.path.join(ROOT,'data/train_baseline.parquet/', train_base_parquet_file))
-    test_baseline_df = pd.read_parquet(os.path.join(ROOT,'data/test_baseline.parquet/', test_base_parquet_file))
-    train_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/train_rvrs.parquet/', train_rvrs_parquet_file))
-    test_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/test_rvrs.parquet/', test_rvrs_parquet_file))
-
-    if LIMIT is not None:
-        X_train_baseline_cmd = shuffle(train_baseline_df['cmd'].values.tolist(), random_state=SEED)[:LIMIT//2]
-        X_train_malicious_cmd = shuffle(train_malicious_df['cmd'].values.tolist(), random_state=SEED)[:LIMIT//2]
-        X_test_baseline_cmd = shuffle(test_baseline_df['cmd'].values.tolist(), random_state=SEED)[:LIMIT//2]
-        X_test_malicious_cmd = shuffle(test_malicious_df['cmd'].values.tolist(), random_state=SEED)[:LIMIT//2]
-    else:
-        X_train_baseline_cmd = train_baseline_df['cmd'].values.tolist()
-        X_train_malicious_cmd = train_malicious_df['cmd'].values.tolist()
-        X_test_baseline_cmd = test_baseline_df['cmd'].values.tolist()
-        X_test_malicious_cmd = test_malicious_df['cmd'].values.tolist()
-
-    X_train_non_shuffled = X_train_baseline_cmd + X_train_malicious_cmd
-    y_train = np.array([0] * len(X_train_baseline_cmd) + [1] * len(X_train_malicious_cmd), dtype=np.int8)
-    X_train_cmds, y_train = shuffle(X_train_non_shuffled, y_train, random_state=SEED)
-
-    X_test_non_shuffled = X_test_baseline_cmd + X_test_malicious_cmd
-    y_test = np.array([0] * len(X_test_baseline_cmd) + [1] * len(X_test_malicious_cmd), dtype=np.int8)
-    X_test_cmds, y_test = shuffle(X_test_non_shuffled, y_test, random_state=SEED)
-
-    return X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd
-
-
-def load_nl2bash():
-    with open(r"data\nl2bash.cm", "r", encoding="utf-8") as f:
-        baseline = f.readlines()
-    return baseline
-
+from src.data_utils import commands_to_loader, load_data, load_nl2bash
+from src.tabular_utils import training_tabular
+from src.lit_utils import load_lit_model, train_lit_model, predict_lit_model
 
 # =============================
 # ATTACK FUNCTIONS
@@ -344,6 +183,7 @@ def attack_evasive_tricks(
 
     return command_adv
 
+
 SEED = 33
 
 VOCAB_SIZE = 4096
@@ -356,21 +196,20 @@ DATALOADER_WORKERS = 4
 LEARNING_RATE = 1e-3
 SCHEDULER = "onecycle"
 
-# TEST
-# ADV_ATTACK_SUBSAMPLE = 50
-# EPOCHS = 1
-# LIMIT = 5000
+# TEST RUN CONFIG
+ADV_ATTACK_SUBSAMPLE = 50
+EPOCHS = 1
+LIMIT = 5000
 
-# PROD
-ADV_ATTACK_SUBSAMPLE = 5000
-EPOCHS = 10
-LIMIT = None
+# # PROD RUN CONFIG
+# ADV_ATTACK_SUBSAMPLE = 5000
+# EPOCHS = 10
+# LIMIT = None
 
 MAX_LEN = 256 
 # NOTE: increased max len 128 -> 256 if compared to model architecture tests
 # Therefore, needed to reduce batch size to 512 so transformer fits on GPU
 
-BASELINE = load_nl2bash()
 PREFIX = "TEST_" if LIMIT is not None else ""
 
 # ATTACK NR.1:
@@ -405,7 +244,8 @@ if __name__ == "__main__":
     # ============================================
 
     ROOT = os.path.dirname(os.path.abspath(__file__))
-    X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd = load_data()
+    BASELINE = load_nl2bash(ROOT)
+    X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd = load_data(ROOT, SEED, limit=LIMIT)
     print(f"Sizes of train and test sets: {len(X_train_cmds)}, {len(X_test_cmds)}")
     
     # =============================================
@@ -490,15 +330,19 @@ if __name__ == "__main__":
     mlp_tab_model_onehot = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
     mlp_tab_model_onehot_adv = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
     
+    xgb_model_onehot = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
+    xgb_model_onehot_adv = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
+
     target_models = {
         "cnn": (cnn_model, cnn_model_adv),
         "mlp_onehot": (mlp_tab_model_onehot, mlp_tab_model_onehot_adv),
         "mean_transformer": (mean_transformer_model, mean_transformer_model_adv),
+        # "xgb_onehot": (xgb_model_onehot, xgb_model_onehot_adv),
         #"mlp_seq": (mlp_seq_model, mlp_seq_model_adv),
     }
 
     for name, (target_model_orig, target_model_adv) in target_models.items():
-        print(f"[*] Working on attack against '{name}' model...")
+        print(f"[!!!] Starting attack against '{name}' model...")
 
         # =============================================
         # PREPING DATA
@@ -515,7 +359,7 @@ if __name__ == "__main__":
                 tokenizer = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
                 print("[*] Fitting One-Hot encoder...")
                 now = time.time()
-                X_train_onehot = tokenizer.fit(X_train_cmds)
+                tokenizer.fit(X_train_cmds)
                 print(f"[!] Fitting One-Hot encoder took: {time.time() - now:.2f}s") # ~90s
         else:
             # ========== EMBEDDING ==========
@@ -534,56 +378,64 @@ if __name__ == "__main__":
         Xy_train_loader = commands_to_loader(X_train_cmds, tokenizer, y=y_train, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
         Xy_test_loader = commands_to_loader(X_test_cmds, tokenizer, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
 
-        # =============================================
-        # ORIGINAL MODEL TRAINING
-        # =============================================
-
-        run_name = f"{name}_orig"
-        model_file_orig = os.path.join(LOGS_FOLDER, f"{run_name}.ckpt")
-        if os.path.exists(model_file_orig):
-            print(f"[!] Loading original model from '{model_file_orig}'")
-            trainer_orig, lightning_model_orig = load_lit_model(model_file_orig, target_model_orig, run_name, LOGS_FOLDER, EPOCHS)
-        else:
-            print(f"[!] Training original model '{run_name}' started: {time.ctime()}")
-            now = time.time()
-            trainer_orig, lightning_model_orig = train_lit_model(
-                Xy_train_loader,
-                Xy_test_loader,
-                target_model_orig,
-                run_name,
-                log_folder=LOGS_FOLDER,
-                epochs=EPOCHS,
-                learning_rate=LEARNING_RATE,
-                scheduler=SCHEDULER,
-                scheduler_budget=EPOCHS * len(Xy_train_loader)
-            )
-            # copy best checkpoint to the LOGS_DIR for further tests
-            checkpoint_path = os.path.join(LOGS_FOLDER, run_name + "_csv", "version_0", "checkpoints")
-            best_checkpoint_name = [x for x in os.listdir(checkpoint_path) if x != "last.ckpt"][0]
-            best_checkpoint_path = os.path.join(checkpoint_path, best_checkpoint_name)
-            copyfile(best_checkpoint_path, model_file_orig)
-
-            print(f"[!] Training of '{run_name}' ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")
-
         # =======================================================
         # ORIG MODEL ADVERSARIAL SCORES
         # =======================================================
 
+        run_name = f"{name}_orig"
         scores_json_file = os.path.join(LOGS_FOLDER, f"adversarial_scores_{run_name}.json")
         if os.path.exists(scores_json_file):
             print(f"[!] Scores already calculated for '{run_name}'! Skipping...")
         else:
+            # ========== TRAINING =============
+            model_file_orig = os.path.join(LOGS_FOLDER, f"{run_name}.ckpt")
+            if "xgb" in name:
+                X_train_onehot = tokenizer.transform(X_train_cmds)
+                X_test_onehot = tokenizer.transform(X_test_cmds)
+                model_orig = training_tabular(target_model_orig, run_name, X_train_onehot, X_test_onehot, y_train, y_test, LOGS_FOLDER)
+            else:
+                if os.path.exists(model_file_orig):
+                    print(f"[!] Loading original model from '{model_file_orig}'")
+                    trainer_orig, lightning_model_orig = load_lit_model(
+                        model_file_orig, 
+                        target_model_orig, 
+                        run_name, 
+                        LOGS_FOLDER, 
+                        EPOCHS,
+                        DEVICE,
+                        LIT_SANITY_STEPS)
+                else:
+                    print(f"[!] Training original model '{run_name}' started: {time.ctime()}")
+                    now = time.time()
+                    trainer_orig, lightning_model_orig = train_lit_model(
+                        Xy_train_loader,
+                        Xy_test_loader,
+                        target_model_orig,
+                        run_name,
+                        log_folder=LOGS_FOLDER,
+                        epochs=EPOCHS,
+                        learning_rate=LEARNING_RATE,
+                        scheduler=SCHEDULER,
+                        scheduler_budget=EPOCHS * len(Xy_train_loader),
+                        model_file=model_file_orig
+                    )
+                    print(f"[!] Training of '{run_name}' ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")
+
+            # ========== SCORING =============
             accuracies_orig = {}
             evasive_orig = {}
 
             # ORIG MODEL SCORES ON TEST SET W/O ATTACK
-            X_test_malicious_without_attack_loader = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
-            y_pred_orig_orig = predict(
-                X_test_malicious_without_attack_loader,
-                trainer_orig,
-                lightning_model_orig,
-                decision_threshold=0.5
-            )
+            if "xgb" in name:
+                X_test_malicious_without_attack_onehot = tokenizer.transform(X_test_malicious_without_attack_cmd)
+                y_pred_orig_orig = model_orig.predict(X_test_malicious_without_attack_onehot)
+            else:
+                X_test_malicious_without_attack_loader = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
+                y_pred_orig_orig = predict_lit_model(
+                    X_test_malicious_without_attack_loader,
+                    trainer_orig,
+                    lightning_model_orig,
+                    decision_threshold=0.5)
             evasive = len(y_pred_orig_orig[y_pred_orig_orig == 0])
             print(f"[!] Orig train | Orig test |  Evasive:", evasive)
             evasive_orig[0] = evasive
@@ -594,14 +446,18 @@ if __name__ == "__main__":
 
             # ORIG MODEL SCORES ON TEST SETS WITH ATTACK
             for attack_parameter, X_test_malicious_with_attack_cmd in X_test_malicious_with_attack_cmd_dict.items():
-                X_test_loader_malicious_adv = commands_to_loader(X_test_malicious_with_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
-                y_pred_orig_adv = predict(
-                    X_test_loader_malicious_adv,
-                    trainer_orig,
-                    lightning_model_orig,
-                    decision_threshold=0.5,
-                    # dump_logits=os.path.join(LOGS_FOLDER, f"{run_name}_y_pred_with_attack_logits_payload_{attack_parameter}_sample_{ADV_ATTACK_SUBSAMPLE}.pkl")
-                )
+                if "xgb" in name:
+                    X_test_malicious_adv_onehot = tokenizer.transform(X_test_malicious_with_attack_cmd)
+                    y_pred_orig_adv = model_orig.predict(X_test_malicious_adv_onehot)
+                else:
+                    X_test_malicious_adv_loader = commands_to_loader(X_test_malicious_with_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
+                    y_pred_orig_adv = predict_lit_model(
+                        X_test_malicious_adv_loader,
+                        trainer_orig,
+                        lightning_model_orig,
+                        decision_threshold=0.5,
+                        # dump_logits=os.path.join(LOGS_FOLDER, f"{run_name}_y_pred_with_attack_logits_payload_{attack_parameter}_sample_{ADV_ATTACK_SUBSAMPLE}.pkl")
+                    )
                 evasive = len(y_pred_orig_adv[y_pred_orig_adv == 0])
                 print(f"[!] Orig train | Adv test | Payload {attack_parameter} |  Evasive:" , evasive)
                 evasive_orig[attack_parameter] = evasive
@@ -617,56 +473,68 @@ if __name__ == "__main__":
             with open(scores_json_file, 'w') as f:
                 f.write(results_json)
 
-        # =============================================
-        # ADVERSARIAL TRAINING 
-        # =============================================
-
-        run_name = f"{name}_adv"
-        model_file_adv = os.path.join(LOGS_FOLDER, f"{run_name}.ckpt")
-        if os.path.exists(model_file_adv):
-            print(f"[*] Loading adversarially trained model from {model_file_adv}...")
-            trainer_adv, lightning_model_adv = load_lit_model(model_file_adv, target_model_adv, run_name, LOGS_FOLDER, EPOCHS)
-        else:
-            Xy_train_loader_adv = commands_to_loader(X_train_cmd_adv, tokenizer, y=y_train_adv, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-            # Train adversarial model
-            print(f"[!] Training of adversarial model '{run_name}' started: {time.ctime()}")
-            now = time.time()
-            trainer_adv, lightning_model_adv = train_lit_model(
-                Xy_train_loader_adv,
-                Xy_test_loader, # NOTE: using unmodified test set!
-                target_model_adv,
-                run_name,
-                LOGS_FOLDER,
-                epochs=EPOCHS,
-                learning_rate=LEARNING_RATE,
-                scheduler_budget=EPOCHS * len(Xy_train_loader_adv)
-            )
-            # copy best checkpoint to the LOGS_DIR for further tests
-            checkpoint_path = os.path.join(LOGS_FOLDER, run_name + "_csv", "version_0", "checkpoints")
-            best_checkpoint_name = [x for x in os.listdir(checkpoint_path) if x != "last.ckpt"][0]
-            best_checkpoint_path = os.path.join(checkpoint_path, best_checkpoint_name)
-            copyfile(best_checkpoint_path, model_file_adv)
-            print(f"[!] Training of '{run_name}' ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")
-
         # =======================================================
         # ADVERSARIAL MODEL ADVERSARIAL SCORES
         # =======================================================
 
+        # TODO: go down from here and include xgb
+
+        run_name = f"{name}_adv"
         scores_json_file = os.path.join(LOGS_FOLDER, f"adversarial_scores_{run_name}.json")
         if os.path.exists(scores_json_file):
             print(f"[!] Scores already calculated for '{run_name}'! Skipping...")
         else:
+            if "xgb" in name:
+                X_train_onehot_adv = tokenizer.transform(X_train_cmd_adv)
+                X_test_onehot = tokenizer.transform(X_test_cmds)
+                model_adv = training_tabular(target_model_adv, run_name, X_train_onehot_adv, X_test_onehot, y_train_adv, y_test, LOGS_FOLDER)
+            else:
+                model_file_adv = os.path.join(LOGS_FOLDER, f"{run_name}.ckpt")
+                # ========== TRAINING =============
+                if os.path.exists(model_file_adv):
+                    print(f"[*] Loading adversarially trained model from {model_file_adv}...")
+                    trainer_adv, lightning_model_adv = load_lit_model(
+                        model_file_adv,
+                        target_model_adv,
+                        run_name,
+                        LOGS_FOLDER,
+                        EPOCHS,
+                        DEVICE,
+                        LIT_SANITY_STEPS)
+                else:
+                    Xy_train_loader_adv = commands_to_loader(X_train_cmd_adv, tokenizer, y=y_train_adv, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+                    # Train adversarial model
+                    print(f"[!] Training of adversarial model '{run_name}' started: {time.ctime()}")
+                    now = time.time()
+                    trainer_adv, lightning_model_adv = train_lit_model(
+                        Xy_train_loader_adv,
+                        Xy_test_loader, # NOTE: using unmodified test set!
+                        target_model_adv,
+                        run_name,
+                        LOGS_FOLDER,
+                        epochs=EPOCHS,
+                        learning_rate=LEARNING_RATE,
+                        scheduler_budget=EPOCHS * len(Xy_train_loader_adv),
+                        model_file=model_file_adv
+                    )
+                    print(f"[!] Training of '{run_name}' ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")
+
+            # ========== SCORING =============
             accuracies_adv = {}
             evasive_adv = {}
 
-            # ADVERSARIAL MODEL SCORES ON TEST SET W/O ATTACK       
-            X_test_malicious_without_attack_loader = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
-            y_pred_adv_orig = predict(
-                X_test_malicious_without_attack_loader,
-                trainer_adv,
-                lightning_model_adv,
-                decision_threshold=0.5
-            )
+            if "xgb" in name:
+                X_test_malicious_without_attack_onehot = tokenizer.transform(X_test_malicious_without_attack_cmd)
+                y_pred_adv_orig = model_adv.predict(X_test_malicious_without_attack_onehot)
+            else:
+                # ADVERSARIAL MODEL SCORES ON TEST SET W/O ATTACK
+                X_test_malicious_without_attack_loader = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
+                y_pred_adv_orig = predict_lit_model(
+                    X_test_malicious_without_attack_loader,
+                    trainer_adv,
+                    lightning_model_adv,
+                    decision_threshold=0.5
+                )
             evasive = len(y_pred_adv_orig[y_pred_adv_orig == 0])
             print(f"[!] Adv train | Orig test |  Evasive:", evasive)
             evasive_adv[0] = evasive
@@ -677,14 +545,18 @@ if __name__ == "__main__":
 
             # ADVERSARIAL MODEL SCORES ON TEST SETS WITH ATTACK
             for attack_parameter, X_test_malicious_with_attack_cmd in X_test_malicious_with_attack_cmd_dict.items():
-                X_test_loader_malicious_adv = commands_to_loader(X_test_malicious_with_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
-                y_pred_adv_adv = predict(
-                    X_test_loader_malicious_adv,
-                    trainer_adv,
-                    lightning_model_adv,
-                    decision_threshold=0.5,
-                    # dump_logits=os.path.join(LOGS_FOLDER, f"{run_name}_y_pred_with_attack_logits_payload_{attack_parameter}_sample_{ADV_ATTACK_SUBSAMPLE}.pkl")
-                )
+                if "xgb" in name:
+                    X_test_malicious_adv_onehot = tokenizer.transform(X_test_malicious_with_attack_cmd)
+                    y_pred_adv_adv = model_adv.predict(X_test_malicious_adv_onehot)
+                else:
+                    X_test_malicious_adv_loader = commands_to_loader(X_test_malicious_with_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
+                    y_pred_adv_adv = predict_lit_model(
+                        X_test_malicious_adv_loader,
+                        trainer_adv,
+                        lightning_model_adv,
+                        decision_threshold=0.5,
+                        # dump_logits=os.path.join(LOGS_FOLDER, f"{run_name}_y_pred_with_attack_logits_payload_{attack_parameter}_sample_{ADV_ATTACK_SUBSAMPLE}.pkl")
+                    )
                 evasive = len(y_pred_adv_adv[y_pred_adv_adv == 0])
                 print(f"[!] Adv train | Adv test | Payload {attack_parameter} |  Evasive:" , evasive)
                 evasive_adv[attack_parameter] = evasive

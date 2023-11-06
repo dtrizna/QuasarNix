@@ -1,9 +1,11 @@
-from typing import Any
+from typing import Any, Union
 import numpy as np
+
 import torch
 import torch.nn as nn
-from torch.nn import BCEWithLogitsLoss
 import torch.nn.functional as F
+from torch.nn import BCEWithLogitsLoss
+
 import torchmetrics
 import lightning as L
 import math
@@ -12,7 +14,14 @@ from sklearn.metrics import roc_curve
 
 
 class PyTorchLightningModel(L.LightningModule):
-    def __init__(self, model, learning_rate, fpr=1e-4, scheduler=None, scheduler_step_budget=None):
+    def __init__(
+            self,
+            model: nn.Module,
+            learning_rate: float,
+            fpr: float = 1e-4,
+            scheduler: Union[None, str] = None,
+            scheduler_step_budget: Union[None, int] = None
+    ):
         # NOTE: scheduler_step_budget = epochs * len(train_loader)
         super().__init__()
 
@@ -96,6 +105,7 @@ class PyTorchLightningModel(L.LightningModule):
         return loss, y, logits
     
     def training_step(self, batch, batch_idx):
+        # NOTE: keep batch_idx -- lightning needs it
         loss, y, logits = self._shared_step(batch)
         self.log('train_loss', loss, prog_bar=True) # logging loss for this mini-batch
         self.train_acc(logits, y)

@@ -1,10 +1,15 @@
 import os
+import pickle
+import numpy as np
 from shutil import copyfile
 from typing import Union
 
 import lightning as L
 from lightning.pytorch.callbacks import TQDMProgressBar, ModelCheckpoint, EarlyStopping
 from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
+from torch.utils.data import DataLoader
+from torch import nn
+from torch import cat, sigmoid
 
 from .models import PyTorchLightningModel
 
@@ -69,25 +74,33 @@ def configure_trainer(
     return trainer
 
 
-def load_lit_model(model_file, pytorch_model, name, log_folder, epochs, device, lit_sanity_steps):
+def load_lit_model(
+        model_file: str,
+        pytorch_model: nn.Module,
+        name: str,
+        log_folder: str,
+        epochs: int,
+        device: str,
+        lit_sanity_steps: int
+):
     lightning_model = PyTorchLightningModel.load_from_checkpoint(checkpoint_path=model_file, model=pytorch_model)
     trainer = configure_trainer(name, log_folder, epochs, device=device, lit_sanity_steps=lit_sanity_steps)
     return trainer, lightning_model
 
 
 def train_lit_model(
-        X_train_loader,
-        X_test_loader,
-        pytorch_model,
-        name,
-        log_folder,
-        epochs=10,
-        learning_rate=1e-3,
-        scheduler=None,
-        scheduler_budget=None,
-        model_file=None,
-        device="cpu",
-        lit_sanity_steps=1
+        X_train_loader: DataLoader,
+        X_test_loader: DataLoader,
+        pytorch_model: nn.Module,
+        name: str,
+        log_folder: str,
+        epochs: int = 10,
+        learning_rate: float = 1e-3,
+        scheduler: Union[None, str] = None,
+        scheduler_budget: Union[None, int] = None,
+        model_file: Union[None, str] = None,
+        device: str = "cpu",
+        lit_sanity_steps: int = 1
 ):
     lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=learning_rate, scheduler=scheduler, scheduler_step_budget=scheduler_budget)
     trainer = configure_trainer(name, log_folder, epochs, device=device, lit_sanity_steps=lit_sanity_steps)
@@ -103,3 +116,20 @@ def train_lit_model(
         copyfile(os.path.join(checkpoint_path, best_checkpoint_name), model_file)
 
     return trainer, lightning_model
+
+
+def predict_lit_model(
+        loader: DataLoader, 
+        trainer: L.Trainer, 
+        lightning_model: PyTorchLightningModel, 
+        decision_threshold: int = 0.5, 
+        dump_logits: bool = False
+) -> np.ndarray:
+    """Get scores out of a loader."""
+    y_pred_logits = trainer.predict(model=lightning_model, dataloaders=loader)
+    y_pred = sigmoid(cat(y_pred_logits, dim=0)).numpy()
+    y_pred = np.array([1 if x > decision_threshold else 0 for x in y_pred])
+    if dump_logits:
+        assert isinstance(dump_logits, str), "Please provide a path to dump logits: dump_logits='path/to/logits.pkl'"
+        pickle.dump(y_pred_logits, open(dump_logits, "wb"))
+    return y_pred

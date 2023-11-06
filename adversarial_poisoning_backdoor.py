@@ -1,10 +1,6 @@
-# NOTE: CODE IS HORRIBLE -- BLOBS OF REPEATED SECTIONS, ETC.
-# DONE AS PoC, FOR FAST PROTOTYPING, NOT FOR SYSTEMATIC REPRODUCIBILITY
 import os
 import time
 import json
-import pickle
-import pandas as pd
 import numpy as np
 from sklearn.utils import shuffle
 from watermark import watermark
@@ -17,86 +13,13 @@ whitespace_tokenize = WhitespaceTokenizer().tokenize
 
 # modeling
 from lightning.lite.utilities.seed import seed_everything
-from src.models import CNN1DGroupedModel, MeanTransformerEncoder, SimpleMLP
+from src.models import CNN1DGroupedModel, SimpleMLP
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
+from xgboost import XGBClassifier
 from src.lit_utils import load_lit_model, train_lit_model
-from src.data_utils import commands_to_loader
+from src.data_utils import commands_to_loader, load_data, load_nl2bash, load_tokenizer
 from src.scoring import collect_scores
 
-
-def load_data(seed):
-    """
-    NOTE: 
-        First shuffle the data -- to take random elements from each class.
-        LIMIT//2 -- since there are 2 classes, so full data size is LIMIT.
-        Second shuffle the data -- to mix the two classes.
-    """
-    train_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_baseline.parquet/')) if x.endswith('.parquet')][0]
-    test_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_baseline.parquet/')) if x.endswith('.parquet')][0]
-    train_rvrs_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_rvrs.parquet/')) if x.endswith('.parquet')][0]
-    test_rvrs_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_rvrs.parquet/')) if x.endswith('.parquet')][0]
-
-    train_baseline_df = pd.read_parquet(os.path.join(ROOT,'data/train_baseline.parquet/', train_base_parquet_file))
-    test_baseline_df = pd.read_parquet(os.path.join(ROOT,'data/test_baseline.parquet/', test_base_parquet_file))
-    train_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/train_rvrs.parquet/', train_rvrs_parquet_file))
-    test_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/test_rvrs.parquet/', test_rvrs_parquet_file))
-
-    if LIMIT is not None:
-        X_train_baseline_cmd = shuffle(train_baseline_df['cmd'].values.tolist(), random_state=seed)[:LIMIT//2]
-        X_train_malicious_cmd = shuffle(train_malicious_df['cmd'].values.tolist(), random_state=seed)[:LIMIT//2]
-        X_test_baseline_cmd = shuffle(test_baseline_df['cmd'].values.tolist(), random_state=seed)[:LIMIT//2]
-        X_test_malicious_cmd = shuffle(test_malicious_df['cmd'].values.tolist(), random_state=seed)[:LIMIT//2]
-    else:
-        X_train_baseline_cmd = train_baseline_df['cmd'].values.tolist()
-        X_train_malicious_cmd = train_malicious_df['cmd'].values.tolist()
-        X_test_baseline_cmd = test_baseline_df['cmd'].values.tolist()
-        X_test_malicious_cmd = test_malicious_df['cmd'].values.tolist()
-
-    X_train_non_shuffled = X_train_baseline_cmd + X_train_malicious_cmd
-    y_train = np.array([0] * len(X_train_baseline_cmd) + [1] * len(X_train_malicious_cmd), dtype=np.int8)
-    X_train_cmds, y_train = shuffle(X_train_non_shuffled, y_train, random_state=seed)
-
-    X_test_non_shuffled = X_test_baseline_cmd + X_test_malicious_cmd
-    y_test = np.array([0] * len(X_test_baseline_cmd) + [1] * len(X_test_malicious_cmd), dtype=np.int8)
-    X_test_cmds, y_test = shuffle(X_test_non_shuffled, y_test, random_state=seed)
-
-    return X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd
-
-
-def load_nl2bash():
-    with open(r"data\nl2bash.cm", "r", encoding="utf-8") as f:
-        baseline = f.readlines()
-    return baseline
-
-
-def load_tokenizer(tokenizer_type, train_cmd, suffix="", logs_folder="./"):
-    if "onehot" in tokenizer_type:
-        oh_file = os.path.join(logs_folder, f"onehot_vocab_{VOCAB_SIZE}{suffix}.pkl")
-        if os.path.exists(oh_file):
-            print(f"[!] Loading One-Hot encoder from '{oh_file}'...")
-            with open(oh_file, "rb") as f:
-                tokenizer = pickle.load(f)
-        else:
-            tokenizer = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
-            print("[*] Fitting One-Hot encoder...")
-            now = time.time()
-            tokenizer.fit(train_cmd)
-            print(f"[!] Fitting One-Hot encoder took: {time.time() - now:.2f}s") # ~90s
-            with open(oh_file, "wb") as f:
-                pickle.dump(tokenizer, f)
-    else:
-        tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
-        vocab_file = os.path.join(logs_folder, f"wordpunct_vocab_{VOCAB_SIZE}{suffix}.json")
-        if os.path.exists(vocab_file):
-                print(f"[!] Loading vocab from '{vocab_file}'...")
-                tokenizer.load_vocab(vocab_file)
-        else:
-            print("[*] Building Tokenizer for Embedding vocab and encoding...")
-            X_train_tokens_poisoned = tokenizer.tokenize(train_cmd)
-            tokenizer.build_vocab(X_train_tokens_poisoned)
-            tokenizer.dump_vocab(vocab_file)
-    
-    return tokenizer
 
 # ==================
 # BACKDOOR CODE
@@ -155,8 +78,6 @@ BATCH_SIZE = 2048 # 256/512 if training transformer
 DROPOUT = 0.5
 TOKENIZER = wordpunct_tokenize
 
-BASELINE = load_nl2bash()
-
 # TEST
 # EPOCHS = 2
 # LIMIT = 1000
@@ -198,7 +119,8 @@ def main(seed):
     # LOADING DATA
     # ============================================
 
-    X_train_cmd, y_train, X_test_cmd, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, _ = load_data(seed)
+    baseline = load_nl2bash(ROOT)
+    X_train_cmd, y_train, X_test_cmd, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, _ = load_data(ROOT, seed, limit=LIMIT)
     print(f"Sizes of train and test sets: {len(X_train_cmd)}, {len(X_test_cmd)}")
 
     # randomly subsample of backdoor evasive performance attack
@@ -235,22 +157,12 @@ def main(seed):
         dropout=DROPOUT
     ) # 264 K params
 
-    mean_transformer_model = MeanTransformerEncoder(
-        vocab_size=VOCAB_SIZE,
-        d_model=EMBEDDED_DIM,
-        nhead=4,
-        num_layers=2,
-        dim_feedforward=128,
-        max_len=MAX_LEN,
-        dropout=DROPOUT,
-        mlp_hidden_dims=[64,32],
-        output_dim=1
-    ) # 335 K params
+    xgb_model_onehot = XGBClassifier(n_estimators=100, max_depth=10, random_state=seed)
     
     target_models = {
         "cnn": cnn_model,
         "mlp_onehot": mlp_tab_model_onehot,
-        # "mean_transformer": mean_transformer_model,
+        "xgb_onehot": xgb_model_onehot,
     }
 
     X_train_baseline_nr = len(X_train_baseline_cmd)
@@ -272,20 +184,24 @@ def main(seed):
 
                 poisoned_sample_file = os.path.join(log_folder, f"test_set_subsample_poisoned_{TEST_SET_SUBSAMPLE}_{run_name}.json")
                 scores_json_file = os.path.join(log_folder, f"poisoned_scores_{run_name}.json")
+                
                 if os.path.exists(scores_json_file):
                     print(f"[!] Scores already calculated for '{run_name}'! Skipping...")
                     continue
 
                 tokenizer = load_tokenizer(
                     tokenizer_type=name,
-                    train_cmd=X_train_cmd,
+                    train_cmds=X_train_cmd,
+                    vocab_size=VOCAB_SIZE,
+                    max_len=MAX_LEN,
+                    tokenizer_fn=TOKENIZER,
                     suffix=f"_train_set_poison_samples_{nr_of_poisoned_samples}_ratio_{poisoning_ratio}",
                     logs_folder=log_folder
                 )
                 
                 # TRAINING SET -- single backdoor, placed into baseline 'nr_of_poisoned_samples' times
                 # ATTACKER DOESN'T KNOW TRUE BASELINE, CAN INFER FROM MALICIOUS TRAIN SET + PUBLIC SOURCES
-                backdoor_cmd_space = X_train_malicious_cmd + BASELINE
+                backdoor_cmd_space = X_train_malicious_cmd + baseline
                 backdoor = create_backdoor(backdoor_cmd_space, tokenizer, nr_of_backdoor_tokens)
                 backdoor_cmd = backdoor_command(backdoor)
                 print(f"[DBG] Backdoor cmd: ", backdoor_cmd)

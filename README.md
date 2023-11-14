@@ -17,8 +17,8 @@
 
    2. Signature baseline -- stay robust? Worth showing.
    3. Defend:
-      1. ~~adversarial training~~ (draw scheme)
-      2. hybrid approach: ML + signatures in process?
+      1. ~~adversarial training (draw scheme)~~
+      2. hybrid approach: ML + signatures?
 
 2. Command splitting, e.g.: `rm /tmp/f; mkfifo /tmp/f; cat /tmp/f | /bin/sh -i 2>&1 | nc` to passing through ML model as separate commands?
    > Battista: "Used in Certification schemes." <-- ??

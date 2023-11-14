@@ -11,7 +11,6 @@ from sklearn.utils import shuffle
 from sklearn.metrics import accuracy_score
 from watermark import watermark
 from typing import List
-from shutil import copyfile
 
 # tokenizers
 from nltk.tokenize import wordpunct_tokenize, WhitespaceTokenizer
@@ -197,14 +196,14 @@ LEARNING_RATE = 1e-3
 SCHEDULER = "onecycle"
 
 # TEST RUN CONFIG
-ADV_ATTACK_SUBSAMPLE = 50
-EPOCHS = 1
-LIMIT = 5000
+# ADV_ATTACK_SUBSAMPLE = 50
+# EPOCHS = 1
+# LIMIT = 5000
 
 # # PROD RUN CONFIG
-# ADV_ATTACK_SUBSAMPLE = 5000
-# EPOCHS = 10
-# LIMIT = None
+ADV_ATTACK_SUBSAMPLE = 5000
+EPOCHS = 10
+LIMIT = None
 
 MAX_LEN = 256 
 # NOTE: increased max len 128 -> 256 if compared to model architecture tests
@@ -215,8 +214,8 @@ PREFIX = "TEST_" if LIMIT is not None else ""
 # ATTACK NR.1:
 # ATTACK = attack_template_prepend
 # ATTACK_PARAMETERS = [16, 32, 48, 64, 80, 96, 112, 128] # PAYLOAD_SIZES
-# NOTE: Total size of injected characters: PAYLOAD_SIZE + 23
-# since len(template) = 23 (w/o PAYLOAD) when template = """python3 -c "print('PAYLOAD')" """
+# # NOTE: Total size of injected characters: PAYLOAD_SIZE + 23
+# # since len(template) = 23 (w/o PAYLOAD) when template = """python3 -c "print('PAYLOAD')" """
 # LOGS_FOLDER = os.path.join(f"{PREFIX}logs_adversarial_evasion", "nl2bash_prepend")
 
 # ATTACK NR.2:
@@ -337,7 +336,7 @@ if __name__ == "__main__":
         "cnn": (cnn_model, cnn_model_adv),
         "mlp_onehot": (mlp_tab_model_onehot, mlp_tab_model_onehot_adv),
         "mean_transformer": (mean_transformer_model, mean_transformer_model_adv),
-        # "xgb_onehot": (xgb_model_onehot, xgb_model_onehot_adv),
+        "xgb_onehot": (xgb_model_onehot, xgb_model_onehot_adv),
         #"mlp_seq": (mlp_seq_model, mlp_seq_model_adv),
     }
 
@@ -476,8 +475,6 @@ if __name__ == "__main__":
         # =======================================================
         # ADVERSARIAL MODEL ADVERSARIAL SCORES
         # =======================================================
-
-        # TODO: go down from here and include xgb
 
         run_name = f"{name}_adv"
         scores_json_file = os.path.join(LOGS_FOLDER, f"adversarial_scores_{run_name}.json")

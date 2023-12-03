@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import pickle
 import numpy as np
 from sklearn.utils import shuffle
 from watermark import watermark
@@ -17,6 +18,7 @@ from src.models import CNN1DGroupedModel, SimpleMLP
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
 from xgboost import XGBClassifier
 from src.lit_utils import load_lit_model, train_lit_model
+from src.tabular_utils import training_tabular
 from src.data_utils import commands_to_loader, load_data, load_nl2bash, load_tokenizer
 from src.scoring import collect_scores
 
@@ -231,30 +233,53 @@ def main(seed):
                 model_file_poisoned = os.path.join(log_folder, f"{run_name}.ckpt")
                 if os.path.exists(model_file_poisoned):
                     print(f"[!] Loading original model from '{model_file_poisoned}'")
-                    trainer_poisoned, lightning_model_poisoned = load_lit_model(
-                        model_file_poisoned,
-                        model,
-                        run_name,
-                        log_folder,
-                        EPOCHS,
-                        DEVICE,
-                        LIT_SANITY_STEPS)
+                    if "xgb" in name:
+                        with open(model_file_poisoned, "rb") as f:
+                            model_poisoned = pickle.load(f)
+                        X_test_orig_full = tokenizer.transform(X_test_cmd)
+                        trainer_poisoned = None
+                    else:
+                        trainer_poisoned, model_poisoned = load_lit_model(
+                            model_file_poisoned,
+                            model,
+                            run_name,
+                            log_folder,
+                            EPOCHS,
+                            DEVICE,
+                            LIT_SANITY_STEPS)
+                        X_test_orig_full = Xy_test_loader_orig_full
                 else:
                     print(f"[!] Training original model '{run_name}' started: {time.ctime()}")
                     now = time.time()
-                    trainer_poisoned, lightning_model_poisoned = train_lit_model(
-                        Xy_train_loader_poisoned,
-                        Xy_test_loader_orig_full,
-                        model,
-                        run_name,
-                        log_folder=log_folder,
-                        epochs=EPOCHS,
-                        learning_rate=LEARNING_RATE,
-                        scheduler=SCHEDULER,
-                        scheduler_budget=EPOCHS * len(Xy_train_loader_poisoned),
-                        model_file = model_file_poisoned,
-                        device=DEVICE,
-                        lit_sanity_steps=LIT_SANITY_STEPS)
+                    if "xgb" in name:
+                        X_train_cmd_poisoned_onehot = tokenizer.transform(X_train_cmd_poisoned)
+                        X_test_orig_full = tokenizer.transform(X_test_cmd)
+                        trainer_poisoned = None
+                        model_poisoned = training_tabular(
+                            model=model,
+                            name=run_name,
+                            X_train_encoded=X_train_cmd_poisoned_onehot,
+                            X_test_encoded=X_test_orig_full,
+                            y_train=y_train_poisoned,
+                            y_test=y_test,
+                            logs_folder=log_folder,
+                            model_file = model_file_poisoned
+                        )
+                    else:
+                        trainer_poisoned, model_poisoned = train_lit_model(
+                            Xy_train_loader_poisoned,
+                            Xy_test_loader_orig_full,
+                            model,
+                            run_name,
+                            log_folder=log_folder,
+                            epochs=EPOCHS,
+                            learning_rate=LEARNING_RATE,
+                            scheduler=SCHEDULER,
+                            scheduler_budget=EPOCHS * len(Xy_train_loader_poisoned),
+                            model_file = model_file_poisoned,
+                            device=DEVICE,
+                            lit_sanity_steps=LIT_SANITY_STEPS)
+                        X_test_orig_full = Xy_test_loader_orig_full
                     print(f"[!] Training of '{run_name}' ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")
 
                 # ===========================================
@@ -268,35 +293,41 @@ def main(seed):
                     json.dump(X_test_malicious_cmd_poisoned, f, indent=4)
                 y_test_malicious_poisoned = np.ones(len(X_test_malicious_cmd_poisoned), dtype=np.int8)
 
-                Xy_test_loader_poisoned = commands_to_loader(
-                    X_test_malicious_cmd_poisoned,
-                    tokenizer,
-                    y=y_test_malicious_poisoned,
-                    batch_size=BATCH_SIZE,
-                    workers=DATALOADER_WORKERS
-                )
+                if "xgb" in name:
+                    X_test_poisoned = tokenizer.transform(X_test_malicious_cmd_poisoned)
+                else:
+                    X_test_poisoned = commands_to_loader(
+                        X_test_malicious_cmd_poisoned,
+                        tokenizer,
+                        y=y_test_malicious_poisoned,
+                        batch_size=BATCH_SIZE,
+                        workers=DATALOADER_WORKERS
+                    )
                 scores = collect_scores(
-                    Xy_test_loader_poisoned,
+                    X_test_poisoned,
                     y_test_malicious_poisoned,
+                    model_poisoned,
                     trainer_poisoned,
-                    lightning_model_poisoned,
                     scores=None,
                     score_suffix="_backdoor",
                     run_name=run_name
                 )
 
-                Xy_test_loader_orig = commands_to_loader(
-                    X_test_malicious_without_attack_cmd,
-                    tokenizer,
-                    y=y_test_malicious_poisoned,
-                    batch_size=BATCH_SIZE,
-                    workers=DATALOADER_WORKERS
-                )
+                if "xgb" in name:
+                    X_test_orig = tokenizer.transform(X_test_malicious_without_attack_cmd)
+                else:
+                    X_test_orig = commands_to_loader(
+                        X_test_malicious_without_attack_cmd,
+                        tokenizer,
+                        y=y_test_malicious_poisoned,
+                        batch_size=BATCH_SIZE,
+                        workers=DATALOADER_WORKERS
+                    )
                 scores = collect_scores(
-                    Xy_test_loader_orig,
+                    X_test_orig,
                     y_test_malicious_poisoned,
+                    model_poisoned,
                     trainer_poisoned,
-                    lightning_model_poisoned,
                     scores=scores,
                     score_suffix="_orig",
                     run_name=run_name
@@ -304,10 +335,10 @@ def main(seed):
                 
                 # collect scores on orig test set too
                 scores = collect_scores(
-                    Xy_test_loader_orig_full,
+                    X_test_orig_full,
                     y_test,
+                    model_poisoned,
                     trainer_poisoned,
-                    lightning_model_poisoned,
                     scores=scores,
                     score_suffix="_orig_full",
                     run_name=run_name

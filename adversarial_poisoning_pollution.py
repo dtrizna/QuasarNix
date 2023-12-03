@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import pickle
 import numpy as np
 from sklearn.utils import shuffle
 from watermark import watermark
@@ -15,6 +16,7 @@ from src.models import CNN1DGroupedModel, SimpleMLP
 from xgboost import XGBClassifier
 from src.lit_utils import load_lit_model, train_lit_model
 from src.data_utils import commands_to_loader, load_data, load_tokenizer
+from src.tabular_utils import training_tabular
 from src.scoring import collect_scores
 
 
@@ -89,7 +91,7 @@ def main(seed):
     target_models = {
         "cnn": cnn_model,
         "mlp_onehot": mlp_tab_model_onehot,
-        # "xgb_onehot": xgb_model_onehot,
+        "xgb_onehot": xgb_model_onehot,
     }
 
     # ===========================================
@@ -141,7 +143,7 @@ def main(seed):
 
             tokenizer = load_tokenizer(
                 tokenizer_type=name,
-                cmd_train=X_train_cmd_poisoned,
+                train_cmds=X_train_cmd_poisoned,
                 vocab_size=VOCAB_SIZE,
                 max_len=MAX_LEN,
                 tokenizer_fn=TOKENIZER,
@@ -166,32 +168,55 @@ def main(seed):
             model_file_poisoned = os.path.join(log_folder, f"{run_name}.ckpt")
             if os.path.exists(model_file_poisoned):
                 print(f"[!] Loading original model from '{model_file_poisoned}'")
-                trainer_poisoned, lightning_model_poisoned = load_lit_model(
-                    model_file_poisoned,
-                    target_model_poisoned,
-                    run_name,
-                    log_folder,
-                    EPOCHS,
-                    DEVICE,
-                    LIT_SANITY_STEPS
-                )
+                if "xgb" in name:
+                    with open(model_file_poisoned, "rb") as f:
+                        model_poisoned = pickle.load(f)
+                    X_test = tokenizer.transform(X_test_cmd)
+                    trainer_poisoned = None
+                else:
+                    trainer_poisoned, model_poisoned = load_lit_model(
+                        model_file_poisoned,
+                        target_model_poisoned,
+                        run_name,
+                        log_folder,
+                        EPOCHS,
+                        DEVICE,
+                        LIT_SANITY_STEPS
+                    )
+                    X_test = Xy_test_loader
             else:
                 print(f"[!] Training original model '{run_name}' started: {time.ctime()}")
                 now = time.time()
-                trainer_poisoned, lightning_model_poisoned = train_lit_model(
-                    Xy_train_loader_poisoned,
-                    Xy_test_loader,
-                    target_model_poisoned,
-                    run_name,
-                    log_folder=log_folder,
-                    epochs=EPOCHS,
-                    learning_rate=LEARNING_RATE,
-                    scheduler=SCHEDULER,
-                    scheduler_budget=EPOCHS * len(Xy_train_loader_poisoned),
-                    model_file = model_file_poisoned,
-                    device=DEVICE,
-                    lit_sanity_steps=LIT_SANITY_STEPS
-                )
+                if "xgb" in name:
+                    X_train_cmd_poisoned_onehot = tokenizer.transform(X_train_cmd_poisoned)
+                    X_test = tokenizer.transform(X_test_cmd)
+                    trainer_poisoned = None
+                    model_poisoned = training_tabular(
+                        model=target_model_poisoned,
+                        name=run_name,
+                        X_train_encoded=X_train_cmd_poisoned_onehot,
+                        X_test_encoded=X_test,
+                        y_train=y_train_poisoned,
+                        y_test=y_test,
+                        logs_folder=log_folder,
+                        model_file = model_file_poisoned
+                    )
+                else:
+                    X_test = Xy_test_loader
+                    trainer_poisoned, model_poisoned = train_lit_model(
+                        Xy_train_loader_poisoned,
+                        Xy_test_loader,
+                        target_model_poisoned,
+                        run_name,
+                        log_folder=log_folder,
+                        epochs=EPOCHS,
+                        learning_rate=LEARNING_RATE,
+                        scheduler=SCHEDULER,
+                        scheduler_budget=EPOCHS * len(Xy_train_loader_poisoned),
+                        model_file = model_file_poisoned,
+                        device=DEVICE,
+                        lit_sanity_steps=LIT_SANITY_STEPS
+                    )
                 print(f"[!] Training of '{run_name}' ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")
 
             # ===========================================
@@ -199,10 +224,10 @@ def main(seed):
             # ===========================================
             print(f"[*] Testing '{run_name}' model...")
             scores = collect_scores(
-                    Xy_test_loader,
+                    X_test,
                     y_test,
+                    model_poisoned,
                     trainer_poisoned,
-                    lightning_model_poisoned,
                     run_name=run_name
             )
             with open(scores_json_file, "w") as f:

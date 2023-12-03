@@ -391,7 +391,15 @@ if __name__ == "__main__":
             if "xgb" in name:
                 X_train_onehot = tokenizer.transform(X_train_cmds)
                 X_test_onehot = tokenizer.transform(X_test_cmds)
-                model_orig = training_tabular(target_model_orig, run_name, X_train_onehot, X_test_onehot, y_train, y_test, LOGS_FOLDER)
+                model_orig = training_tabular(
+                    target_model_orig,
+                    run_name,
+                    X_train_onehot,
+                    X_test_onehot,
+                    y_train,
+                    y_test,
+                    LOGS_FOLDER
+                )
             else:
                 if os.path.exists(model_file_orig):
                     print(f"[!] Loading original model from '{model_file_orig}'")
@@ -484,7 +492,15 @@ if __name__ == "__main__":
             if "xgb" in name:
                 X_train_onehot_adv = tokenizer.transform(X_train_cmd_adv)
                 X_test_onehot = tokenizer.transform(X_test_cmds)
-                model_adv = training_tabular(target_model_adv, run_name, X_train_onehot_adv, X_test_onehot, y_train_adv, y_test, LOGS_FOLDER)
+                model_adv = training_tabular(
+                    target_model_adv,
+                    run_name,
+                    X_train_onehot_adv,
+                    X_test_onehot,
+                    y_train_adv,
+                    y_test,
+                    LOGS_FOLDER
+                )
             else:
                 model_file_adv = os.path.join(LOGS_FOLDER, f"{run_name}.ckpt")
                 # ========== TRAINING =============

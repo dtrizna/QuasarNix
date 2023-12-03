@@ -6,7 +6,10 @@ import torch
 from torch.utils.data.dataloader import DataLoader
 import lightning as L
 
+from typing import Union
 from .models import PyTorchLightningModel
+from xgboost import XGBClassifier
+from scipy.sparse import csr_matrix
 
 
 def sigmoid(x):
@@ -46,15 +49,27 @@ def get_tpr_at_fpr(true_labels, predicted_labels, fprNeeded=1e-4, logits=True, i
 
 
 def collect_scores(
-        Xy_test_loader: DataLoader,
+        X_test: Union[DataLoader, np.ndarray, csr_matrix],
         y_test: np.ndarray,
-        trainer: L.Trainer,
-        lightning_model: PyTorchLightningModel,
+        model: Union[PyTorchLightningModel, XGBClassifier],
+        trainer: L.Trainer = None,
         scores: dict = None,
         score_suffix: str = "",
         run_name: str = "",
         verbose: bool = True) -> dict:
-    y_test_pred, y_test_pred_logits = predict(Xy_test_loader, trainer, lightning_model, decision_threshold=0.5)
+    
+    assert isinstance(model, (PyTorchLightningModel, XGBClassifier)), "Please provide a PyTorchLightningModel or XGBClassifier"
+    assert isinstance(X_test, (DataLoader, np.ndarray, csr_matrix)), "Please provide a DataLoader, np.ndarray or csr_matrix"
+    assert isinstance(X_test, DataLoader) == isinstance(model, PyTorchLightningModel), "Please provide a DataLoader if you are using a PyTorchLightningModel"
+    assert isinstance(X_test, (np.ndarray, csr_matrix)) == isinstance(model, XGBClassifier), "Please provide a np.ndarray if you are using a XGBClassifier"
+    assert isinstance(model, PyTorchLightningModel) == (trainer is not None), "Please provide a trainer if you are using a PyTorchLightningModel"
+    
+    if isinstance(model, PyTorchLightningModel):
+        y_test_pred, y_test_pred_logits = predict(X_test, trainer, model, decision_threshold=0.5)
+    elif isinstance(model, XGBClassifier):
+        y_test_pred = model.predict(X_test)
+        y_test_pred_logits = model.predict_proba(X_test)[:,1]
+
     tpr_test_poisoned = get_tpr_at_fpr(y_test, y_test_pred_logits, logits=True)
     f1_test_poisoned = f1_score(y_test, y_test_pred)
     acc_test_poisoned = accuracy_score(y_test, y_test_pred)
@@ -62,11 +77,7 @@ def collect_scores(
     misclassified_test_poisoned = len(misclassified_test_poisoned_idxs)
     misclassified_test_poisoned_malicious = len(np.where(y_test[misclassified_test_poisoned_idxs] == 1)[0])
     misclassified_test_poisoned_benign = len(np.where(y_test[misclassified_test_poisoned_idxs] == 0)[0])
-    # try:
-    #     auc_test_poisoned = roc_auc_score(y_test, y_test_pred)
-    # except ValueError: # if single class expection -- skip
-    #     auc_test_poisoned = None
-    # same as above, but without try -- check if all values are the same, and if not -- then calculate auc
+    # check if single class, if not -- then calculate auc
     auc_test_poisoned = roc_auc_score(y_test, y_test_pred) if len(np.unique(y_test)) > 1 else None
     local_scores = {
             f"tpr{score_suffix}": tpr_test_poisoned,

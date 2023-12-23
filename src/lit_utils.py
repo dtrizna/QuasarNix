@@ -100,10 +100,11 @@ def train_lit_model(
         scheduler_budget: Union[None, int] = None,
         model_file: Union[None, str] = None,
         device: str = "cpu",
-        lit_sanity_steps: int = 1
+        lit_sanity_steps: int = 1,
+        early_stop_patience: int = 5
 ):
     lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=learning_rate, scheduler=scheduler, scheduler_step_budget=scheduler_budget)
-    trainer = configure_trainer(name, log_folder, epochs, device=device, lit_sanity_steps=lit_sanity_steps)
+    trainer = configure_trainer(name, log_folder, epochs, device=device, lit_sanity_steps=lit_sanity_steps, early_stop_patience=early_stop_patience)
 
     print(f"[*] Training '{name}' model...")
     trainer.fit(lightning_model, X_train_loader, X_test_loader)

@@ -1,4 +1,3 @@
-
 import torch
 from torch.utils.data import TensorDataset, Dataset, DataLoader
 from scipy.sparse import csr_matrix
@@ -42,7 +41,6 @@ class CSRTensorDataset(Dataset):
             return x_data, y_data
         else:
             return x_data,
-
 
 
 def create_dataloader(X, y=None, batch_size=1024, shuffle=False, workers=4):

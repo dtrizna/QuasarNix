@@ -22,6 +22,7 @@ SEED = 33
 ROOT = os.path.dirname(os.path.abspath('__file__'))
 VOCAB_SIZE = 4096
 MAX_LEN = 128
+BASELINE = True # whether to train on baseline or malicious data
 
 LOGS_FOLDER = "logs_models_one_class_v2"
 os.makedirs(LOGS_FOLDER, exist_ok=True)
@@ -63,7 +64,7 @@ def load_data():
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
-def get_tpr_at_fpr(predicted_probs, true_labels, fprNeeded=1e-4):
+def get_tpr_at_fpr(predicted_probs, true_labels, fprNeeded=1e-5):
     # if isinstance(predicted_logits, torch.Tensor):
     #     predicted_probs = torch.sigmoid(predicted_logits).cpu().detach().numpy()
     # else:
@@ -90,7 +91,7 @@ if LIMIT is not None:
 print('X_train_cmds: ', len(X_train_cmds))
 print('X_test_cmds: ', len(X_test_cmds))
 
-train_mask = y_train == 0
+train_mask = y_train == 0 if BASELINE else y_train == 1
 X_train_cmds_one_class = np.array(X_train_cmds)[train_mask]
 y_train_one_class = np.array(y_train)[train_mask]
 
@@ -143,12 +144,12 @@ def train_and_predict(model, X_train, X_test, y_test, name=""):
     model_preds = np.array([1 if x == -1 else 0 for x in model_preds])
 
     # calculating metrics
-    model_tpr = get_tpr_at_fpr(model_preds, y_test, fprNeeded=1e-4)
+    model_tpr = get_tpr_at_fpr(model_preds, y_test, fprNeeded=1e-5)
     model_f1 = f1_score(y_test, model_preds)
     model_acc = accuracy_score(y_test, model_preds)
     model_auc = roc_auc_score(y_test, model_preds)
 
-    print('TPR at FPR=1e-4: {:.4f}%'.format(model_tpr*100))
+    print('TPR at FPR=1e-5: {:.4f}%'.format(model_tpr*100))
     print('F1 score: {:.4f}%'.format(model_f1*100))
     print('Accuracy: {:.4f}%'.format(model_acc*100))
     print('AUC: {:.4f}%'.format(model_auc*100))

@@ -18,12 +18,13 @@ from src.lit_utils import load_lit_model, train_lit_model
 from src.data_utils import commands_to_loader, load_data, load_tokenizer
 from src.tabular_utils import training_tabular
 from src.scoring import collect_scores
+from src.models import CLSTransformerEncoder
 
 
 MAX_LEN = 128
 VOCAB_SIZE = 4096
 EMBEDDED_DIM = 64
-BATCH_SIZE = 2048 # 256/512 if training transformer
+BATCH_SIZE = 1024 # 256/512 if training transformer
 DROPOUT = 0.5
 TOKENIZER = wordpunct_tokenize
 
@@ -41,6 +42,7 @@ POISONING_RATIOS = [0, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3]
 
 DEVICE = "gpu"
 LIT_SANITY_STEPS = 1
+EARLY_STOP_PATIENCE = 10
 DATALOADER_WORKERS = 4
 LEARNING_RATE = 1e-3
 SCHEDULER = "onecycle"
@@ -86,12 +88,25 @@ def main(seed):
         dropout=DROPOUT
     ) # 264 K params
 
+    cls_transformer_model = CLSTransformerEncoder(
+        vocab_size=VOCAB_SIZE,
+        d_model=EMBEDDED_DIM,
+        nhead=4,
+        num_layers=2,
+        dim_feedforward=128,
+        max_len=MAX_LEN,
+        dropout=DROPOUT,
+        mlp_hidden_dims=[64,32],
+        output_dim=1
+    ) #  335 K params
+
     xgb_model_onehot = XGBClassifier(n_estimators=100, max_depth=10, random_state=seed)
 
     target_models = {
         "cnn": cnn_model,
         "mlp_onehot": mlp_tab_model_onehot,
         "xgb_onehot": xgb_model_onehot,
+        "cls_transformer": cls_transformer_model
     }
 
     # ===========================================
@@ -215,7 +230,8 @@ def main(seed):
                         scheduler_budget=EPOCHS * len(Xy_train_loader_poisoned),
                         model_file = model_file_poisoned,
                         device=DEVICE,
-                        lit_sanity_steps=LIT_SANITY_STEPS
+                        lit_sanity_steps=LIT_SANITY_STEPS,
+                        early_stop_patience=EARLY_STOP_PATIENCE
                     )
                 print(f"[!] Training of '{run_name}' ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")
 

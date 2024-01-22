@@ -157,10 +157,10 @@ def train_models(run_name, X_train_onehot, X_test_onehot, X_train_loader, X_test
     xgb_model_onehot = XGBClassifier(n_estimators=100, max_depth=10, random_state=RANDOM_SEED)
 
     models = {
-        # "xgb_onehot": xgb_model_onehot,
+        "xgb_onehot": xgb_model_onehot,
         # "mlp_onehot": mlp_tab_model_onehot,
         # "mean_transformer": mean_transformer_model,
-        "cnn": cnn_model,
+        # "cnn": cnn_model,
     }
 
     for name in models:

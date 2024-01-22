@@ -35,16 +35,27 @@ def training_tabular(
     if model_file is not None:
         copyfile(f"{logs_folder}/{name}/model.pkl", model_file)
     
-    y_test_preds = model.predict_proba(X_test_encoded)[:,1]
+    # calculate train metrics
+    y_train_preds = model.predict_proba(X_train_encoded)[:,1]
+    tpr = get_tpr_at_fpr(y_train, y_train_preds, fprNeeded=1e-4, logits=False)
+    f1 = f1_score(y_train, y_train_preds.round())
+    acc = accuracy_score(y_train, y_train_preds.round())
+    auc = roc_auc_score(y_train, y_train_preds)
+    print(f"[!] {name} model scores: train_tpr={tpr:.4f}, train_f1={f1:.4f}, train_acc={acc:.4f}, train_auc={auc:.4f}")
+    metrics_csv = pd.DataFrame({"train_tpr": [tpr], "train_f1": [f1], "train_acc": [acc], "train_auc": [auc]})
 
+    # calculate test metrics
+    y_test_preds = model.predict_proba(X_test_encoded)[:,1]
     tpr = get_tpr_at_fpr(y_test, y_test_preds, fprNeeded=1e-4, logits=False)
     f1 = f1_score(y_test, y_test_preds.round())
     acc = accuracy_score(y_test, y_test_preds.round())
     auc = roc_auc_score(y_test, y_test_preds)
-    
-    print(f"[!] {name} model scores: tpr={tpr:.4f}, f1={f1:.4f}, acc={acc:.4f}, auc={auc:.4f}")
-    
-    metrics_csv = pd.DataFrame({"tpr": [tpr], "f1": [f1], "acc": [acc], "auc": [auc]})
+    print(f"[!] {name} model scores: val_tpr={tpr:.4f}, val_f1={f1:.4f}, val_acc={acc:.4f}, val_auc={auc:.4f}")
+    metrics_csv["val_tpr"] = tpr
+    metrics_csv["val_f1"] = f1
+    metrics_csv["val_acc"] = acc
+    metrics_csv["val_auc"] = auc
+
     with open(f"{logs_folder}/{name}/metrics.csv", "w") as f:
         metrics_csv.to_csv(f, index=False)
     

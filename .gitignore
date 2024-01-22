@@ -3,6 +3,8 @@ data/*
 notes*
 *pickle
 *pkl
+*npy
+*cmd*
 
 # Model checkpoints
 *model

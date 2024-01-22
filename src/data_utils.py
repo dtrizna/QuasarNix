@@ -67,14 +67,15 @@ def commands_to_loader(
         tokenizer: Union[CommandTokenizer, OneHotCustomVectorizer], 
         workers: int, 
         batch_size: int, 
-        y: np.ndarray = None
+        y: np.ndarray = None,
+        shuffle: bool = False
 ) -> DataLoader:
     """Convert a list of commands to a DataLoader."""
     array = tokenizer.transform(cmd)
     if y is None:
-        loader = create_dataloader(array, batch_size=batch_size, workers=workers)
+        loader = create_dataloader(array, batch_size=batch_size, workers=workers, shuffle=shuffle)
     else:
-        loader = create_dataloader(array, y, batch_size=batch_size, workers=workers)
+        loader = create_dataloader(array, y, batch_size=batch_size, workers=workers, shuffle=shuffle)
     return loader
 
 

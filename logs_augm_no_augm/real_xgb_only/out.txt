@@ -1,0 +1,45 @@
+C:\Users\dtrizna\Code\Synapse\Linux>python3 -W ignore ablation_augm_no_augm.py
+Python implementation: CPython
+Python version       : 3.9.13
+IPython version      : 8.11.0
+
+torch    : 2.0.1+cu117
+lightning: 1.8.6
+sklearn  : 0.0.post1
+
+[!] Script start time: Mon Jan 22 13:38:11 2024
+Global seed set to 33
+[!] Generating 8883 number of examples per template.
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 21/21 [00:04<00:00,  4.51it/s] 
+[!] Generated total 186543 commands.
+[!] Generating 1 number of examples per template.
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 21/21 [00:00<?, ?it/s] 
+[!] Generated total 21 commands.
+[!] Generating 1 number of examples per template.
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 9/9 [00:00<00:00, 9058.97it/s]
+[!] Generated total 9 commands.
+[!] Generated 453056 augmented train commands (balanced).
+[!] Generated 266534 non-augmented train commands (imbalanced).
+[!] Generated 235078 test commands (imbalanced).
+    Size of train set: 266513
+    Size of test set: 235069
+[*] Building vocab and encoding...
+[*] Fitting One-Hot encoder...
+[*] Building vocab and encoding...
+[*] Fitting One-Hot encoder...
+[*] Training augm_xgb_onehot... Started: Mon Jan 22 13:40:16 2024
+[*] Training augm_xgb_onehot model...
+[!] augm_xgb_onehot model scores: train_tpr=1.0000, train_f1=1.0000, train_acc=1.0000, train_auc=1.0000
+[!] augm_xgb_onehot model scores: val_tpr=1.0000, val_f1=0.3830, val_acc=0.9999, val_auc=1.0000
+[!] Training of augm_xgb_onehot ended:  Mon Jan 22 13:40:28 2024  | Took: 12.49 seconds
+[*] Training not_augm_xgb_onehot... Started: Mon Jan 22 13:40:28 2024
+[*] Training not_augm_xgb_onehot model...
+[!] not_augm_xgb_onehot model scores: train_tpr=1.0000, train_f1=1.0000, train_acc=1.0000, train_auc=1.0000
+[!] not_augm_xgb_onehot model scores: val_tpr=0.2222, val_f1=0.0000, val_acc=1.0000, val_auc=0.8438
+[!] Training of not_augm_xgb_onehot ended:  Mon Jan 22 13:40:31 2024  | Took: 3.06 seconds
+[*] Training not_augm_balanced_xgb_onehot... Started: Mon Jan 22 13:40:32 2024
+[*] Training not_augm_balanced_xgb_onehot model...
+[!] not_augm_balanced_xgb_onehot model scores: train_tpr=1.0000, train_f1=1.0000, train_acc=1.0000, train_auc=1.0000
+[!] not_augm_balanced_xgb_onehot model scores: val_tpr=0.2222, val_f1=0.2000, val_acc=1.0000, val_auc=0.8084
+[!] Training of not_augm_balanced_xgb_onehot ended:  Mon Jan 22 13:40:37 2024  | Took: 5.36 seconds
+[!] Script end time: Mon Jan 22 13:40:37 2024

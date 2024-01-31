@@ -5,6 +5,7 @@ notes*
 *pkl
 *npy
 *cmd*
+events.out*
 
 # Model checkpoints
 *model

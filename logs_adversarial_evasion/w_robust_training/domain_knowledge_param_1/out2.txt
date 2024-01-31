@@ -1,0 +1,229 @@
+C:\Users\dtrizna\Code\Synapse\Linux>python3 adversarial_evasion.py
+[!] Script start time: Sat Jan 27 19:15:55 2024
+Python implementation: CPython
+Python version       : 3.9.13
+IPython version      : 8.11.0
+
+torch    : 2.0.1+cu117
+lightning: 1.8.6
+sklearn  : 0.0.post1
+
+Global seed set to 33
+Sizes of train and test sets: 533014, 470129
+[*] Loading malicious test set sample from 'logs_adversarial_evasion\w_robust_training\domain_knowledge\X_test_malicious_without_attack_cmd_sample_5000.json'
+[!] Size of malicious test set: 5000
+[!] Loading adversarial test set for payload size 0.05 from 'logs_adversarial_evasion\w_robust_training\domain_knowledge\X_test_malicious_with_attack_0.05_cmd_sample_5000.json'
+[!] Loading adversarial test set for payload size 0.1 from 'logs_adversarial_evasion\w_robust_training\domain_knowledge\X_test_malicious_with_attack_0.1_cmd_sample_5000.json'
+[!] Loading adversarial test set for payload size 0.3 from 'logs_adversarial_evasion\w_robust_training\domain_knowledge\X_test_malicious_with_attack_0.3_cmd_sample_5000.json'
+[!] Loading adversarial test set for payload size 0.5 from 'logs_adversarial_evasion\w_robust_training\domain_knowledge\X_test_malicious_with_attack_0.5_cmd_sample_5000.json'
+[!] Loading adversarial test set for payload size 0.7 from 'logs_adversarial_evasion\w_robust_training\domain_knowledge\X_test_malicious_with_attack_0.7_cmd_sample_5000.json'
+[!] Loading adversarial test set for payload size 0.9 from 'logs_adversarial_evasion\w_robust_training\domain_knowledge\X_test_malicious_with_attack_0.9_cmd_sample_5000.json'
+[!] Loading adversarial test set for payload size 1 from 'logs_adversarial_evasion\w_robust_training\domain_knowledge\X_test_malicious_with_attack_1_cmd_sample_5000.json'
+[*] Creating robust training set: applying attack with highest parameter...
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 266501/266501 [00:02<00:00, 112361.28it/s] 
+[!!!] Starting attack against 'cnn' model...
+[!] Loading vocab from 'logs_adversarial_evasion\w_robust_training\domain_knowledge\wordpunct_vocab_4096.json'...
+[!] Scores already calculated for 'cnn_orig'! Skipping...
+[!] Scores already calculated for 'cnn_adv'! Skipping...
+[!!!] Starting attack against 'mlp_onehot' model...
+[*] Fitting One-Hot encoder...
+[!] Fitting One-Hot encoder took: 7.75s
+[!] Scores already calculated for 'mlp_onehot_orig'! Skipping...
+[!] Scores already calculated for 'mlp_onehot_adv'! Skipping...
+[!!!] Starting attack against 'mean_transformer' model...
+[!] Loading vocab from 'logs_adversarial_evasion\w_robust_training\domain_knowledge\wordpunct_vocab_4096.json'...
+[!] Loading original model from 'logs_adversarial_evasion\w_robust_training\domain_knowledge\mean_transformer_orig.ckpt'
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:02<00:00,  7.64it/s]
+[!] Orig train | Orig test |  Evasive: 0
+[!] Orig train | Orig test | Accuracy: 1.000
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 23.87it/s]
+[!] Orig train | Adv test | Payload 0.05 |  Evasive: 67
+[!] Orig train | Adv test | Payload 0.05 | Accuracy: 0.987
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 21.78it/s]
+[!] Orig train | Adv test | Payload 0.1 |  Evasive: 172
+[!] Orig train | Adv test | Payload 0.1 | Accuracy: 0.966
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 23.51it/s]
+[!] Orig train | Adv test | Payload 0.3 |  Evasive: 455
+[!] Orig train | Adv test | Payload 0.3 | Accuracy: 0.909
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 23.62it/s]
+[!] Orig train | Adv test | Payload 0.5 |  Evasive: 823
+[!] Orig train | Adv test | Payload 0.5 | Accuracy: 0.835
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 23.69it/s]
+[!] Orig train | Adv test | Payload 0.7 |  Evasive: 1226
+[!] Orig train | Adv test | Payload 0.7 | Accuracy: 0.755
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 22.79it/s]
+[!] Orig train | Adv test | Payload 0.9 |  Evasive: 1616
+[!] Orig train | Adv test | Payload 0.9 | Accuracy: 0.677
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 23.52it/s]
+[!] Orig train | Adv test | Payload 1 |  Evasive: 1787
+[!] Orig train | Adv test | Payload 1 | Accuracy: 0.643
+[!] Training of adversarial model 'mean_transformer_adv' started: Sat Jan 27 19:20:19 2024
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[*] Training 'mean_transformer_adv' model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+   | Name            | Type                   | Params
+------------------------------------------------------------
+0  | model           | MeanTransformerEncoder | 335 K
+1  | loss            | BCEWithLogitsLoss      | 0
+2  | train_acc       | BinaryAccuracy         | 0
+3  | train_f1        | BinaryF1Score          | 0
+4  | train_auc       | BinaryAUROC            | 0
+5  | train_recall    | BinaryRecall           | 0
+6  | train_precision | BinaryPrecision        | 0
+7  | val_acc         | BinaryAccuracy         | 0
+8  | val_f1          | BinaryF1Score          | 0
+9  | val_auc         | BinaryAUROC            | 0
+10 | val_recall      | BinaryRecall           | 0
+11 | val_precision   | BinaryPrecision        | 0
+------------------------------------------------------------
+335 K     Trainable params
+0         Non-trainable params
+335 K     Total params
+1.341     Total estimated model params size (MB)
+Epoch 0:  50%|▍| 2878/5757 [04:09<04:10, 11.51it/s, loss=0.00116, v_num=0, train_loss=0.00188, memory=1.76e+9, val_f1=0.940, val_tpr=0.869, val_accMetric val_tpr improved. New best score: 0.869                                                                                                       
+Epoch 0: 100%|▉| 5756/5757 [08:14<00:00, 11.63it/s, loss=0.000744, v_num=0, train_loss=1.34e-5, memory=1.76e+9, val_f1=0.946, val_tpr=0.942, val_acMetric val_tpr improved by 0.073 >= min_delta = 0.0001. New best score: 0.942                                                                        
+Epoch 0: 100%|█| 5757/5757 [08:15<00:00, 11.63it/s, loss=0.00055, v_num=0, train_loss=1.08e-8, memory=1.77e+8, val_f1=0.946, val_tpr=0.942, val_acc
+Epoch 1:  50%|▍| 2878/5757 [04:11<04:11, 11.46it/s, loss=0.000465, v_num=0, train_loss=4.18e-5, memory=1.76e+9, val_f1=0.946, val_tpr=0.946, val_acMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.946                                                                        
+Epoch 1: 100%|▉| 5756/5757 [08:30<00:00, 11.27it/s, loss=0.000357, v_num=0, train_loss=6.68e-5, memory=1.76e+9, val_f1=0.944, val_tpr=0.962, val_acMetric val_tpr improved by 0.015 >= min_delta = 0.0001. New best score: 0.962                                                                        
+Epoch 1: 100%|█| 5757/5757 [08:31<00:00, 11.27it/s, loss=0.000356, v_num=0, train_loss=0.000, memory=1.77e+8, val_f1=0.944, val_tpr=0.962, val_acc=
+Epoch 2:  50%|▍| 2878/5757 [04:24<04:24, 10.89it/s, loss=0.00037, v_num=0, train_loss=2.36e-6, memory=1.76e+9, val_f1=0.958, val_tpr=0.965, val_accMetric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.965                                                                        
+Epoch 2: 100%|▉| 5756/5757 [08:57<00:00, 10.71it/s, loss=0.000289, v_num=0, train_loss=3.24e-6, memory=1.76e+9, val_f1=0.917, val_tpr=0.975, val_acMetric val_tpr improved by 0.010 >= min_delta = 0.0001. New best score: 0.975                                                                        
+Epoch 2: 100%|█| 5757/5757 [08:57<00:00, 10.71it/s, loss=0.000289, v_num=0, train_loss=1.63e-8, memory=1.77e+8, val_f1=0.917, val_tpr=0.975, val_ac
+Epoch 3: 100%|▉| 5756/5757 [09:25<00:00, 10.18it/s, loss=0.000265, v_num=0, train_loss=1.6e-6, memory=1.76e+9, val_f1=0.925, val_tpr=0.979, val_accMetric val_tpr improved by 0.004 >= min_delta = 0.0001. New best score: 0.979                                                                        
+Epoch 3: 100%|█| 5757/5757 [09:25<00:00, 10.18it/s, loss=0.000265, v_num=0, train_loss=2.14e-5, memory=1.77e+8, val_f1=0.925, val_tpr=0.979, val_ac
+Epoch 4: 100%|█| 5757/5757 [09:56<00:00,  9.66it/s, loss=0.000146, v_num=0, train_loss=0.000, memory=1.77e+8, val_f1=0.878, val_tpr=0.969, val_acc=
+Epoch 5:  50%|▍| 2878/5757 [05:04<05:04,  9.45it/s, loss=0.000101, v_num=0, train_loss=7.38e-7, memory=1.76e+9, val_f1=0.915, val_tpr=0.986, val_acMetric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.986                                                                        
+Epoch 5: 100%|▉| 5756/5757 [10:18<00:00,  9.31it/s, loss=0.000102, v_num=0, train_loss=0.000941, memory=1.76e+9, val_f1=0.835, val_tpr=0.987, val_aMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.987                                                                        
+Epoch 5: 100%|█| 5757/5757 [10:18<00:00,  9.31it/s, loss=9.84e-05, v_num=0, train_loss=0.000, memory=1.77e+8, val_f1=0.835, val_tpr=0.987, val_acc=
+Epoch 6:  50%|▍| 2878/5757 [05:18<05:19,  9.02it/s, loss=6.43e-05, v_num=0, train_loss=5.09e-5, memory=1.76e+9, val_f1=0.912, val_tpr=0.989, val_acMetric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.989                                                                        
+Epoch 6: 100%|█| 5757/5757 [10:45<00:00,  8.91it/s, loss=1.53e-05, v_num=0, train_loss=0.000, memory=1.77e+8, val_f1=0.944, val_tpr=0.987, val_acc=
+Epoch 7: 100%|█| 5757/5757 [11:11<00:00,  8.57it/s, loss=0.000123, v_num=0, train_loss=0.000, memory=1.77e+8, val_f1=0.872, val_tpr=0.986, val_acc= 
+Epoch 8:  50%|▍| 2878/5757 [05:44<05:45,  8.34it/s, loss=0.000111, v_num=0, train_loss=1.28e-5, memory=1.76e+9, val_f1=0.927, val_tpr=0.989, val_acMetric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.989                                                                        
+Epoch 8: 100%|▉| 5756/5757 [11:37<00:00,  8.25it/s, loss=6.69e-05, v_num=0, train_loss=2.79e-9, memory=1.76e+9, val_f1=0.941, val_tpr=0.990, val_acMetric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.990                                                                        
+Epoch 8: 100%|█| 5757/5757 [11:37<00:00,  8.25it/s, loss=6.69e-05, v_num=0, train_loss=1.3e-7, memory=1.77e+8, val_f1=0.941, val_tpr=0.990, val_acc
+Epoch 9: 100%|█| 5757/5757 [12:03<00:00,  7.95it/s, loss=3.09e-05, v_num=0, train_loss=4.99e-7, memory=1.77e+8, val_f1=0.859, val_tpr=0.981, val_ac
+`Trainer.fit` stopped: `max_epochs=10` reached.                                                                                                     
+Epoch 9: 100%|█| 5757/5757 [12:03<00:00,  7.95it/s, loss=3.09e-05, v_num=0, train_loss=4.99e-7, memory=1.77e+8, val_f1=0.859, val_tpr=0.981, val_ac 
+[!] Training of 'mean_transformer_adv' ended:  Sat Jan 27 21:01:37 2024  | Took: 6078.58 seconds
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 20.99it/s]
+[!] Adv train | Orig test |  Evasive: 1200
+[!] Adv train | Orig test | Accuracy: 0.760
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 20.25it/s]
+[!] Adv train | Adv test | Payload 0.05 |  Evasive: 1193
+[!] Adv train | Adv test | Payload 0.05 | Accuracy: 0.761
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 23.97it/s]
+[!] Adv train | Adv test | Payload 0.1 |  Evasive: 1128
+[!] Adv train | Adv test | Payload 0.1 | Accuracy: 0.774
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:01<00:00, 15.02it/s]
+[!] Adv train | Adv test | Payload 0.3 |  Evasive: 1045
+[!] Adv train | Adv test | Payload 0.3 | Accuracy: 0.791
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 23.41it/s]
+[!] Adv train | Adv test | Payload 0.5 |  Evasive: 911
+[!] Adv train | Adv test | Payload 0.5 | Accuracy: 0.818
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 25.11it/s]
+[!] Adv train | Adv test | Payload 0.7 |  Evasive: 802
+[!] Adv train | Adv test | Payload 0.7 | Accuracy: 0.840
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 24.27it/s]
+[!] Adv train | Adv test | Payload 0.9 |  Evasive: 688
+[!] Adv train | Adv test | Payload 0.9 | Accuracy: 0.862
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+C:\Users\dtrizna\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:224: PossibleUserWarning: The dataloader, predict_dataloader 0, does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` (try 16 which is the number of cpus on this machine) in the `DataLoader` init to improve performance.
+  rank_zero_warn(
+Predicting DataLoader 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 20/20 [00:00<00:00, 22.46it/s]
+[!] Adv train | Adv test | Payload 1 |  Evasive: 640
+[!] Adv train | Adv test | Payload 1 | Accuracy: 0.872
+[!!!] Starting attack against 'xgb_onehot' model...
+[*] Fitting One-Hot encoder...
+[!] Fitting One-Hot encoder took: 7.93s
+[*] Training xgb_onehot_orig model...
+[!] xgb_onehot_orig model scores: train_tpr=1.0000, train_f1=1.0000, train_acc=1.0000, train_auc=1.0000
+[!] xgb_onehot_orig model scores: val_tpr=0.9994, val_f1=0.9997, val_acc=0.9997, val_auc=1.0000
+[!] Orig train | Orig test |  Evasive: 1
+[!] Orig train | Orig test | Accuracy: 1.000
+[!] Orig train | Adv test | Payload 0.05 |  Evasive: 258
+[!] Orig train | Adv test | Payload 0.05 | Accuracy: 0.948
+[!] Orig train | Adv test | Payload 0.1 |  Evasive: 508
+[!] Orig train | Adv test | Payload 0.1 | Accuracy: 0.898
+[!] Orig train | Adv test | Payload 0.3 |  Evasive: 1484
+[!] Orig train | Adv test | Payload 0.3 | Accuracy: 0.703
+[!] Orig train | Adv test | Payload 0.5 |  Evasive: 2537
+[!] Orig train | Adv test | Payload 0.5 | Accuracy: 0.493
+[!] Orig train | Adv test | Payload 0.7 |  Evasive: 3575
+[!] Orig train | Adv test | Payload 0.7 | Accuracy: 0.285
+[!] Orig train | Adv test | Payload 0.9 |  Evasive: 4538
+[!] Orig train | Adv test | Payload 0.9 | Accuracy: 0.092
+[!] Orig train | Adv test | Payload 1 |  Evasive: 4998
+[!] Orig train | Adv test | Payload 1 | Accuracy: 0.000
+[*] Training xgb_onehot_adv model...
+[!] xgb_onehot_adv model scores: train_tpr=1.0000, train_f1=1.0000, train_acc=1.0000, train_auc=1.0000
+[!] xgb_onehot_adv model scores: val_tpr=0.5658, val_f1=0.6088, val_acc=0.7188, val_auc=0.9996
+[!] Adv train | Orig test |  Evasive: 2833
+[!] Adv train | Orig test | Accuracy: 0.433
+[!] Adv train | Adv test | Payload 0.05 |  Evasive: 2741
+[!] Adv train | Adv test | Payload 0.05 | Accuracy: 0.452
+[!] Adv train | Adv test | Payload 0.1 |  Evasive: 2662
+[!] Adv train | Adv test | Payload 0.1 | Accuracy: 0.468
+[!] Adv train | Adv test | Payload 0.3 |  Evasive: 2321
+[!] Adv train | Adv test | Payload 0.3 | Accuracy: 0.536
+[!] Adv train | Adv test | Payload 0.5 |  Evasive: 1961
+[!] Adv train | Adv test | Payload 0.5 | Accuracy: 0.608
+[!] Adv train | Adv test | Payload 0.7 |  Evasive: 1596
+[!] Adv train | Adv test | Payload 0.7 | Accuracy: 0.681
+[!] Adv train | Adv test | Payload 0.9 |  Evasive: 1264
+[!] Adv train | Adv test | Payload 0.9 | Accuracy: 0.747
+[!] Adv train | Adv test | Payload 1 |  Evasive: 1067
+[!] Adv train | Adv test | Payload 1 | Accuracy: 0.787
+[!] Script end time: Sat Jan 27 21:08:09 2024

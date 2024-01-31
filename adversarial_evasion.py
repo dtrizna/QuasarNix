@@ -4,7 +4,6 @@ import time
 import json
 import pickle
 import random
-import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from sklearn.utils import shuffle
@@ -203,7 +202,9 @@ SCHEDULER = "onecycle"
 # # PROD RUN CONFIG
 ADV_ATTACK_SUBSAMPLE = 5000
 EPOCHS = 10
-LIMIT = None
+LIMIT = 30000
+
+ROBUST_TRAINING_PARAM = 0.05
 
 MAX_LEN = 256 
 # NOTE: increased max len 128 -> 256 if compared to model architecture tests
@@ -221,12 +222,12 @@ PREFIX = "TEST_" if LIMIT is not None else ""
 # ATTACK NR.2:
 # ATTACK = attack_evasive_tricks
 # ATTACK_PARAMETERS = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
-# LOGS_FOLDER = os.path.join(f"{PREFIX}logs_adversarial_evasion", "domain_knowledge")
+# LOGS_FOLDER = os.path.join(f"{PREFIX}logs_adversarial_evasion", "w_robust_training", "domain_knowledge_param_0.5")
 
 # ATTACK NR.3:
 ATTACK = attack_hybrid
 ATTACK_PARAMETERS = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
-LOGS_FOLDER = os.path.join(f"{PREFIX}logs_adversarial_evasion", "hybrid")
+LOGS_FOLDER = os.path.join(f"{PREFIX}logs_adversarial_evasion", "w_robust_training", f"hybrid_but_adv_evasive_param_{ROBUST_TRAINING_PARAM}")
 
 os.makedirs(LOGS_FOLDER, exist_ok=True)
 
@@ -298,16 +299,25 @@ if __name__ == "__main__":
         with open(X_train_malicious_cmd_adv_file, "r", encoding="utf-8") as f:
             X_train_malicious_cmd_adv = json.load(f)
     else:
-        print("[*] Creating robust training set: greedy append of single baseline command to malicious one...")
+        # NOTE: Initial Greedy Version
+        # print("[*] Creating robust training set: greedy append of single baseline command to malicious one...")
+        # X_train_malicious_cmd_adv = []
+        # for cmd in tqdm(X_train_malicious_cmd):
+        #     random_baseline_command = random.choice(X_train_baseline_cmd)
+        #     cmd_a = cmd + ";" + random_baseline_command
+        #     X_train_malicious_cmd_adv.append(cmd_a)
+
+        # NOTE: Updated after discussion with Luca to include actual ATTACK in adversarial training
+        print("[*] Creating robust training set: applying attack with custom parameter...")
         X_train_malicious_cmd_adv = []
         for cmd in tqdm(X_train_malicious_cmd):
-            random_baseline_command = random.choice(X_train_baseline_cmd)
-            cmd_a = cmd + ";" + random_baseline_command
+            # cmd_a = ATTACK(cmd, BASELINE, attack_parameter=ROBUST_TRAINING_PARAM)
+            cmd_a = attack_evasive_tricks(cmd, BASELINE, attack_parameter=ROBUST_TRAINING_PARAM)
             X_train_malicious_cmd_adv.append(cmd_a)
         
         # NOTE: this results in ~57 MB size JSON: not for git
-        # with open(X_train_malicious_cmd_adv_file, "w", encoding="utf-8") as f:
-        #     json.dump(X_train_malicious_cmd_adv, f, indent=4)
+        with open(X_train_malicious_cmd_adv_file, "w", encoding="utf-8") as f:
+            json.dump(X_train_malicious_cmd_adv, f, indent=4)
 
     X_train_cmd_adv = X_train_baseline_cmd + X_train_malicious_cmd_adv
     y_train_adv = np.array([0] * len(X_train_baseline_cmd) + [1] * len(X_train_malicious_cmd_adv), dtype=np.int8)
@@ -333,9 +343,9 @@ if __name__ == "__main__":
     xgb_model_onehot_adv = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
 
     target_models = {
-        "cnn": (cnn_model, cnn_model_adv),
-        "mlp_onehot": (mlp_tab_model_onehot, mlp_tab_model_onehot_adv),
-        "mean_transformer": (mean_transformer_model, mean_transformer_model_adv),
+        # "cnn": (cnn_model, cnn_model_adv),
+        # "mlp_onehot": (mlp_tab_model_onehot, mlp_tab_model_onehot_adv),
+        # "mean_transformer": (mean_transformer_model, mean_transformer_model_adv),
         "xgb_onehot": (xgb_model_onehot, xgb_model_onehot_adv),
         #"mlp_seq": (mlp_seq_model, mlp_seq_model_adv),
     }
@@ -423,6 +433,7 @@ if __name__ == "__main__":
                         epochs=EPOCHS,
                         learning_rate=LEARNING_RATE,
                         scheduler=SCHEDULER,
+                        device=DEVICE,
                         scheduler_budget=EPOCHS * len(Xy_train_loader),
                         model_file=model_file_orig
                     )
@@ -527,6 +538,7 @@ if __name__ == "__main__":
                         LOGS_FOLDER,
                         epochs=EPOCHS,
                         learning_rate=LEARNING_RATE,
+                        device=DEVICE,
                         scheduler_budget=EPOCHS * len(Xy_train_loader_adv),
                         model_file=model_file_adv
                     )

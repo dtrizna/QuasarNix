@@ -311,11 +311,9 @@ if __name__ == "__main__":
         print("[*] Creating robust training set: applying attack with custom parameter...")
         X_train_malicious_cmd_adv = []
         for cmd in tqdm(X_train_malicious_cmd):
-            # cmd_a = ATTACK(cmd, BASELINE, attack_parameter=ROBUST_TRAINING_PARAM)
-            cmd_a = attack_evasive_tricks(cmd, BASELINE, attack_parameter=ROBUST_TRAINING_PARAM)
+            cmd_a = ATTACK(cmd, BASELINE, attack_parameter=ROBUST_TRAINING_PARAM)
             X_train_malicious_cmd_adv.append(cmd_a)
         
-        # NOTE: this results in ~57 MB size JSON: not for git
         with open(X_train_malicious_cmd_adv_file, "w", encoding="utf-8") as f:
             json.dump(X_train_malicious_cmd_adv, f, indent=4)
 
@@ -342,6 +340,7 @@ if __name__ == "__main__":
     xgb_model_onehot = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
     xgb_model_onehot_adv = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
 
+    # NOTE: kept only xgb for now to test its behavior with hybrid attack
     target_models = {
         # "cnn": (cnn_model, cnn_model_adv),
         # "mlp_onehot": (mlp_tab_model_onehot, mlp_tab_model_onehot_adv),

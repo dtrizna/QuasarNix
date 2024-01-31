@@ -194,40 +194,34 @@ DATALOADER_WORKERS = 4
 LEARNING_RATE = 1e-3
 SCHEDULER = "onecycle"
 
-# TEST RUN CONFIG
-# ADV_ATTACK_SUBSAMPLE = 50
-# EPOCHS = 1
-# LIMIT = 5000
-
-# # PROD RUN CONFIG
+# RUN CONFIG
 ADV_ATTACK_SUBSAMPLE = 5000
 EPOCHS = 10
 LIMIT = 30000
 
-ROBUST_TRAINING_PARAM = 0.05
+ROBUST_TRAINING_PARAM = 0.5
+ROBUST_MANIPULATION_PROB = 0.5
 
 MAX_LEN = 256 
 # NOTE: increased max len 128 -> 256 if compared to model architecture tests
 # Therefore, needed to reduce batch size to 512 so transformer fits on GPU
-
-PREFIX = "TEST_" if LIMIT is not None else ""
 
 # ATTACK NR.1:
 # ATTACK = attack_template_prepend
 # ATTACK_PARAMETERS = [16, 32, 48, 64, 80, 96, 112, 128] # PAYLOAD_SIZES
 # # NOTE: Total size of injected characters: PAYLOAD_SIZE + 23
 # # since len(template) = 23 (w/o PAYLOAD) when template = """python3 -c "print('PAYLOAD')" """
-# LOGS_FOLDER = os.path.join(f"{PREFIX}logs_adversarial_evasion", "nl2bash_prepend")
+# LOGS_FOLDER = os.path.join(f"logs_adversarial_evasion", "nl2bash_prepend")
 
 # ATTACK NR.2:
-# ATTACK = attack_evasive_tricks
-# ATTACK_PARAMETERS = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
-# LOGS_FOLDER = os.path.join(f"{PREFIX}logs_adversarial_evasion", "w_robust_training", "domain_knowledge_param_0.5")
+ATTACK = attack_evasive_tricks
+ATTACK_PARAMETERS = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
+LOGS_FOLDER = os.path.join(f"logs_adversarial_evasion", f"domain_knowledge_prob_{ROBUST_MANIPULATION_PROB}_attack_param_{ROBUST_TRAINING_PARAM}_limit_{LIMIT}")
 
 # ATTACK NR.3:
-ATTACK = attack_hybrid
-ATTACK_PARAMETERS = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
-LOGS_FOLDER = os.path.join(f"{PREFIX}logs_adversarial_evasion", "w_robust_training", f"hybrid_but_adv_evasive_param_{ROBUST_TRAINING_PARAM}")
+# ATTACK = attack_hybrid
+# ATTACK_PARAMETERS = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
+# LOGS_FOLDER = os.path.join(f"logs_adversarial_evasion", f"hybrid_prob_{ROBUST_MANIPULATION_PROB}_attack_param_{ROBUST_TRAINING_PARAM}_limit_{LIMIT}")
 
 os.makedirs(LOGS_FOLDER, exist_ok=True)
 
@@ -311,7 +305,11 @@ if __name__ == "__main__":
         print("[*] Creating robust training set: applying attack with custom parameter...")
         X_train_malicious_cmd_adv = []
         for cmd in tqdm(X_train_malicious_cmd):
-            cmd_a = ATTACK(cmd, BASELINE, attack_parameter=ROBUST_TRAINING_PARAM)
+            if random.random() <= ROBUST_MANIPULATION_PROB:
+                cmd_a = ATTACK(cmd, BASELINE, attack_parameter=ROBUST_TRAINING_PARAM)
+            else:
+                cmd_a = cmd
+
             X_train_malicious_cmd_adv.append(cmd_a)
         
         with open(X_train_malicious_cmd_adv_file, "w", encoding="utf-8") as f:
@@ -340,11 +338,10 @@ if __name__ == "__main__":
     xgb_model_onehot = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
     xgb_model_onehot_adv = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
 
-    # NOTE: kept only xgb for now to test its behavior with hybrid attack
     target_models = {
-        # "cnn": (cnn_model, cnn_model_adv),
-        # "mlp_onehot": (mlp_tab_model_onehot, mlp_tab_model_onehot_adv),
-        # "mean_transformer": (mean_transformer_model, mean_transformer_model_adv),
+        "cnn": (cnn_model, cnn_model_adv),
+        "mlp_onehot": (mlp_tab_model_onehot, mlp_tab_model_onehot_adv),
+        "mean_transformer": (mean_transformer_model, mean_transformer_model_adv),
         "xgb_onehot": (xgb_model_onehot, xgb_model_onehot_adv),
         #"mlp_seq": (mlp_seq_model, mlp_seq_model_adv),
     }

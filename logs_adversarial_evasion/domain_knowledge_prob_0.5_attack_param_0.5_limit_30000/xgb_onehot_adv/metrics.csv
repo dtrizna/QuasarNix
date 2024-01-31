@@ -1,0 +1,2 @@
+train_tpr,train_f1,train_acc,train_auc,val_tpr,val_f1,val_acc,val_auc
+1.0,1.0,1.0,1.0,0.7496,0.953244308078519,0.9553,0.9998114044444445

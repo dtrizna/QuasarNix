@@ -1,0 +1,23 @@
+{
+    "tpr_backdoor": 0,
+    "f1_backdoor": 0.8065401599236185,
+    "acc_backdoor": 0.6758,
+    "auc_backdoor": null,
+    "misclassified_backdoor": 1621,
+    "misclassified_malicious_backdoor": 1621,
+    "misclassified_benign_backdoor": 0,
+    "tpr_orig": 0,
+    "f1_orig": 0.9626556016597512,
+    "acc_orig": 0.928,
+    "auc_orig": null,
+    "misclassified_orig": 360,
+    "misclassified_malicious_orig": 360,
+    "misclassified_benign_orig": 0,
+    "tpr_orig_full": 0.0,
+    "f1_orig_full": 0.9627593931160359,
+    "acc_orig_full": 0.96409,
+    "auc_orig_full": 0.9640900000000001,
+    "misclassified_orig_full": 3591,
+    "misclassified_malicious_orig_full": 3582,
+    "misclassified_benign_orig_full": 9
+}

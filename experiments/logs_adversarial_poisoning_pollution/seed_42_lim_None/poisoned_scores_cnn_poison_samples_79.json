@@ -1,0 +1,9 @@
+{
+    "tpr": 1.0,
+    "f1": 0.9998957608711838,
+    "acc": 0.9998957732877571,
+    "auc": 0.9998957713738761,
+    "misclassified": 49,
+    "misclassified_malicious": 48,
+    "misclassified_benign": 1
+}

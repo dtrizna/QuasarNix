@@ -28,7 +28,12 @@ from src.models import CLSTransformerEncoder
 # BACKDOOR CODE
 # ==================
 
-def create_backdoor(X_train_cmd: List, tokenizer: Union[OneHotCustomVectorizer, CommandTokenizer], backdoor_size: int, max_chars: int = 128) -> List:
+def create_backdoor(
+        X_train_cmd: List,
+        tokenizer: Union[OneHotCustomVectorizer, CommandTokenizer],
+        backdoor_size: int,
+        max_chars: int = 128
+) -> str:
     """
     Create a backdoor from a sparsely populated region of the dataset using Kernel Density Estimation.
 
@@ -38,7 +43,7 @@ def create_backdoor(X_train_cmd: List, tokenizer: Union[OneHotCustomVectorizer, 
     - backdoor_size: The size of the backdoor (number of tokens).
 
     Returns:
-    - backdoor: list | The backdoor pattern represented as a list of tokens.
+    - backdoor: The backdoor pattern represented as a string of max_chars length.
     """
     tokenized_sequences = tokenizer.tokenize(X_train_cmd)
     vocab = tokenizer.vocab
@@ -58,8 +63,9 @@ def create_backdoor(X_train_cmd: List, tokenizer: Union[OneHotCustomVectorizer, 
 
 def backdoor_command(backdoor: Union[str, List], command: str = None, template: str = None) -> str:
     if template is None:
-        # option #2: """awk 'BEGIN { print ARGV[1] }' "PAYLOAD" """
         template = """python3 -c "print('PAYLOAD')" """
+        # valid option #2 but with more character overhead: 
+        # """awk 'BEGIN { print ARGV[1] }' "PAYLOAD" """
     else:
         assert "PAYLOAD" in template, "Please provide a template with 'PAYLOAD' placeholder."
 

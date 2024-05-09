@@ -35,7 +35,8 @@ def create_backdoor(
         max_chars: int = 128
 ) -> str:
     """
-    Create a backdoor from a sparsely populated region of the dataset using Kernel Density Estimation.
+    Create a backdoor from a sparsely populated region of the dataset. Since our training data is discrete, 
+    the heuristical shortcut for sparse region is to use the least frequent tokens. Other options possible.
 
     Parameters:
     - X_train_cmd: The collection of commands in training dataset.

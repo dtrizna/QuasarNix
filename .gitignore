@@ -1,5 +1,5 @@
 # Skipping data
-data/*
+data/*parquet
 notes*
 *pkl
 *npy

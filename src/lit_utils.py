@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 from time import time
 from shutil import copyfile
-from typing import Union, Any, Callable, Optional
+from typing import Union, Any, Callable, Optional, Tuple
 
 from sklearn.metrics import roc_curve
 
@@ -13,7 +13,7 @@ from lightning.pytorch.callbacks import TQDMProgressBar, ModelCheckpoint, EarlyS
 from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
 
 import torch
-from torch import cat, sigmoid, nn
+from torch import cat, sigmoid, nn, Tensor
 from torch.nn import CrossEntropyLoss, BCEWithLogitsLoss
 from torch.utils.data import DataLoader
 import torchmetrics
@@ -200,7 +200,7 @@ class PyTorchLightningModel(PyTorchLightningModelBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
     
-    def validation_step(self, batch: (torch.Tensor, torch.Tensor), batch_idx):
+    def validation_step(self, batch: Tuple[Tensor, Tensor], batch_idx):
         # NOTE: keep batch_idx -- lightning needs it
         # loss, y, logits = self._shared_step(batch)
         loss = self._shared_step(batch)

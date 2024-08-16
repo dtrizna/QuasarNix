@@ -15,12 +15,17 @@ from typing import List
 from nltk.tokenize import wordpunct_tokenize, WhitespaceTokenizer
 whitespace_tokenize = WhitespaceTokenizer().tokenize
 
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+import sys
+sys.path.append(ROOT)
+
 # modeling
 from lightning.lite.utilities.seed import seed_everything
 from src.models import (
     SimpleMLPWithEmbedding,
     CNN1DGroupedModel,
     MeanTransformerEncoder,
+    CLSTransformerEncoder,
     SimpleMLP,
 )
 from xgboost import XGBClassifier
@@ -214,14 +219,14 @@ MAX_LEN = 256
 # LOGS_FOLDER = os.path.join(f"logs_adversarial_evasion", "nl2bash_prepend")
 
 # ATTACK NR.2:
-ATTACK = attack_evasive_tricks
-ATTACK_PARAMETERS = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
-LOGS_FOLDER = os.path.join(f"logs_adversarial_evasion", f"domain_knowledge_prob_{ROBUST_MANIPULATION_PROB}_attack_param_{ROBUST_TRAINING_PARAM}_limit_{LIMIT}")
+# ATTACK = attack_evasive_tricks
+# ATTACK_PARAMETERS = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
+# LOGS_FOLDER = os.path.join(f"logs_adversarial_evasion", f"domain_knowledge_prob_{ROBUST_MANIPULATION_PROB}_attack_param_{ROBUST_TRAINING_PARAM}_limit_{LIMIT}")
 
 # ATTACK NR.3:
-# ATTACK = attack_hybrid
-# ATTACK_PARAMETERS = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
-# LOGS_FOLDER = os.path.join(f"logs_adversarial_evasion", f"hybrid_prob_{ROBUST_MANIPULATION_PROB}_attack_param_{ROBUST_TRAINING_PARAM}_limit_{LIMIT}")
+ATTACK = attack_hybrid
+ATTACK_PARAMETERS = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 1]
+LOGS_FOLDER = os.path.join(f"logs_adversarial_evasion", f"hybrid_prob_{ROBUST_MANIPULATION_PROB}_attack_param_{ROBUST_TRAINING_PARAM}_limit_{LIMIT}")
 
 os.makedirs(LOGS_FOLDER, exist_ok=True)
 
@@ -236,10 +241,19 @@ if __name__ == "__main__":
     # ============================================
     # LOADING DATA
     # ============================================
-
-    ROOT = os.path.dirname(os.path.abspath(__file__))
     BASELINE = load_nl2bash(ROOT)
-    X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd = load_data(ROOT, SEED, limit=LIMIT)
+
+    (
+        X_train_cmds,
+        y_train,
+        X_test_cmds,
+        y_test,
+        X_train_malicious_cmd,
+        X_train_baseline_cmd,
+        X_test_malicious_cmd,
+        X_test_baseline_cmd
+    ) = load_data(ROOT, SEED, limit=LIMIT)
+    
     print(f"Sizes of train and test sets: {len(X_train_cmds)}, {len(X_test_cmds)}")
     
     # =============================================
@@ -332,6 +346,9 @@ if __name__ == "__main__":
     mean_transformer_model = MeanTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
     mean_transformer_model_adv = MeanTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
     
+    cls_transformer_model = CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
+    cls_transformer_model_adv = CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
+
     mlp_tab_model_onehot = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
     mlp_tab_model_onehot_adv = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
     
@@ -342,6 +359,7 @@ if __name__ == "__main__":
         "cnn": (cnn_model, cnn_model_adv),
         "mlp_onehot": (mlp_tab_model_onehot, mlp_tab_model_onehot_adv),
         "mean_transformer": (mean_transformer_model, mean_transformer_model_adv),
+        "cls_transformer": (cls_transformer_model, cls_transformer_model_adv),
         "xgb_onehot": (xgb_model_onehot, xgb_model_onehot_adv),
         #"mlp_seq": (mlp_seq_model, mlp_seq_model_adv),
     }

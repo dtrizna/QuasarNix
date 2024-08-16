@@ -1,7 +1,6 @@
 # Skipping data
 data/*
 notes*
-*pickle
 *pkl
 *npy
 *cmd*

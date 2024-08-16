@@ -15,7 +15,7 @@ from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
 from src.data_utils import create_dataloader, commands_to_loader, load_data
 from src.lit_utils import train_lit_model
 from src.tabular_utils import training_tabular
-from lightning.lite.utilities.seed import seed_everything
+from lightning.fabric.utilities.seed import seed_everything
 
 SEED = 33
 

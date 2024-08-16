@@ -17,7 +17,7 @@ whitespace_tokenize = WhitespaceTokenizer().tokenize
 import lightning as L
 from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
 from lightning.pytorch.callbacks.early_stopping import EarlyStopping
-from lightning.lite.utilities.seed import seed_everything
+from lightning.fabric.utilities.seed import seed_everything
 
 sys.path.append("Linux/")
 from src.models import SimpleMLP, SimpleMLPWithEmbedding, PyTorchLightningModel

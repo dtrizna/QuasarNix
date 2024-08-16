@@ -8,7 +8,7 @@ from typing import Union, Any, Callable, Optional, Tuple
 from sklearn.metrics import roc_curve
 
 import lightning as L
-from lightning.lite.utilities.seed import seed_everything
+from lightning.fabric.utilities.seed import seed_everything
 from lightning.pytorch.callbacks import TQDMProgressBar, ModelCheckpoint, EarlyStopping, ModelSummary
 from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
 
@@ -79,7 +79,7 @@ class PyTorchLightningModelBase(L.LightningModule):
 
         # self.save_hyperparameters(ignore=["model"])
     
-    def optimizer_zero_grad(self, epoch: int, batch_idx: int, optimizer: Callable, optimizer_idx: int):
+    def optimizer_zero_grad(self, epoch: int, batch_idx: int, optimizer: Callable):
         # https://pytorch-lightning.readthedocs.io/en/1.3.8/benchmarking/performance.html#zero-grad-set-to-none-true
         optimizer.zero_grad(set_to_none=True)
 

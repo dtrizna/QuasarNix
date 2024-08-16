@@ -19,7 +19,7 @@ whitespace_tokenize = WhitespaceTokenizer().tokenize
 import lightning as L
 from lightning.pytorch.loggers import CSVLogger, TensorBoardLogger
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
-from lightning.lite.utilities.seed import seed_everything
+from lightning.fabric.utilities.seed import seed_everything
 
 from src.models import *
 from src.lit_utils import LitProgressBar

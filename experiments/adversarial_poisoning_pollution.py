@@ -11,7 +11,7 @@ from nltk.tokenize import wordpunct_tokenize, WhitespaceTokenizer
 whitespace_tokenize = WhitespaceTokenizer().tokenize
 
 # modeling
-from lightning.lite.utilities.seed import seed_everything
+from lightning.fabric.utilities.seed import seed_everything
 from src.models import CNN1DGroupedModel, SimpleMLP
 from xgboost import XGBClassifier
 from src.lit_utils import load_lit_model, train_lit_model

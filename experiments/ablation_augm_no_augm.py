@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 from watermark import watermark
 from nltk.tokenize import wordpunct_tokenize
-from lightning.lite.utilities.seed import seed_everything
+from lightning.fabric.utilities.seed import seed_everything
 
 from src.augmentation import REVERSE_SHELL_TEMPLATES, NixCommandAugmentation
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer

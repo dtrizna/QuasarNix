@@ -20,7 +20,7 @@ import sys
 sys.path.append(ROOT)
 
 # modeling
-from lightning.lite.utilities.seed import seed_everything
+from lightning.fabric.utilities.seed import seed_everything
 from src.models import (
     SimpleMLPWithEmbedding,
     CNN1DGroupedModel,

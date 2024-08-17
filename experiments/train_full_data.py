@@ -3,6 +3,7 @@ import re
 import time
 import json
 import random
+import pickle
 from tqdm import tqdm
 from sklearn.utils import shuffle
 from watermark import watermark
@@ -24,9 +25,9 @@ sys.path.append(ROOT)
 from src.models import *
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
 from src.data_utils import create_dataloader, commands_to_loader, load_data, load_nl2bash
-from src.lit_utils import train_lit_model
+from src.lit_utils import LitTrainerWrapper
 from src.tabular_utils import training_tabular
-from lightning.lite.utilities.seed import seed_everything
+from lightning.fabric.utilities.seed import seed_everything
 
 # =============================
 # ATTACK FUNCTIONS
@@ -206,7 +207,7 @@ SCHEDULER = "onecycle"
 
 # PROD RUN CONFIG
 DEVICE = "gpu"
-EPOCHS = 20
+EPOCHS = 10
 LIT_SANITY_STEPS = 1
 LIMIT = None
 DATALOADER_WORKERS = 4
@@ -236,8 +237,8 @@ if __name__ == "__main__":
         X_test_malicious_cmd,
         X_test_baseline_cmd
     ) = load_data(ROOT, SEED, limit=LIMIT)
-    print(f"X_train_malicious_cmd: {len(X_train_malicious_cmd)} | X_test_malicious_cmd: {len(X_test_malicious_cmd)}")
-    print(f"X_train_baseline_cmd: {len(X_train_baseline_cmd)} | X_test_baseline_cmd: {len(X_test_baseline_cmd)}")
+    print(f"[!] X_train_malicious_cmd: {len(X_train_malicious_cmd)} | X_test_malicious_cmd: {len(X_test_malicious_cmd)}")
+    print(f"[!] X_train_baseline_cmd: {len(X_train_baseline_cmd)} | X_test_baseline_cmd: {len(X_test_baseline_cmd)}")
 
     X_train_malicious_cmd_file = os.path.join(LOGS_FOLDER, f"X_train_malicious_cmd.json")
     with open(X_train_malicious_cmd_file, "w", encoding="utf-8") as f:
@@ -302,14 +303,18 @@ if __name__ == "__main__":
     tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
 
     # ========== EMBEDDING ==========
-    print("[*] Building vocab and encoding...")
-    X_full_tokens = tokenizer.tokenize(X_full_cmd_adv)
-    tokenizer.build_vocab(X_full_tokens)
-
     vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}.json")
-    tokenizer.dump_vocab(vocab_file)
+    if os.path.exists(vocab_file):
+        print(f"[*] Loading vocab from:\n\t'{vocab_file}'")
+        tokenizer.load_vocab(vocab_file)
+    else:
+        print("[*] Building vocab and encoding...")
+        X_full_tokens = tokenizer.tokenize(X_full_cmd_adv)
+        tokenizer.build_vocab(X_full_tokens)
+        tokenizer.dump_vocab(vocab_file)
 
     # creating dataloaders
+    print("[*] Creating dataloaders from commands...")
     X_train_loader = commands_to_loader(X_full_cmd_adv, tokenizer, y=y_full_adv, workers=DATALOADER_WORKERS, batch_size=BATCH_SIZE)
     X_test_loader = commands_to_loader(X_full_cmd_adv, tokenizer, y=y_full_adv, workers=DATALOADER_WORKERS, batch_size=BATCH_SIZE)
 
@@ -319,10 +324,18 @@ if __name__ == "__main__":
     # X_train_minhash = minhash.fit_transform(X_full_cmd_adv)
 
     # ========== ONE-HOT TABULAR ENCODING ===========
-    oh = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
-
-    print("[*] Fitting One-Hot encoder...")
-    X_train_onehot = oh.fit_transform(X_full_cmd_adv)
+    oh_pickle = os.path.join(LOGS_FOLDER, f"onehot_vectorizer_{VOCAB_SIZE}.pkl")
+    if os.path.exists(oh_pickle):
+        print(f"[*] Loading One-Hot encoder from:\n\t'{oh_pickle}'")
+        with open(oh_pickle, "rb") as f:
+            oh = pickle.load(f)
+        X_train_onehot = oh.transform(X_full_cmd_adv)
+    else:
+        print("[*] Fitting One-Hot encoder...")
+        oh = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
+        X_train_onehot = oh.fit_transform(X_full_cmd_adv)
+        with open(oh_pickle, "wb") as f:
+            pickle.dump(oh, f)
 
     # =============================================
     # DEFINING MODELS
@@ -390,19 +403,37 @@ if __name__ == "__main__":
             #     x_train = X_train_minhash
                 
             if "_mlp_" in name:
-                train_loader = create_dataloader(x_train_full, y_full_adv, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-                test_loader = create_dataloader(x_train_full, y_full_adv, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-                _ = train_lit_model(
-                    train_loader,
-                    test_loader,
-                    model,
-                    name,
+                # DEPRECATED
+                # train_loader = create_dataloader(x_train_full, y_full_adv, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+                # test_loader = create_dataloader(x_train_full, y_full_adv, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+                # _ = train_lit_model(
+                #     train_loader,
+                #     test_loader,
+                #     model,
+                #     name,
+                #     log_folder=LOGS_FOLDER,
+                #     epochs=EPOCHS,
+                #     learning_rate=LEARNING_RATE,
+                #     scheduler=SCHEDULER,
+                #     scheduler_budget = EPOCHS * len(X_train_loader),
+                #     device=DEVICE
+                # )
+                
+                # NEW CLASS
+                trainer = LitTrainerWrapper(
+                    pytorch_model=model,
+                    name=name,
                     log_folder=LOGS_FOLDER,
                     epochs=EPOCHS,
                     learning_rate=LEARNING_RATE,
                     scheduler=SCHEDULER,
-                    scheduler_budget = EPOCHS * len(X_train_loader)
+                    device=DEVICE,
+                    precision=16,
                 )
+                train_loader = trainer.create_dataloader(x_train_full, y_full_adv, batch_size=BATCH_SIZE, dataloader_workers=DATALOADER_WORKERS)
+                test_loader = trainer.create_dataloader(x_train_full, y_full_adv, batch_size=BATCH_SIZE, dataloader_workers=DATALOADER_WORKERS)
+                trainer.train_lit_model(train_loader, test_loader)
+
             else:
                 training_tabular(
                     model=model,
@@ -414,17 +445,32 @@ if __name__ == "__main__":
                     logs_folder=LOGS_FOLDER
                 )
         else:
-            _ = train_lit_model(
-                X_train_loader,
-                X_test_loader,
-                model,
-                name,
+            # DEPRECATED
+            # _ = train_lit_model(
+            #     X_train_loader,
+            #     X_test_loader,
+            #     model,
+            #     name,
+            #     log_folder=LOGS_FOLDER,
+            #     epochs=EPOCHS,
+            #     learning_rate=LEARNING_RATE,
+            #     scheduler=SCHEDULER,
+            #     scheduler_budget= EPOCHS * len(X_train_loader),
+            #     device=DEVICE
+            # )
+
+            # NEW CLASS
+            trainer = LitTrainerWrapper(
+                pytorch_model=model,
+                name=name,
                 log_folder=LOGS_FOLDER,
                 epochs=EPOCHS,
                 learning_rate=LEARNING_RATE,
                 scheduler=SCHEDULER,
-                scheduler_budget= EPOCHS * len(X_train_loader)
+                device=DEVICE,
+                precision=16,
             )
+            trainer.train_lit_model(X_train_loader, X_test_loader)
         
         print(f"[!] Training of {name} ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")
 

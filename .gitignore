@@ -5,6 +5,7 @@ notes*
 *npy
 *cmd*
 events.out*
+hf-*/*
 
 # Model checkpoints
 *model

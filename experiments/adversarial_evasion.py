@@ -191,7 +191,8 @@ SEED = 33
 
 VOCAB_SIZE = 4096
 EMBEDDED_DIM = 64
-BATCH_SIZE = 256
+MAX_LEN = 128
+BATCH_SIZE = 512
 DROPOUT = 0.5
 DEVICE = "gpu"
 LIT_SANITY_STEPS = 1
@@ -200,16 +201,13 @@ LEARNING_RATE = 1e-3
 SCHEDULER = "onecycle"
 
 # RUN CONFIG
-ADV_ATTACK_SUBSAMPLE = 5000
+ADV_ATTACK_SUBSAMPLE = 50000
 EPOCHS = 10
-LIMIT = 30000
+LIMIT = None
 
 ROBUST_TRAINING_PARAM = 0.5
 ROBUST_MANIPULATION_PROB = 0.5
 
-MAX_LEN = 256 
-# NOTE: increased max len 128 -> 256 if compared to model architecture tests
-# Therefore, needed to reduce batch size to 512 so transformer fits on GPU
 
 # ATTACK NR.1:
 # ATTACK = attack_template_prepend
@@ -337,14 +335,14 @@ if __name__ == "__main__":
     # DEFINING MODELS
     # =============================================
 
-    mlp_seq_model = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_len=MAX_LEN, dropout=DROPOUT) # 297 K params
-    mlp_seq_model_adv = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_len=MAX_LEN, dropout=DROPOUT) # 297 K params
+    # mlp_seq_model = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_len=MAX_LEN, dropout=DROPOUT) # 297 K params
+    # mlp_seq_model_adv = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_len=MAX_LEN, dropout=DROPOUT) # 297 K params
     
     cnn_model = CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[2, 3, 4, 5], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 301 K params
     cnn_model_adv = CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[2, 3, 4, 5], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 301 K params
     
-    mean_transformer_model = MeanTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
-    mean_transformer_model_adv = MeanTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
+    # mean_transformer_model = MeanTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
+    # mean_transformer_model_adv = MeanTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
     
     cls_transformer_model = CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
     cls_transformer_model_adv = CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
@@ -358,7 +356,7 @@ if __name__ == "__main__":
     target_models = {
         "cnn": (cnn_model, cnn_model_adv),
         "mlp_onehot": (mlp_tab_model_onehot, mlp_tab_model_onehot_adv),
-        "mean_transformer": (mean_transformer_model, mean_transformer_model_adv),
+        # "mean_transformer": (mean_transformer_model, mean_transformer_model_adv),
         "cls_transformer": (cls_transformer_model, cls_transformer_model_adv),
         "xgb_onehot": (xgb_model_onehot, xgb_model_onehot_adv),
         #"mlp_seq": (mlp_seq_model, mlp_seq_model_adv),
@@ -373,33 +371,35 @@ if __name__ == "__main__":
 
         if "onehot" in name:
             # # ========== ONE-HOT TABULAR ENCODING ===========
-            oh_tokenizer_file = os.path.join(LOGS_FOLDER, f"onehot_tokenizer_{VOCAB_SIZE}.pkl")
-            if os.path.exists(oh_tokenizer_file):
-                print(f"[!] Loading One-Hot tokenizer from '{oh_tokenizer_file}'...")
-                with open(oh_tokenizer_file, "rb") as f:
-                    tokenizer = pickle.load(f)
+            oh_tokenizer_file_orig = os.path.join(LOGS_FOLDER, f"onehot_tokenizer_{VOCAB_SIZE}_orig.pkl")
+            if os.path.exists(oh_tokenizer_file_orig):
+                print(f"[!] Loading One-Hot tokenizer from '{oh_tokenizer_file_orig}'...")
+                with open(oh_tokenizer_file_orig, "rb") as f:
+                    tokenizer_orig = pickle.load(f)
             else:
-                tokenizer = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
+                tokenizer_orig = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
                 print("[*] Fitting One-Hot encoder...")
                 now = time.time()
-                tokenizer.fit(X_train_cmds)
+                tokenizer_orig.fit(X_train_cmds)
                 print(f"[!] Fitting One-Hot encoder took: {time.time() - now:.2f}s") # ~90s
+                with open(oh_tokenizer_file_orig, "wb") as f:
+                    pickle.dump(tokenizer_orig, f)
         else:
             # ========== EMBEDDING ==========
-            tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
-            vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}.json")
-            if os.path.exists(vocab_file):
-                print(f"[!] Loading vocab from '{vocab_file}'...")
-                tokenizer.load_vocab(vocab_file)
+            tokenizer_orig = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
+            vocab_file_orig = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}_orig.json")
+            if os.path.exists(vocab_file_orig):
+                print(f"[!] Loading vocab from '{vocab_file_orig}'...")
+                tokenizer_orig.load_vocab(vocab_file_orig)
             else:
                 print("[*] Building vocab and encoding...")
-                X_train_tokens = tokenizer.tokenize(X_train_cmds)
-                tokenizer.build_vocab(X_train_tokens)
-                tokenizer.dump_vocab(vocab_file)
+                X_train_tokens = tokenizer_orig.tokenize(X_train_cmds)
+                tokenizer_orig.build_vocab(X_train_tokens)
+                tokenizer_orig.dump_vocab(vocab_file_orig)
 
-        # creating dataloaders
-        Xy_train_loader = commands_to_loader(X_train_cmds, tokenizer, y=y_train, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-        Xy_test_loader = commands_to_loader(X_test_cmds, tokenizer, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+        # creating dataloaders -- creating here to do it once for both sequential models
+        Xy_train_loader = commands_to_loader(X_train_cmds, tokenizer_orig, y=y_train, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+        Xy_test_loader = commands_to_loader(X_test_cmds, tokenizer_orig, y=y_test, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
 
         # =======================================================
         # ORIG MODEL ADVERSARIAL SCORES
@@ -413,8 +413,8 @@ if __name__ == "__main__":
             # ========== TRAINING =============
             model_file_orig = os.path.join(LOGS_FOLDER, f"{run_name}.ckpt")
             if "xgb" in name:
-                X_train_onehot = tokenizer.transform(X_train_cmds)
-                X_test_onehot = tokenizer.transform(X_test_cmds)
+                X_train_onehot = tokenizer_orig.transform(X_train_cmds)
+                X_test_onehot = tokenizer_orig.transform(X_test_cmds)
                 model_orig = training_tabular(
                     target_model_orig,
                     run_name,
@@ -459,10 +459,10 @@ if __name__ == "__main__":
 
             # ORIG MODEL SCORES ON TEST SET W/O ATTACK
             if "xgb" in name:
-                X_test_malicious_without_attack_onehot = tokenizer.transform(X_test_malicious_without_attack_cmd)
+                X_test_malicious_without_attack_onehot = tokenizer_orig.transform(X_test_malicious_without_attack_cmd)
                 y_pred_orig_orig = model_orig.predict(X_test_malicious_without_attack_onehot)
             else:
-                X_test_malicious_without_attack_loader = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
+                X_test_malicious_without_attack_loader = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer_orig, batch_size=BATCH_SIZE, workers=1)
                 y_pred_orig_orig = predict_lit_model(
                     X_test_malicious_without_attack_loader,
                     trainer_orig,
@@ -479,10 +479,10 @@ if __name__ == "__main__":
             # ORIG MODEL SCORES ON TEST SETS WITH ATTACK
             for attack_parameter, X_test_malicious_with_attack_cmd in X_test_malicious_with_attack_cmd_dict.items():
                 if "xgb" in name:
-                    X_test_malicious_adv_onehot = tokenizer.transform(X_test_malicious_with_attack_cmd)
+                    X_test_malicious_adv_onehot = tokenizer_orig.transform(X_test_malicious_with_attack_cmd)
                     y_pred_orig_adv = model_orig.predict(X_test_malicious_adv_onehot)
                 else:
-                    X_test_malicious_adv_loader = commands_to_loader(X_test_malicious_with_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
+                    X_test_malicious_adv_loader = commands_to_loader(X_test_malicious_with_attack_cmd, tokenizer_orig, batch_size=BATCH_SIZE, workers=1)
                     y_pred_orig_adv = predict_lit_model(
                         X_test_malicious_adv_loader,
                         trainer_orig,
@@ -515,8 +515,20 @@ if __name__ == "__main__":
             print(f"[!] Scores already calculated for '{run_name}'! Skipping...")
         else:
             if "xgb" in name:
-                X_train_onehot_adv = tokenizer.transform(X_train_cmd_adv)
-                X_test_onehot = tokenizer.transform(X_test_cmds)
+                oh_tokenizer_adv_path = os.path.join(LOGS_FOLDER, f"onehot_tokenizer_{VOCAB_SIZE}_adv.pkl")
+                if os.path.exists(oh_tokenizer_adv_path):
+                    print(f"[!] Loading One-Hot tokenizer from '{oh_tokenizer_adv_path}'...")
+                    with open(oh_tokenizer_adv_path, "rb") as f:
+                        tokenizer_adv = pickle.load(f)
+                else:
+                    print("[*] Fitting One-Hot encoder for adversarial model...")
+                    tokenizer_adv = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
+                    tokenizer_adv.fit(X_train_cmd_adv)
+                    with open(oh_tokenizer_adv_path, "wb") as f:
+                        pickle.dump(tokenizer_adv, f)
+
+                X_train_onehot_adv = tokenizer_adv.transform(X_train_cmd_adv)
+                X_test_onehot = tokenizer_adv.transform(X_test_cmds)
                 model_adv = training_tabular(
                     target_model_adv,
                     run_name,
@@ -527,6 +539,17 @@ if __name__ == "__main__":
                     LOGS_FOLDER
                 )
             else:
+                vocab_file_adv = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}_adv.json")
+                tokenizer_adv = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
+                if os.path.exists(vocab_file_adv):
+                    print(f"[!] Loading vocab from '{vocab_file_adv}'...")
+                    tokenizer_adv.load_vocab(vocab_file_adv)
+                else:
+                    print("[*] Building vocab and encoding for adversarial model...")
+                    X_train_tokens_adv = tokenizer_adv.tokenize(X_train_cmd_adv)
+                    tokenizer_adv.build_vocab(X_train_tokens_adv)
+                    tokenizer_adv.dump_vocab(vocab_file_adv)
+                
                 model_file_adv = os.path.join(LOGS_FOLDER, f"{run_name}.ckpt")
                 # ========== TRAINING =============
                 if os.path.exists(model_file_adv):
@@ -540,7 +563,7 @@ if __name__ == "__main__":
                         DEVICE,
                         LIT_SANITY_STEPS)
                 else:
-                    Xy_train_loader_adv = commands_to_loader(X_train_cmd_adv, tokenizer, y=y_train_adv, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
+                    Xy_train_loader_adv = commands_to_loader(X_train_cmd_adv, tokenizer_adv, y=y_train_adv, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
                     # Train adversarial model
                     print(f"[!] Training of adversarial model '{run_name}' started: {time.ctime()}")
                     now = time.time()
@@ -563,11 +586,11 @@ if __name__ == "__main__":
             evasive_adv = {}
 
             if "xgb" in name:
-                X_test_malicious_without_attack_onehot = tokenizer.transform(X_test_malicious_without_attack_cmd)
+                X_test_malicious_without_attack_onehot = tokenizer_adv.transform(X_test_malicious_without_attack_cmd)
                 y_pred_adv_orig = model_adv.predict(X_test_malicious_without_attack_onehot)
             else:
                 # ADVERSARIAL MODEL SCORES ON TEST SET W/O ATTACK
-                X_test_malicious_without_attack_loader = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
+                X_test_malicious_without_attack_loader = commands_to_loader(X_test_malicious_without_attack_cmd, tokenizer_adv, batch_size=BATCH_SIZE, workers=1)
                 y_pred_adv_orig = predict_lit_model(
                     X_test_malicious_without_attack_loader,
                     trainer_adv,
@@ -585,10 +608,10 @@ if __name__ == "__main__":
             # ADVERSARIAL MODEL SCORES ON TEST SETS WITH ATTACK
             for attack_parameter, X_test_malicious_with_attack_cmd in X_test_malicious_with_attack_cmd_dict.items():
                 if "xgb" in name:
-                    X_test_malicious_adv_onehot = tokenizer.transform(X_test_malicious_with_attack_cmd)
+                    X_test_malicious_adv_onehot = tokenizer_adv.transform(X_test_malicious_with_attack_cmd)
                     y_pred_adv_adv = model_adv.predict(X_test_malicious_adv_onehot)
                 else:
-                    X_test_malicious_adv_loader = commands_to_loader(X_test_malicious_with_attack_cmd, tokenizer, batch_size=BATCH_SIZE, workers=1)
+                    X_test_malicious_adv_loader = commands_to_loader(X_test_malicious_with_attack_cmd, tokenizer_adv, batch_size=BATCH_SIZE, workers=1)
                     y_pred_adv_adv = predict_lit_model(
                         X_test_malicious_adv_loader,
                         trainer_adv,

@@ -255,7 +255,7 @@ class LitTrainerWrapper:
         early_stop_min_delta: float = 0.0001,
         # efficient training strategies
         scheduler: Union[None, str] = None,
-        accumulate_grad_batches: Optional[int] = None,
+        accumulate_grad_batches: int = 1,
         gradient_clip_val: Optional[float] = None,
         # https://lightning.ai/docs/pytorch/stable/advanced/speed.html#mixed-precision-16-bit-training
         # lit: Double precision (64), full precision (32), half precision (16) or bfloat16 precision (bf16) for TPUS
@@ -493,21 +493,10 @@ class LitTrainerWrapper:
     ):
         if batch_size is None:
             batch_size = self.batch_size
-        else:
-            self.batch_size = batch_size
         if dataloader_workers is None:
             dataloader_workers = self.dataloader_workers
-        else:
-            self.dataloader_workers = dataloader_workers
-
-        dataloader = create_dataloader(
-                X=X,
-                y=y,
-                batch_size=self.batch_size,
-                shuffle=shuffle,
-                workers=self.dataloader_workers
-        )
-        return dataloader
+        
+        return create_dataloader(X, y, batch_size, shuffle, workers=dataloader_workers)
     
 
     def calculate_scheduler_step_budget(
@@ -542,6 +531,9 @@ def configure_trainer(
         early_stop_patience: Union[None, int] = 5,
         lit_sanity_steps: int = 1
 ):
+    """ 
+    Deprecated: use LitTrainerWrapper instead
+    """
     model_checkpoint = ModelCheckpoint(
         monitor=monitor_metric,
         save_top_k=1,
@@ -563,13 +555,13 @@ def configure_trainer(
         callbacks.append(early_stop)
 
     trainer = L.Trainer(
-        num_sanity_val_steps=lit_sanity_steps,
         max_epochs=epochs,
         accelerator=device,
         devices=1,
         callbacks=callbacks,
         val_check_interval=1/val_check_times,
         log_every_n_steps=log_every_n_steps,
+        num_sanity_val_steps=lit_sanity_steps,
         logger=[
             CSVLogger(save_dir=log_folder, name=f"{name}_csv"),
             TensorBoardLogger(save_dir=log_folder, name=f"{name}_tb")
@@ -592,6 +584,9 @@ def load_lit_model(
         device: str,
         lit_sanity_steps: int
 ):
+    """ 
+    Deprecated: use LitTrainerWrapper instead
+    """
     lightning_model = PyTorchLightningModel.load_from_checkpoint(checkpoint_path=model_file, model=pytorch_model)
     trainer = configure_trainer(name, log_folder, epochs, device=device, lit_sanity_steps=lit_sanity_steps)
     return trainer, lightning_model
@@ -612,6 +607,9 @@ def train_lit_model(
         lit_sanity_steps: int = 1,
         early_stop_patience: int = 5
 ):
+    """ 
+    Deprecated: use LitTrainerWrapper instead
+    """
     lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=learning_rate, scheduler=scheduler, scheduler_step_budget=scheduler_budget)
     trainer = configure_trainer(name, log_folder, epochs, device=device, lit_sanity_steps=lit_sanity_steps, early_stop_patience=early_stop_patience)
 
@@ -635,7 +633,10 @@ def predict_lit_model(
         decision_threshold: int = 0.5, 
         dump_logits: bool = False
 ) -> np.ndarray:
-    """Get scores out of a loader."""
+    """
+    Get scores out of a loader. 
+    Deprecated: use LitTrainerWrapper instead
+    """
     y_pred_logits = trainer.predict(model=lightning_model, dataloaders=loader)
     y_pred = sigmoid(cat(y_pred_logits, dim=0)).numpy()
     y_pred = np.array([1 if x > decision_threshold else 0 for x in y_pred])

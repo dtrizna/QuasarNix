@@ -119,7 +119,7 @@ def load_data(root, seed, limit=None):
 
 
 def load_nl2bash(root):
-    with open(os.path.join(root, r"data\nl2bash.cm"), "r", encoding="utf-8") as f:
+    with open(os.path.join(root, "data", "nl2bash.cm"), "r", encoding="utf-8") as f:
         baseline = f.readlines()
     return baseline
 

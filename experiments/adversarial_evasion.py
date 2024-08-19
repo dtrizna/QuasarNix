@@ -514,7 +514,7 @@ if __name__ == "__main__":
         if os.path.exists(scores_json_file):
             print(f"[!] Scores already calculated for '{run_name}'! Skipping...")
         else:
-            if "xgb" in name:
+            if "onehot" in name:
                 oh_tokenizer_adv_path = os.path.join(LOGS_FOLDER, f"onehot_tokenizer_{VOCAB_SIZE}_adv.pkl")
                 if os.path.exists(oh_tokenizer_adv_path):
                     print(f"[!] Loading One-Hot tokenizer from '{oh_tokenizer_adv_path}'...")
@@ -526,18 +526,6 @@ if __name__ == "__main__":
                     tokenizer_adv.fit(X_train_cmd_adv)
                     with open(oh_tokenizer_adv_path, "wb") as f:
                         pickle.dump(tokenizer_adv, f)
-
-                X_train_onehot_adv = tokenizer_adv.transform(X_train_cmd_adv)
-                X_test_onehot = tokenizer_adv.transform(X_test_cmds)
-                model_adv = training_tabular(
-                    target_model_adv,
-                    run_name,
-                    X_train_onehot_adv,
-                    X_test_onehot,
-                    y_train_adv,
-                    y_test,
-                    LOGS_FOLDER
-                )
             else:
                 vocab_file_adv = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}_adv.json")
                 tokenizer_adv = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
@@ -549,7 +537,20 @@ if __name__ == "__main__":
                     X_train_tokens_adv = tokenizer_adv.tokenize(X_train_cmd_adv)
                     tokenizer_adv.build_vocab(X_train_tokens_adv)
                     tokenizer_adv.dump_vocab(vocab_file_adv)
-                
+
+            if "xgb" in name:
+                X_train_onehot_adv = tokenizer_adv.transform(X_train_cmd_adv)
+                X_test_onehot = tokenizer_adv.transform(X_test_cmds)
+                model_adv = training_tabular(
+                    target_model_adv,
+                    run_name,
+                    X_train_onehot_adv,
+                    X_test_onehot,
+                    y_train_adv,
+                    y_test,
+                    LOGS_FOLDER
+                )
+            else:                
                 model_file_adv = os.path.join(LOGS_FOLDER, f"{run_name}.ckpt")
                 # ========== TRAINING =============
                 if os.path.exists(model_file_adv):

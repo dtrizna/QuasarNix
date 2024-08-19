@@ -30,8 +30,11 @@ def training_tabular(
 
     # save trained model to LOGS_FOLDER/name
     os.makedirs(f"{logs_folder}/{name}", exist_ok=True)
-    with open(f"{logs_folder}/{name}/model.pkl", "wb") as f:
-        pickle.dump(model, f)
+    if isinstance(model, XGBClassifier):
+        model.save_model(f"{logs_folder}/{name}/model.xgboost", model)
+    else:
+        with open(f"{logs_folder}/{name}/model.pkl", "wb") as f:
+            pickle.dump(model, f)
     if model_file is not None:
         copyfile(f"{logs_folder}/{name}/model.pkl", model_file)
     

@@ -9,12 +9,7 @@ from sklearn.utils import shuffle
 from watermark import watermark
 from typing import List
 
-# from sklearn.feature_extraction.text import HashingVectorizer
-from nltk.tokenize import wordpunct_tokenize, WhitespaceTokenizer
-whitespace_tokenize = WhitespaceTokenizer().tokenize
-
-# from sklearn.ensemble import RandomForestClassifier
-# from sklearn.linear_model import LogisticRegression
+from nltk.tokenize import wordpunct_tokenize
 from xgboost import XGBClassifier
 
 # importing root of repository
@@ -24,7 +19,7 @@ sys.path.append(ROOT)
 
 from src.models import *
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
-from src.data_utils import create_dataloader, commands_to_loader, load_data, load_nl2bash
+from src.data_utils import commands_to_loader, load_data, load_nl2bash
 from src.lit_utils import LitTrainerWrapper
 from src.tabular_utils import training_tabular
 from lightning.fabric.utilities.seed import seed_everything
@@ -40,7 +35,7 @@ def attack_hybrid(
         template: str = None
 ) -> str:
     command_adv = attack_template_prepend(command, baseline, int(attack_parameter * 128), template)
-    command_adv = attack_evasive_tricks(command_adv, baseline, attack_parameter)
+    command_adv = attack_domain_knowledge(command_adv, baseline, attack_parameter)
     return command_adv
 
 
@@ -103,7 +98,7 @@ def replace_ip_with_decimal(command_adv):
     return command_adv
 
 
-def attack_evasive_tricks(
+def attack_domain_knowledge(
         command: str,
         baseline: List[str], # keep for backward compatibility with attack_template_prepend
         attack_parameter: float = 0.7 # threshold how often to change, here: 70% of the time
@@ -182,10 +177,83 @@ def attack_evasive_tricks(
     return command_adv
 
 
+# =============================
+# DATA SET WRAPPERS
+# =============================
+
+def create_adversarial_set(malicious_cmd: List[str], dataset_name: str) -> List[str]:
+    assert dataset_name in ["train", "test"]
+
+    adv_set_file = os.path.join(LOGS_FOLDER, f"X_{dataset_name}_malicious_cmd_adv.json")
+    if os.path.exists(adv_set_file):
+        print(f"[*] Loading adversarial {dataset_name} set from:\n\t'{adv_set_file}'")
+        with open(adv_set_file, "r", encoding="utf-8") as f:
+            x_malicious_cmd_adv = json.load(f)
+    else:
+        print(f"[*] Creating robust {dataset_name} set: applying attack with probability {ROBUST_MANIPULATION_PROB} and strength parameter {ROBUST_TRAINING_PARAM}...")
+        x_malicious_cmd_adv = []
+        for cmd in tqdm(malicious_cmd):
+            if random.random() <= ROBUST_MANIPULATION_PROB:
+                cmd_a = ATTACK(cmd, BASELINE, attack_parameter=ROBUST_TRAINING_PARAM)
+            else:
+                cmd_a = cmd
+            x_malicious_cmd_adv.append(cmd_a)
+        
+        with open(adv_set_file, "w", encoding="utf-8") as f:
+            json.dump(x_malicious_cmd_adv, f, indent=4)
+    
+    return x_malicious_cmd_adv
+
+
+def get_embedded_tokenizer(x_cmds: List[str], tokenizer_type: str) -> CommandTokenizer:
+    assert tokenizer_type in ["orig", "adv"]
+
+    tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
+    vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}_{tokenizer_type}.json")
+    
+    if os.path.exists(vocab_file):
+        print(f"[*] Loading vocab from:\n\t'{vocab_file}'")
+        tokenizer.load_vocab(vocab_file)
+    else:
+        print(f"[*] Building {tokenizer_type} vocab and encoding...")
+        x_tokens = tokenizer.tokenize(x_cmds)
+        tokenizer.build_vocab(x_tokens)
+        tokenizer.dump_vocab(vocab_file)
+
+    return tokenizer
+
+
+def get_onehot_tokenizer(x_cmds: List[str], tokenizer_type: str) -> OneHotCustomVectorizer:
+    assert tokenizer_type in ["orig", "adv"]
+
+    oh_pickle = os.path.join(LOGS_FOLDER, f"onehot_vectorizer_{VOCAB_SIZE}_{tokenizer_type}.pkl")
+    if os.path.exists(oh_pickle):
+        print(f"[*] Loading One-Hot encoder from:\n\t'{oh_pickle}'")
+        with open(oh_pickle, "rb") as f:
+            oh_tokenizer = pickle.load(f)
+    else:
+        print("[*] Fitting One-Hot encoder...")
+        oh_tokenizer = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
+        oh_tokenizer.fit(x_cmds)
+        with open(oh_pickle, "wb") as f:
+            pickle.dump(oh_tokenizer, f)
+    
+    return oh_tokenizer
+
+
+def find_lit_checkpoint_folder(train_name):
+    train_folder = os.path.join(LOGS_FOLDER, f"{train_name}_csv")
+    version = sorted(os.listdir(train_folder))[-1]
+    return os.path.join(train_folder, version, "checkpoints")
+
+
+# =============================
+# RUN CONFIGURATION
+# =============================
+
 ATTACK = attack_hybrid
-ROBUST_TRAINING_PARAM = 0.5
+ROBUST_TRAINING_PARAM = 0.7
 ROBUST_MANIPULATION_PROB = 0.5
-ATTACK_PARAMETER = 1
 
 SEED = 33
 
@@ -215,6 +283,7 @@ LOGS_FOLDER = "logs_adv_train_full"
 
 os.makedirs(LOGS_FOLDER, exist_ok=True)
 
+
 if __name__ == "__main__":
     # ===========================================
     print(watermark(packages="torch,lightning,sklearn", python=True))
@@ -227,156 +296,148 @@ if __name__ == "__main__":
     # LOADING DATA
     # ===========================================
     BASELINE = load_nl2bash(ROOT)
+
     (
-        X_train_cmds,
-        y_train,
-        X_test_cmds,
-        y_test,
-        X_train_malicious_cmd,
-        X_train_baseline_cmd,
-        X_test_malicious_cmd,
-        X_test_baseline_cmd
+        X_train_cmds_orig,
+        y_train_orig,
+        X_test_cmds_orig,
+        y_test_orig,
+        X_train_malicious_cmds,
+        X_train_baseline_cmds,
+        X_test_malicious_cmds,
+        X_test_baseline_cmds
     ) = load_data(ROOT, SEED, limit=LIMIT)
-    print(f"[!] X_train_malicious_cmd: {len(X_train_malicious_cmd)} | X_test_malicious_cmd: {len(X_test_malicious_cmd)}")
-    print(f"[!] X_train_baseline_cmd: {len(X_train_baseline_cmd)} | X_test_baseline_cmd: {len(X_test_baseline_cmd)}")
+
+    print(f"[!] X_train_malicious_cmd: {len(X_train_malicious_cmds)} | X_test_malicious_cmd: {len(X_test_malicious_cmds)}")
+    print(f"[!] X_train_baseline_cmd: {len(X_train_baseline_cmds)} | X_test_baseline_cmd: {len(X_test_baseline_cmds)}")
 
     X_train_malicious_cmd_file = os.path.join(LOGS_FOLDER, f"X_train_malicious_cmd.json")
     with open(X_train_malicious_cmd_file, "w", encoding="utf-8") as f:
-        json.dump(X_train_malicious_cmd, f, indent=4)
+        json.dump(X_train_malicious_cmds, f, indent=4)
 
     X_test_malicious_cmd_file = os.path.join(LOGS_FOLDER, f"X_test_malicious_cmd.json")
     with open(X_test_malicious_cmd_file, "w", encoding="utf-8") as f:
-        json.dump(X_test_malicious_cmd, f, indent=4)
+        json.dump(X_test_malicious_cmds, f, indent=4)
 
     # =============================================
     # ADVERSARIAL DATA SET
     # =============================================
 
-    # create adversarial data sets
-    X_train_malicious_cmd_adv_file = os.path.join(LOGS_FOLDER, f"X_train_malicious_cmd_adv.json")
-    if os.path.exists(X_train_malicious_cmd_adv_file):
-        print(f"[*] Loading adversarial training set from:\n\t'{X_train_malicious_cmd_adv_file}'")
-        with open(X_train_malicious_cmd_adv_file, "r", encoding="utf-8") as f:
-            X_train_malicious_cmd_adv = json.load(f)
-    else:
-        print("[*] Creating robust training set: applying attack with custom parameter...")
-        X_train_malicious_cmd_adv = []
-        for cmd in tqdm(X_train_malicious_cmd):
-            if random.random() <= ROBUST_MANIPULATION_PROB:
-                cmd_a = ATTACK(cmd, BASELINE, attack_parameter=ROBUST_TRAINING_PARAM)
-            else:
-                cmd_a = cmd
-            X_train_malicious_cmd_adv.append(cmd_a)
-        
-        with open(X_train_malicious_cmd_adv_file, "w", encoding="utf-8") as f:
-            json.dump(X_train_malicious_cmd_adv, f, indent=4)
+    X_train_malicious_cmds_adv = create_adversarial_set(X_train_malicious_cmds, "train")
+    X_test_malicious_cmds_adv = create_adversarial_set(X_test_malicious_cmds, "test")
 
-    X_test_malicious_cmd_adv_file = os.path.join(LOGS_FOLDER, f"X_test_malicious_cmd_adv.json")
-    if os.path.exists(X_test_malicious_cmd_adv_file):
-        print(f"[*] Loading adversarial test set from:\n\t'{X_test_malicious_cmd_adv_file}'")
-        with open(X_test_malicious_cmd_adv_file, "r", encoding="utf-8") as f:
-            X_test_malicious_cmd_adv = json.load(f)
-    else:
-        print("[*] Creating robust test set: applying attack with custom parameter...")
-        X_test_malicious_cmd_adv = []
-        for cmd in tqdm(X_test_malicious_cmd):
-            if random.random() <= ROBUST_MANIPULATION_PROB:
-                cmd_a = ATTACK(cmd, BASELINE, attack_parameter=ROBUST_TRAINING_PARAM)
-            else:
-                cmd_a = cmd
-            X_test_malicious_cmd_adv.append(cmd_a)
+    X_train_cmds_adv = X_train_malicious_cmds_adv + X_train_baseline_cmds
+    y_train_adv = np.array([1] * len(X_train_malicious_cmds_adv) + [0] * len(X_train_baseline_cmds))
+    X_train_cmds_adv, y_train_adv = shuffle(X_train_cmds_adv, y_train_adv, random_state=SEED)
 
-        with open(X_test_malicious_cmd_adv_file, "w", encoding="utf-8") as f:
-            json.dump(X_test_malicious_cmd_adv, f, indent=4)
+    X_test_cmds_adv = X_test_malicious_cmds_adv + X_test_baseline_cmds
+    y_test_adv = np.array([1] * len(X_test_malicious_cmds_adv) + [0] * len(X_test_baseline_cmds))
+    X_test_cmds_adv, y_test_adv = shuffle(X_test_cmds_adv, y_test_adv, random_state=SEED)
 
-    X_full_malicious_cmd_adv = X_train_malicious_cmd_adv + X_test_malicious_cmd_adv
-    X_full_cmd_adv = X_full_malicious_cmd_adv + X_train_baseline_cmd + X_test_baseline_cmd
-    y_full_adv = np.array(
-        [1] * len(X_full_malicious_cmd_adv) + \
-        [0] * len(X_train_baseline_cmd + X_test_baseline_cmd)
-    )
-    X_full_cmd_adv, y_full_adv = shuffle(X_full_cmd_adv, y_full_adv, random_state=SEED)
+    X_full_cmds_adv = X_train_malicious_cmds_adv + X_test_malicious_cmds_adv + \
+                        X_train_baseline_cmds + X_test_baseline_cmds
+    y_full_adv = np.array([1] * len(X_train_malicious_cmds_adv) + [1] * len(X_test_malicious_cmds_adv) + \
+                          [0] * len(X_train_baseline_cmds + X_test_baseline_cmds))
+    X_full_cmds_adv, y_full_adv = shuffle(X_full_cmds_adv, y_full_adv, random_state=SEED)
 
     # =============================================
-    # PREPING DATA
+    # TOKENIZERS
     # =============================================
-    tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
 
     # ========== EMBEDDING ==========
-    vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}.json")
-    if os.path.exists(vocab_file):
-        print(f"[*] Loading vocab from:\n\t'{vocab_file}'")
-        tokenizer.load_vocab(vocab_file)
-    else:
-        print("[*] Building vocab and encoding...")
-        X_full_tokens = tokenizer.tokenize(X_full_cmd_adv)
-        tokenizer.build_vocab(X_full_tokens)
-        tokenizer.dump_vocab(vocab_file)
+    
+    # non-robust original model trained on training set
+    tokenizer_train_orig = get_embedded_tokenizer(X_train_cmds_orig, "train_orig")
+    
+    # adversarially trained model on training set for further research
+    tokenizer_train_adv = get_embedded_tokenizer(X_train_cmds_adv, "train_adv")
+    
+    # production release model trained on all data
+    tokenizer_full_adv = get_embedded_tokenizer(X_full_cmds_adv, "full_adv")
 
-    # creating dataloaders
     print("[*] Creating dataloaders from commands...")
-    X_train_loader = commands_to_loader(X_full_cmd_adv, tokenizer, y=y_full_adv, workers=DATALOADER_WORKERS, batch_size=BATCH_SIZE)
-    X_test_loader = commands_to_loader(X_full_cmd_adv, tokenizer, y=y_full_adv, workers=DATALOADER_WORKERS, batch_size=BATCH_SIZE)
 
-    # ========== MIN-HASH TABULAR ENCODING ==========
-    # minhash = HashingVectorizer(n_features=VOCAB_SIZE, tokenizer=TOKENIZER, token_pattern=None)
-    # print("[*] Fitting MinHash encoder...")
-    # X_train_minhash = minhash.fit_transform(X_full_cmd_adv)
+    X_train_loader_orig = commands_to_loader(
+        X_train_cmds_orig,
+        tokenizer_train_orig,
+        y=y_train_orig,
+        workers=DATALOADER_WORKERS,
+        batch_size=BATCH_SIZE
+    )
+    X_test_loader_orig = commands_to_loader(
+        X_test_cmds_orig,
+        tokenizer_train_orig,
+        y=y_test_orig,
+        workers=DATALOADER_WORKERS,
+        batch_size=BATCH_SIZE
+    )
+
+    X_train_loader_adv = commands_to_loader(
+        X_train_cmds_adv,
+        tokenizer_train_adv,
+        y=y_train_adv,
+        workers=DATALOADER_WORKERS,
+        batch_size=BATCH_SIZE
+    )
+    X_test_loader_adv = commands_to_loader(
+        X_test_cmds_adv,
+        tokenizer_train_adv,
+        y=y_test_adv,
+        workers=DATALOADER_WORKERS,
+        batch_size=BATCH_SIZE
+    )
+
+    X_full_loader_adv = commands_to_loader(
+        X_full_cmds_adv,
+        tokenizer_full_adv,
+        y=y_full_adv,
+        workers=DATALOADER_WORKERS,
+        batch_size=BATCH_SIZE
+    )
 
     # ========== ONE-HOT TABULAR ENCODING ===========
-    oh_pickle = os.path.join(LOGS_FOLDER, f"onehot_vectorizer_{VOCAB_SIZE}.pkl")
-    if os.path.exists(oh_pickle):
-        print(f"[*] Loading One-Hot encoder from:\n\t'{oh_pickle}'")
-        with open(oh_pickle, "rb") as f:
-            oh = pickle.load(f)
-        X_train_onehot = oh.transform(X_full_cmd_adv)
-    else:
-        print("[*] Fitting One-Hot encoder...")
-        oh = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
-        X_train_onehot = oh.fit_transform(X_full_cmd_adv)
-        with open(oh_pickle, "wb") as f:
-            pickle.dump(oh, f)
+    
+    # non-robust original model trained on training set
+    oh_tokenizer_train_orig = get_onehot_tokenizer(X_train_cmds_orig, "train_orig")
+    
+    # adversarially trained model on training set for further research
+    oh_tokenizer_train_adv = get_onehot_tokenizer(X_train_cmds_adv, "train_adv")
+    
+    # production release model trained on all data
+    oh_tokenizer_full_adv = get_onehot_tokenizer(X_full_cmds_adv, "full_adv")
+
+    print("[*] Transforming commands to One-Hot encoding...")
+
+    X_train_onehot_orig = oh_tokenizer_train_orig.transform(X_train_cmds_orig)
+    X_test_onehot_orig = oh_tokenizer_train_orig.transform(X_test_cmds_orig)
+
+    X_train_onehot_adv = oh_tokenizer_train_adv.transform(X_train_cmds_adv)
+    X_test_onehot_adv = oh_tokenizer_train_adv.transform(X_test_cmds_adv)
+
+    X_full_onehot_adv = oh_tokenizer_full_adv.transform(X_full_cmds_adv)
 
     # =============================================
     # DEFINING MODELS
     # =============================================
 
-    # mlp_seq_model = SimpleMLPWithEmbedding(vocab_size=VOCAB_SIZE, embedding_dim=EMBEDDED_DIM, output_dim=1, hidden_dim=[256, 64, 32], use_positional_encoding=False, max_len=MAX_LEN, dropout=DROPOUT) # 297 K params
-    # lstm_model = BiLSTMModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, hidden_dim=32, mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 318 K params
-    # cnn_lstm_model = CNN1D_BiLSTM_Model(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_size=3, lstm_hidden_dim=32, mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 316 K params
-    # mean_transformer_model = MeanTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) # 335 K params
-    # attpool_transformer_model = AttentionPoolingTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) #  335 K params
-    # neurlux = NeurLuxModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, max_len=MAX_LEN, hidden_dim=32, output_dim=1, dropout=DROPOUT) # 402 K params
-    cnn_model = CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[2, 3, 4, 5], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT) # 301 K params
-    cls_transformer_model = CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1) #  335 K params
-
-    # tabular models
-    # rf_model_minhash = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=SEED)
-    # xgb_model_minhash = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
-    # log_reg_minhash = LogisticRegression(random_state=SEED)
-    # mlp_tab_model_minhash = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
-    # rf_model_onehot = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=SEED)
-    # log_reg_onehot = LogisticRegression(random_state=SEED)
-    xgb_model_onehot = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
-    mlp_tab_model_onehot = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
-
     models = {
-        # "_tabular_mlp_minhash": mlp_tab_model_minhash,
-        # "_tabular_rf_minhash": rf_model_minhash,
-        # "_tabular_xgb_minhash": xgb_model_minhash,
-        # "_tabular_log_reg_minhash": log_reg_minhash,
-        # "_tabular_rf_onehot": rf_model_onehot,
-        # "_tabular_log_reg_onehot": log_reg_onehot,
-        "_tabular_mlp_onehot": mlp_tab_model_onehot,
-        "_tabular_xgb_onehot": xgb_model_onehot,
-        # "mlp_seq": mlp_seq_model,
-        # "attpool_transformer": attpool_transformer_model,
-        # "mean_transformer": mean_transformer_model,
-        # "neurlux": neurlux,
-        # "lstm": lstm_model,
-        # "cnn_lstm": cnn_lstm_model,
-        "cnn": cnn_model,
-        "cls_transformer": cls_transformer_model,
+        # xgb
+        "xgb_train_orig": XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED),
+        "xgb_train_adv": XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED),
+        "xgb_full_adv": XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED),
+        # MLP models
+        "mlp_train_orig": SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT), # 264 K params
+        "mlp_train_adv": SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT), # 264 K params
+        "mlp_full_adv": SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT), # 264 K params
+        # CNN models
+        "cnn_train_orig": CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[2, 3, 4, 5], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT), # 301 K params
+        "cnn_train_adv": CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[2, 3, 4, 5], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT), # 301 K params
+        "cnn_full_adv": CNN1DGroupedModel(vocab_size=VOCAB_SIZE, embed_dim=EMBEDDED_DIM, num_channels=32, kernel_sizes=[2, 3, 4, 5], mlp_hidden_dims=[64, 32], output_dim=1, dropout=DROPOUT), # 301 K params
+        # transformers
+        "transformer_train_orig": CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1), #  335 K params
+        "transformer_train_adv": CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1), #  335 K params
+        "transformer_full_adv": CLSTransformerEncoder(vocab_size=VOCAB_SIZE, d_model=EMBEDDED_DIM, nhead=4, num_layers=2, dim_feedforward=128, max_len=MAX_LEN, dropout=DROPOUT, mlp_hidden_dims=[64,32], output_dim=1), #  335 K params
+
     }
 
     # =============================================
@@ -384,43 +445,45 @@ if __name__ == "__main__":
     # =============================================
 
     for name, model in models.items():
-        if os.path.exists(os.path.join(LOGS_FOLDER, f"{name}_csv", "version_0", "checkpoints")):
+        x_train, y_train, x_test, y_test, X_train_loader, X_test_loader = None, None, None, None, None, None
+        
+        if ("xgb" not in name and os.path.exists(find_lit_checkpoint_folder(name))) or \
+            ("xgb" in name and os.path.exists(os.path.join(LOGS_FOLDER, name, "model.xgboost"))):
             print(f"[!] Training of {name} already done, skipping...")
             continue
 
         now = time.time()
         print(f"[!] Training of {name} started: ", time.ctime())
         
-        if name.startswith("_tabular"):
-            x_train_full = None
-            
-            preprocessor = name.split("_")[-1]
-            assert preprocessor in ["onehot", "minhash"]
+        # selectin train and test sets for this model
+        if name.startswith("xgb") or name.startswith("mlp"):
+            if "train_orig" in name:
+                x_train, y_train, x_test, y_test = X_train_onehot_orig, y_train_orig, X_test_onehot_orig, y_test_orig
+            elif "train_adv" in name:
+                x_train, y_train, x_test, y_test = X_train_onehot_adv, y_train_adv, X_test_onehot_adv, y_test_adv
+            else:
+                x_train, y_train, x_test, y_test = X_full_onehot_adv, y_full_adv, X_full_onehot_adv, y_full_adv
+        else:
+            if "train_orig" in name:
+                X_train_loader, X_test_loader = X_train_loader_orig, X_test_loader_orig
+            elif "train_adv" in name:
+                X_train_loader, X_test_loader = X_train_loader_adv, X_test_loader_adv
+            else:
+                X_train_loader, X_test_loader = X_full_loader_adv, X_full_loader_adv
 
-            if preprocessor == "onehot":
-                x_train_full = X_train_onehot
-            # elif preprocessor == "minhash":
-            #     x_train = X_train_minhash
-                
-            if "_mlp_" in name:
-                # DEPRECATED
-                # train_loader = create_dataloader(x_train_full, y_full_adv, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-                # test_loader = create_dataloader(x_train_full, y_full_adv, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
-                # _ = train_lit_model(
-                #     train_loader,
-                #     test_loader,
-                #     model,
-                #     name,
-                #     log_folder=LOGS_FOLDER,
-                #     epochs=EPOCHS,
-                #     learning_rate=LEARNING_RATE,
-                #     scheduler=SCHEDULER,
-                #     scheduler_budget = EPOCHS * len(X_train_loader),
-                #     device=DEVICE
-                # )
-                
-                # NEW CLASS
-                trainer = LitTrainerWrapper(
+        # actual training
+        if "xgb" in name:
+            training_tabular(
+                    model=model,
+                    name=name,
+                    X_train_encoded=x_train,
+                    X_test_encoded=x_test,
+                    y_train=y_train,
+                    y_test=y_test,
+                    logs_folder=LOGS_FOLDER
+                )
+        else:
+            trainer = LitTrainerWrapper(
                     pytorch_model=model,
                     name=name,
                     log_folder=LOGS_FOLDER,
@@ -428,48 +491,11 @@ if __name__ == "__main__":
                     learning_rate=LEARNING_RATE,
                     scheduler=SCHEDULER,
                     device=DEVICE,
-                    precision=16,
+                    precision=32
                 )
-                train_loader = trainer.create_dataloader(x_train_full, y_full_adv, batch_size=BATCH_SIZE, dataloader_workers=DATALOADER_WORKERS)
-                test_loader = trainer.create_dataloader(x_train_full, y_full_adv, batch_size=BATCH_SIZE, dataloader_workers=DATALOADER_WORKERS)
-                trainer.train_lit_model(train_loader, test_loader)
-
-            else:
-                training_tabular(
-                    model=model,
-                    name=name,
-                    X_train_encoded=x_train_full,
-                    X_test_encoded=x_train_full,
-                    y_train=y_full_adv,
-                    y_test=y_full_adv,
-                    logs_folder=LOGS_FOLDER
-                )
-        else:
-            # DEPRECATED
-            # _ = train_lit_model(
-            #     X_train_loader,
-            #     X_test_loader,
-            #     model,
-            #     name,
-            #     log_folder=LOGS_FOLDER,
-            #     epochs=EPOCHS,
-            #     learning_rate=LEARNING_RATE,
-            #     scheduler=SCHEDULER,
-            #     scheduler_budget= EPOCHS * len(X_train_loader),
-            #     device=DEVICE
-            # )
-
-            # NEW CLASS
-            trainer = LitTrainerWrapper(
-                pytorch_model=model,
-                name=name,
-                log_folder=LOGS_FOLDER,
-                epochs=EPOCHS,
-                learning_rate=LEARNING_RATE,
-                scheduler=SCHEDULER,
-                device=DEVICE,
-                precision=16,
-            )
+            if "mlp" in name:
+                X_train_loader = trainer.create_dataloader(x_train, y_train, batch_size=BATCH_SIZE, dataloader_workers=DATALOADER_WORKERS)
+                X_test_loader = trainer.create_dataloader(x_test, y_test, batch_size=BATCH_SIZE, dataloader_workers=DATALOADER_WORKERS)
             trainer.train_lit_model(X_train_loader, X_test_loader)
         
         print(f"[!] Training of {name} ended: ", time.ctime(), f" | Took: {time.time() - now:.2f} seconds")

@@ -206,8 +206,6 @@ def create_adversarial_set(malicious_cmd: List[str], dataset_name: str) -> List[
 
 
 def get_embedded_tokenizer(x_cmds: List[str], tokenizer_type: str) -> CommandTokenizer:
-    assert tokenizer_type in ["orig", "adv"]
-
     tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
     vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}_{tokenizer_type}.json")
     
@@ -224,8 +222,6 @@ def get_embedded_tokenizer(x_cmds: List[str], tokenizer_type: str) -> CommandTok
 
 
 def get_onehot_tokenizer(x_cmds: List[str], tokenizer_type: str) -> OneHotCustomVectorizer:
-    assert tokenizer_type in ["orig", "adv"]
-
     oh_pickle = os.path.join(LOGS_FOLDER, f"onehot_vectorizer_{VOCAB_SIZE}_{tokenizer_type}.pkl")
     if os.path.exists(oh_pickle):
         print(f"[*] Loading One-Hot encoder from:\n\t'{oh_pickle}'")
@@ -243,8 +239,11 @@ def get_onehot_tokenizer(x_cmds: List[str], tokenizer_type: str) -> OneHotCustom
 
 def find_lit_checkpoint_folder(train_name):
     train_folder = os.path.join(LOGS_FOLDER, f"{train_name}_csv")
-    version = sorted(os.listdir(train_folder))[-1]
-    return os.path.join(train_folder, version, "checkpoints")
+    if os.path.exists(train_folder):
+        version = sorted(os.listdir(train_folder))[-1]
+        return os.path.join(train_folder, version, "checkpoints")
+    else:
+        return None
 
 
 # =============================
@@ -447,7 +446,7 @@ if __name__ == "__main__":
     for name, model in models.items():
         x_train, y_train, x_test, y_test, X_train_loader, X_test_loader = None, None, None, None, None, None
         
-        if ("xgb" not in name and os.path.exists(find_lit_checkpoint_folder(name))) or \
+        if ("xgb" not in name and find_lit_checkpoint_folder(name) is not None) or \
             ("xgb" in name and os.path.exists(os.path.join(LOGS_FOLDER, name, "model.xgboost"))):
             print(f"[!] Training of {name} already done, skipping...")
             continue

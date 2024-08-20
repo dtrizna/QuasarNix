@@ -1,0 +1,265 @@
+# python3 train_release_models.py
+Python implementation: CPython
+Python version       : 3.10.12
+IPython version      : 8.22.2
+
+torch    : 2.2.1
+lightning: 2.2.1
+sklearn  : 1.4.1.post1
+
+[!] Script start time: Mon Aug 19 14:39:30 2024
+Seed set to 33
+[!] X_train_malicious_cmd: 266501 | X_test_malicious_cmd: 235060
+[!] X_train_baseline_cmd: 266513 | X_test_baseline_cmd: 235069
+[*] Loading adversarial train set from:
+        'logs_adv_train_full/X_train_malicious_cmd_adv.json'
+[*] Loading adversarial test set from:
+        'logs_adv_train_full/X_test_malicious_cmd_adv.json'
+[*] Loading vocab from:
+        'logs_adv_train_full/wordpunct_vocab_4096_train_orig.json'
+[*] Loading vocab from:
+        'logs_adv_train_full/wordpunct_vocab_4096_train_adv.json'
+[*] Loading vocab from:
+        'logs_adv_train_full/wordpunct_vocab_4096_full_adv.json'
+[*] Creating dataloaders from commands...
+[*] Loading One-Hot encoder from:
+        'logs_adv_train_full/onehot_vectorizer_4096_train_orig.pkl'
+[*] Loading One-Hot encoder from:
+        'logs_adv_train_full/onehot_vectorizer_4096_train_adv.pkl'
+[*] Loading One-Hot encoder from:
+        'logs_adv_train_full/onehot_vectorizer_4096_full_adv.pkl'
+[*] Transforming commands to One-Hot encoding...
+/home/dtrizna/.local/lib/python3.10/site-packages/torch/nn/modules/transformer.py:286: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(f"enable_nested_tensor is True, but self.use_nested_tensor is False because {why_not_sparsity_fast_path}")
+[!] Training of xgb_train_orig already done, skipping...
+[!] Training of xgb_train_adv already done, skipping...
+[!] Training of xgb_full_adv already done, skipping...
+[!] Training of mlp_train_orig started:  Mon Aug 19 14:44:24 2024
+Seed set to 42
+[!] Logging to logs_adv_train_full
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 train_release_models.py ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+[*] Training 'mlp_train_orig' model...
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 train_release_models.py ...
+You are using a CUDA device ('NVIDIA L40') that has Tensor Cores. To properly utilize them, you should set `torch.set_float32_matmul_precision('medium' | 'high')` which will trade-off precision for performance. For more details, read https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html#torch.set_float32_matmul_precision
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1]
+[!] Setting up onecycle scheduler with step budget 5210
+Epoch 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:32<00:00, 16.03it/s, v_num=0, train_loss=0.0256, memory=2.95e+7, val_f1=1.000, val_tpr=0.999, val_acc=1.000, train_f1=0.881, train_tpr=0.780, train_acc=0.893]
+Epoch 1: 100%|████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:39<00:00, 13.11it/s, v_num=0, train_loss=0.00142, memory=2.95e+7, val_f1=0.999, val_tpr=0.999, val_acc=0.999, train_f1=1.000, train_tpr=0.999, train_acc=1.000]
+Epoch 2: 100%|███████████████████████████████████████████████████████████████████████████████████| 521/521 [00:38<00:00, 13.41it/s, v_num=0, train_loss=0.000555, memory=2.95e+7, val_f1=0.999, val_tpr=0.999, val_acc=0.999, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 3: 100%|████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:32<00:00, 15.89it/s, v_num=0, train_loss=0.00032, memory=2.95e+7, val_f1=0.998, val_tpr=0.999, val_acc=0.998, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 4: 100%|███████████████████████████████████████████████████████████████████████████████████| 521/521 [00:32<00:00, 15.85it/s, v_num=0, train_loss=0.000317, memory=2.95e+7, val_f1=0.997, val_tpr=0.999, val_acc=0.997, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 5: 100%|███████████████████████████████████████████████████████████████████████████████████| 521/521 [00:32<00:00, 15.98it/s, v_num=0, train_loss=0.000372, memory=2.95e+7, val_f1=0.998, val_tpr=1.000, val_acc=0.998, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 6: 100%|███████████████████████████████████████████████████████████████████████████████████| 521/521 [00:32<00:00, 15.93it/s, v_num=0, train_loss=0.000168, memory=2.95e+7, val_f1=0.996, val_tpr=0.999, val_acc=0.996, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 7: 100%|████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:34<00:00, 15.31it/s, v_num=0, train_loss=4.01e-5, memory=2.95e+7, val_f1=0.996, val_tpr=0.999, val_acc=0.996, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 8: 100%|████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:34<00:00, 15.06it/s, v_num=0, train_loss=0.00017, memory=2.95e+7, val_f1=0.996, val_tpr=0.999, val_acc=0.996, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 9: 100%|███████████████████████████████████████████████████████████████████████████████████| 521/521 [00:32<00:00, 15.91it/s, v_num=0, train_loss=0.000132, memory=2.95e+7, val_f1=0.996, val_tpr=0.999, val_acc=0.996, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|███████████████████████████████████████████████████████████████████████████████████| 521/521 [00:32<00:00, 15.91it/s, v_num=0, train_loss=0.000132, memory=2.95e+7, val_f1=0.996, val_tpr=0.999, val_acc=0.996, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+[!] Training of mlp_train_orig ended:  Mon Aug 19 14:50:11 2024  | Took: 347.04 seconds
+[!] Training of mlp_train_adv started:  Mon Aug 19 14:50:11 2024
+Seed set to 42
+[!] Logging to logs_adv_train_full
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 train_release_models.py ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+[*] Training 'mlp_train_adv' model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1]
+[!] Setting up onecycle scheduler with step budget 5210
+Epoch 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:33<00:00, 15.55it/s, v_num=0, train_loss=0.0264, memory=2.95e+7, val_f1=0.999, val_tpr=0.992, val_acc=0.999, train_f1=0.870, train_tpr=0.743, train_acc=0.885]
+Epoch 1: 100%|█████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:36<00:00, 14.24it/s, v_num=0, train_loss=0.0019, memory=2.95e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=0.995, train_acc=1.000]
+Epoch 2: 100%|███████████████████████████████████████████████████████████████████████████████████| 521/521 [00:33<00:00, 15.42it/s, v_num=0, train_loss=0.000572, memory=2.95e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 3: 100%|███████████████████████████████████████████████████████████████████████████████████| 521/521 [00:32<00:00, 16.14it/s, v_num=0, train_loss=0.000317, memory=2.95e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 4: 100%|████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:32<00:00, 15.93it/s, v_num=0, train_loss=0.00167, memory=2.95e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 5: 100%|████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:33<00:00, 15.54it/s, v_num=0, train_loss=6.13e-5, memory=2.95e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 6: 100%|███████████████████████████████████████████████████████████████████████████████████| 521/521 [00:32<00:00, 15.79it/s, v_num=0, train_loss=0.000135, memory=2.95e+7, val_f1=0.999, val_tpr=1.000, val_acc=0.999, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 7: 100%|████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:32<00:00, 16.00it/s, v_num=0, train_loss=8.11e-5, memory=2.95e+7, val_f1=0.999, val_tpr=1.000, val_acc=0.999, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 8: 100%|████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:34<00:00, 15.25it/s, v_num=0, train_loss=0.00021, memory=2.95e+7, val_f1=0.999, val_tpr=1.000, val_acc=0.999, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 9: 100%|████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:34<00:00, 15.22it/s, v_num=0, train_loss=9.93e-5, memory=2.95e+7, val_f1=0.999, val_tpr=1.000, val_acc=0.999, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:34<00:00, 15.21it/s, v_num=0, train_loss=9.93e-5, memory=2.95e+7, val_f1=0.999, val_tpr=1.000, val_acc=0.999, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+[!] Training of mlp_train_adv ended:  Mon Aug 19 14:55:49 2024  | Took: 337.57 seconds
+[!] Training of mlp_full_adv started:  Mon Aug 19 14:55:49 2024
+Seed set to 42
+[!] Logging to logs_adv_train_full
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 train_release_models.py ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[!] Scheduler: onecycle | Scheduler step budget: 9800
+[*] Training 'mlp_full_adv' model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1]
+[!] Setting up onecycle scheduler with step budget 9800
+Epoch 0:  50%|██████████████████████████████████████████████████████████████████████████████████████████▌                                                                                          | 490/980 [00:10<00:10, 44.95it/s, v_num=0, train_loss=0.161, memory=3.9e+7]
+Epoch 1: 100%|█████████████████████████████████████████████████████████████████████████████| 980/980 [01:15<00:00, 13.04it/s, v_num=0, train_loss=0.000725, memory=3.25e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=0.999, train_acc=1.000]
+Epoch 2: 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 980/980 [01:04<00:00, 15.14it/s, v_num=0, train_loss=0.000493, memory=3.25e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 3: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 980/980 [01:06<00:00, 14.85it/s, v_num=0, train_loss=2.57e-5, memory=3.25e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 4: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 980/980 [01:06<00:00, 14.76it/s, v_num=0, train_loss=2.59e-5, memory=3.25e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 5: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 980/980 [01:06<00:00, 14.83it/s, v_num=0, train_loss=1.58e-5, memory=3.25e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 6: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 980/980 [01:07<00:00, 14.56it/s, v_num=0, train_loss=5.51e-5, memory=3.25e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 7: 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 980/980 [01:06<00:00, 14.84it/s, v_num=0, train_loss=0.000117, memory=3.25e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 8: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 980/980 [01:05<00:00, 15.08it/s, v_num=0, train_loss=1.25e-5, memory=3.25e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 9: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 980/980 [01:07<00:00, 14.46it/s, v_num=0, train_loss=1.69e-6, memory=3.25e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 980/980 [01:07<00:00, 14.46it/s, v_num=0, train_loss=1.69e-6, memory=3.25e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+[!] Training of mlp_full_adv ended:  Mon Aug 19 15:07:06 2024  | Took: 677.40 seconds
+[!] Training of cnn_train_orig started:  Mon Aug 19 15:07:06 2024
+Seed set to 42
+[!] Logging to logs_adv_train_full
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 train_release_models.py ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+[*] Training 'cnn_train_orig' model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1]
+[!] Setting up onecycle scheduler with step budget 5210
+Epoch 0: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:20<00:00, 25.14it/s, v_num=0, train_loss=0.00785, memory=7.44e+7, val_f1=0.999, val_tpr=0.979, val_acc=0.999, train_f1=0.862, train_tpr=0.433, train_acc=0.875]
+Epoch 1: 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:17<00:00, 29.49it/s, v_num=0, train_loss=0.000812, memory=7.44e+7, val_f1=1.000, val_tpr=0.997, val_acc=1.000, train_f1=1.000, train_tpr=0.987, train_acc=1.000]
+Epoch 2: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:16<00:00, 30.73it/s, v_num=0, train_loss=2.41e-5, memory=7.44e+7, val_f1=1.000, val_tpr=0.996, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 3: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:17<00:00, 29.36it/s, v_num=0, train_loss=2e-5, memory=7.44e+7, val_f1=1.000, val_tpr=0.996, val_acc=1.000, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 4: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:16<00:00, 30.72it/s, v_num=0, train_loss=9e-6, memory=7.44e+7, val_f1=1.000, val_tpr=0.985, val_acc=1.000, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 5: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:17<00:00, 29.39it/s, v_num=0, train_loss=3.35e-5, memory=7.44e+7, val_f1=0.991, val_tpr=0.997, val_acc=0.991, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 6: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:15<00:00, 34.22it/s, v_num=0, train_loss=3.29e-6, memory=7.44e+7, val_f1=1.000, val_tpr=0.989, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 7: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:15<00:00, 33.27it/s, v_num=0, train_loss=1.29e-6, memory=7.44e+7, val_f1=1.000, val_tpr=0.993, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 8: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:17<00:00, 29.74it/s, v_num=0, train_loss=1.82e-5, memory=7.44e+7, val_f1=1.000, val_tpr=0.993, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 9: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:15<00:00, 33.79it/s, v_num=0, train_loss=5.79e-6, memory=7.44e+7, val_f1=1.000, val_tpr=0.993, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:15<00:00, 33.77it/s, v_num=0, train_loss=5.79e-6, memory=7.44e+7, val_f1=1.000, val_tpr=0.993, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+[!] Training of cnn_train_orig ended:  Mon Aug 19 15:09:59 2024  | Took: 172.95 seconds
+[!] Training of cnn_train_adv started:  Mon Aug 19 15:09:59 2024
+Seed set to 42
+[!] Logging to logs_adv_train_full
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 train_release_models.py ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+[*] Training 'cnn_train_adv' model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1]
+[!] Setting up onecycle scheduler with step budget 5210
+Epoch 0: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:18<00:00, 27.87it/s, v_num=0, train_loss=0.00743, memory=7.44e+7, val_f1=0.998, val_tpr=0.999, val_acc=0.998, train_f1=0.919, train_tpr=0.398, train_acc=0.915]
+Epoch 1: 100%|█████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [00:14<00:00, 35.93it/s, v_num=0, train_loss=0.000214, memory=7.44e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=0.995, train_acc=1.000]
+Epoch 2:  48%|████████████████████████████████████████████▉                                                | 252/521 [00:04<00:04, 57.00it/s, v_num=0, train_loss=0.000882, memory=1.26e+8, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=0.995, Epoch 2:  48%|████████████▌             | 252/521 [00:04<00:04, 56.94it/s, v_num=0, train_loss=0.0057, memory=1.26e+8, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=0.995, train_acc=1.000]                                                     Epoch 2: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:17<00:00, 30.47it/s, v_num=0, train_loss=6.18e-5, memory=7.44e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 3: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:16<00:00, 31.20it/s, v_num=0, train_loss=4.41e-6, memory=7.44e+7, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 4: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:17<00:00, 29.76it/s, v_num=0, train_loss=1.62e-5, memory=7.44e+7, val_f1=0.996, val_tpr=1.000, val_acc=0.996, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 5: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:16<00:00, 30.99it/s, v_num=0, train_loss=8.97e-6, memory=7.44e+7, val_f1=0.997, val_tpr=1.000, val_acc=0.997, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 6: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:15<00:00, 32.76it/s, v_num=0, train_loss=1.59e-6, memory=7.44e+7, val_f1=0.998, val_tpr=1.000, val_acc=0.998, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 7: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:17<00:00, 30.43it/s, v_num=0, train_loss=1.16e-7, memory=7.44e+7, val_f1=0.995, val_tpr=1.000, val_acc=0.995, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 8: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:17<00:00, 30.38it/s, v_num=0, train_loss=4.16e-7, memory=7.44e+7, val_f1=0.995, val_tpr=1.000, val_acc=0.995, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 9: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:17<00:00, 30.10it/s, v_num=0, train_loss=3.08e-5, memory=7.44e+7, val_f1=0.995, val_tpr=1.000, val_acc=0.995, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:17<00:00, 30.10it/s, v_num=0, train_loss=3.08e-5, memory=7.44e+7, val_f1=0.995, val_tpr=1.000, val_acc=0.995, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+[!] Training of cnn_train_adv ended:  Mon Aug 19 15:12:49 2024  | Took: 169.97 seconds
+[!] Training of cnn_full_adv started:  Mon Aug 19 15:12:49 2024
+Seed set to 42
+[!] Logging to logs_adv_train_full
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 train_release_models.py ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[!] Scheduler: onecycle | Scheduler step budget: 9800
+[*] Training 'cnn_full_adv' model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1]
+[!] Setting up onecycle scheduler with step budget 9800
+Epoch 0:  50%|███████████████████████████████████████▌                                       | 490/980 [00:15<00:15, 31.78it/s, v_num=0, train_loss=0.0283, memory=1.26e+8, val_f1=0.995, val_tpr=0.989, val_acc=0.995, train_f1=0.860, train_tpr=0.315, train_acc=0.839]
+Epoch 1:  50%|███████████████████████████████████████                                       | 490/980 [00:16<00:16, 29.12it/s, v_num=0, train_loss=0.00151, memory=1.26e+8, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=0.998, train_tpr=0.964, train_acc=0.998]
+Epoch 2:  50%|██████████████████████████████████████▌                                      | 490/980 [00:15<00:15, 30.87it/s, v_num=0, train_loss=0.000552, memory=1.26e+8, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 3:  50%|██████████████████████████████████████▌                                      | 490/980 [00:16<00:16, 29.60it/s, v_num=0, train_loss=0.000218, memory=1.26e+8, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 4:  50%|██████████████████████████████████████▌                                      | 490/980 [00:18<00:18, 27.20it/s, v_num=0, train_loss=0.000423, memory=1.26e+8, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 5:  50%|██████████████████████████████████████▌                                      | 490/980 [00:16<00:16, 30.56it/s, v_num=0, train_loss=0.000102, memory=1.26e+8, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 6:  50%|██████████████████████████████████████▌                                      | 490/980 [00:16<00:16, 29.63it/s, v_num=0, train_loss=0.000151, memory=1.26e+8, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 7:  50%|███████████████████████████████████████                                       | 490/980 [00:18<00:18, 26.55it/s, v_num=0, train_loss=4.98e-5, memory=1.26e+8, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 8:  50%|███████████████████████████████████████                                       | 490/980 [00:16<00:16, 30.38it/s, v_num=0, train_loss=1.32e-5, memory=1.26e+8, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 9:  50%|███████████████████████████████████████                                       | 490/980 [00:17<00:17, 27.24it/s, v_num=0, train_loss=1.13e-7, memory=1.26e+8, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9:  50%|███████████████████████████████████████                                       | 490/980 [00:17<00:17, 27.23it/s, v_num=0, train_loss=1.13e-7, memory=1.26e+8, val_f1=1.000, val_tpr=1.000, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+[!] Training of cnn_full_adv ended:  Mon Aug 19 15:15:38 2024  | Took: 168.51 seconds
+[!] Training of transformer_train_orig started:  Mon Aug 19 15:15:38 2024
+Seed set to 42
+[!] Logging to logs_adv_train_full
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 train_release_models.py ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+[*] Training 'transformer_train_orig' model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1]
+[!] Setting up onecycle scheduler with step budget 5210
+Epoch 0: 100%|███████████████████████████████████████████████████████████████████████████████| 521/521 [00:42<00:00, 12.20it/s, v_num=0, train_loss=0.0124, memory=5.46e+8, val_f1=0.985, val_tpr=0.547, val_acc=0.984, train_f1=0.793, train_tpr=0.133, train_acc=0.788]
+Epoch 1: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:41<00:00, 12.47it/s, v_num=0, train_loss=0.00127, memory=5.46e+8, val_f1=0.997, val_tpr=0.566, val_acc=0.997, train_f1=0.997, train_tpr=0.757, train_acc=0.997]
+Epoch 2: 100%|█████████████████████████████████████████████████████████████████████████████| 521/521 [00:45<00:00, 11.48it/s, v_num=0, train_loss=0.000575, memory=5.46e+8, val_f1=0.998, val_tpr=0.536, val_acc=0.998, train_f1=0.999, train_tpr=0.961, train_acc=0.999]
+Epoch 3: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:43<00:00, 12.04it/s, v_num=0, train_loss=6.87e-5, memory=5.46e+8, val_f1=0.999, val_tpr=0.874, val_acc=0.999, train_f1=1.000, train_tpr=0.989, train_acc=1.000]
+Epoch 4: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:42<00:00, 12.17it/s, v_num=0, train_loss=6.86e-5, memory=5.46e+8, val_f1=1.000, val_tpr=0.924, val_acc=1.000, train_f1=1.000, train_tpr=0.993, train_acc=1.000]
+Epoch 5: 100%|█████████████████████████████████████████████████████████████████████████████| 521/521 [00:42<00:00, 12.29it/s, v_num=0, train_loss=0.000169, memory=5.46e+8, val_f1=1.000, val_tpr=0.926, val_acc=1.000, train_f1=1.000, train_tpr=0.997, train_acc=1.000]
+Epoch 6: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:41<00:00, 12.67it/s, v_num=0, train_loss=8.05e-5, memory=5.46e+8, val_f1=1.000, val_tpr=0.928, val_acc=1.000, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 7: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:44<00:00, 11.76it/s, v_num=0, train_loss=3.67e-5, memory=5.46e+8, val_f1=1.000, val_tpr=0.930, val_acc=1.000, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 8: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:43<00:00, 11.91it/s, v_num=0, train_loss=1.19e-5, memory=5.46e+8, val_f1=1.000, val_tpr=0.935, val_acc=1.000, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 9: 100%|█████████████████████████████████████████████████████████████████████████████| 521/521 [00:46<00:00, 11.09it/s, v_num=0, train_loss=0.000155, memory=5.46e+8, val_f1=1.000, val_tpr=0.937, val_acc=1.000, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|█████████████████████████████████████████████████████████████████████████████| 521/521 [00:46<00:00, 11.09it/s, v_num=0, train_loss=0.000155, memory=5.46e+8, val_f1=1.000, val_tpr=0.937, val_acc=1.000, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+[!] Training of transformer_train_orig ended:  Mon Aug 19 15:22:53 2024  | Took: 435.62 seconds
+[!] Training of transformer_train_adv started:  Mon Aug 19 15:22:53 2024
+Seed set to 42
+[!] Logging to logs_adv_train_full
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 train_release_models.py ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[!] Scheduler: onecycle | Scheduler step budget: 5210
+[*] Training 'transformer_train_adv' model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1]
+[!] Setting up onecycle scheduler with step budget 5210
+Epoch 0: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:43<00:00, 12.03it/s, v_num=0, train_loss=0.0637, memory=5.46e+8, val_f1=0.973, val_tpr=0.378, val_acc=0.973, train_f1=0.755, train_tpr=0.0862, train_acc=0.773]
+Epoch 1: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:41<00:00, 12.45it/s, v_num=0, train_loss=0.00717, memory=5.46e+8, val_f1=0.990, val_tpr=0.893, val_acc=0.990, train_f1=0.994, train_tpr=0.675, train_acc=0.994]
+Epoch 2: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:44<00:00, 11.82it/s, v_num=0, train_loss=0.00179, memory=5.46e+8, val_f1=0.998, val_tpr=0.876, val_acc=0.998, train_f1=0.999, train_tpr=0.949, train_acc=0.999]
+Epoch 3: 100%|█████████████████████████████████████████████████████████████████████████████| 521/521 [00:42<00:00, 12.33it/s, v_num=0, train_loss=0.000178, memory=5.46e+8, val_f1=0.999, val_tpr=0.835, val_acc=0.999, train_f1=0.999, train_tpr=0.978, train_acc=0.999]
+Epoch 4: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:41<00:00, 12.42it/s, v_num=0, train_loss=6.48e-5, memory=5.46e+8, val_f1=0.999, val_tpr=0.899, val_acc=0.999, train_f1=1.000, train_tpr=0.991, train_acc=1.000]
+Epoch 5: 100%|█████████████████████████████████████████████████████████████████████████████| 521/521 [00:42<00:00, 12.22it/s, v_num=0, train_loss=0.000143, memory=5.46e+8, val_f1=0.999, val_tpr=0.867, val_acc=0.999, train_f1=1.000, train_tpr=0.993, train_acc=1.000]
+Epoch 6: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:46<00:00, 11.27it/s, v_num=0, train_loss=7.31e-5, memory=5.46e+8, val_f1=0.997, val_tpr=0.936, val_acc=0.997, train_f1=1.000, train_tpr=0.994, train_acc=1.000]
+Epoch 7: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:44<00:00, 11.66it/s, v_num=0, train_loss=3.65e-5, memory=5.46e+8, val_f1=0.998, val_tpr=0.948, val_acc=0.998, train_f1=1.000, train_tpr=0.994, train_acc=1.000]
+Epoch 8: 100%|█████████████████████████████████████████████████████████████████████████████| 521/521 [00:42<00:00, 12.26it/s, v_num=0, train_loss=0.000198, memory=5.46e+8, val_f1=0.998, val_tpr=0.946, val_acc=0.998, train_f1=1.000, train_tpr=0.994, train_acc=1.000]
+Epoch 9: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:41<00:00, 12.44it/s, v_num=0, train_loss=2.43e-5, memory=5.46e+8, val_f1=0.998, val_tpr=0.941, val_acc=0.998, train_f1=1.000, train_tpr=0.994, train_acc=1.000]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9: 100%|██████████████████████████████████████████████████████████████████████████████| 521/521 [00:41<00:00, 12.44it/s, v_num=0, train_loss=2.43e-5, memory=5.46e+8, val_f1=0.998, val_tpr=0.941, val_acc=0.998, train_f1=1.000, train_tpr=0.994, train_acc=1.000]
+[!] Training of transformer_train_adv ended:  Mon Aug 19 15:30:06 2024  | Took: 432.52 seconds
+[!] Training of transformer_full_adv started:  Mon Aug 19 15:30:06 2024
+Seed set to 42
+[!] Logging to logs_adv_train_full
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 train_release_models.py ...
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+[!] Scheduler: onecycle | Scheduler step budget: 9800
+[*] Training 'transformer_full_adv' model...
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0,1]
+[!] Setting up onecycle scheduler with step budget 9800
+Epoch 0:  50%|███████████████████████████████████████                                       | 490/980 [00:36<00:36, 13.44it/s, v_num=0, train_loss=0.0715, memory=1.02e+9, val_f1=0.983, val_tpr=0.366, val_acc=0.982, train_f1=0.705, train_tpr=0.0445, train_acc=0.720]
+Epoch 1:  50%|███████████████████████████████████████▌                                       | 490/980 [00:42<00:42, 11.65it/s, v_num=0, train_loss=0.0129, memory=1.02e+9, val_f1=0.994, val_tpr=0.977, val_acc=0.994, train_f1=0.989, train_tpr=0.433, train_acc=0.989]
+Epoch 2:  50%|███████████████████████████████████████▌                                       | 490/980 [00:43<00:43, 11.27it/s, v_num=0, train_loss=0.0113, memory=1.02e+9, val_f1=0.998, val_tpr=0.979, val_acc=0.998, train_f1=0.996, train_tpr=0.837, train_acc=0.996]
+Epoch 3:  50%|███████████████████████████████████████                                       | 490/980 [00:41<00:41, 11.85it/s, v_num=0, train_loss=0.00458, memory=1.02e+9, val_f1=0.999, val_tpr=0.967, val_acc=0.999, train_f1=0.998, train_tpr=0.941, train_acc=0.998]
+Epoch 4:  50%|███████████████████████████████████████                                       | 490/980 [00:44<00:44, 11.09it/s, v_num=0, train_loss=0.00178, memory=1.02e+9, val_f1=1.000, val_tpr=0.956, val_acc=1.000, train_f1=0.999, train_tpr=0.976, train_acc=0.999]
+Epoch 5:  50%|██████████████████████████████████████▌                                      | 490/980 [00:36<00:36, 13.26it/s, v_num=0, train_loss=0.000777, memory=1.02e+9, val_f1=1.000, val_tpr=0.974, val_acc=1.000, train_f1=0.999, train_tpr=0.991, train_acc=0.999]
+Epoch 6:  50%|██████████████████████████████████████▌                                      | 490/980 [00:36<00:36, 13.29it/s, v_num=0, train_loss=0.000282, memory=1.02e+9, val_f1=1.000, val_tpr=0.984, val_acc=1.000, train_f1=1.000, train_tpr=0.992, train_acc=1.000]
+Epoch 7:  50%|██████████████████████████████████████▌                                      | 490/980 [00:37<00:37, 13.14it/s, v_num=0, train_loss=0.000261, memory=1.02e+9, val_f1=1.000, val_tpr=0.986, val_acc=1.000, train_f1=1.000, train_tpr=0.995, train_acc=1.000]
+Epoch 8:  50%|██████████████████████████████████████▌                                      | 490/980 [00:36<00:36, 13.51it/s, v_num=0, train_loss=0.000491, memory=1.02e+9, val_f1=1.000, val_tpr=0.982, val_acc=1.000, train_f1=1.000, train_tpr=0.995, train_acc=1.000]
+Epoch 9:  50%|███████████████████████████████████████                                       | 490/980 [00:37<00:37, 13.13it/s, v_num=0, train_loss=0.00502, memory=1.02e+9, val_f1=1.000, val_tpr=0.987, val_acc=1.000, train_f1=1.000, train_tpr=0.994, train_acc=1.000]
+`Trainer.fit` stopped: `max_epochs=10` reached.
+Epoch 9:  50%|███████████████████████████████████████                                       | 490/980 [00:37<00:37, 13.13it/s, v_num=0, train_loss=0.00502, memory=1.02e+9, val_f1=1.000, val_tpr=0.987, val_acc=1.000, train_f1=1.000, train_tpr=0.994, train_acc=1.000]
+[!] Training of transformer_full_adv ended:  Mon Aug 19 15:36:39 2024  | Took: 392.84 seconds
+[!] Script end time: Mon Aug 19 15:36:39 2024
+

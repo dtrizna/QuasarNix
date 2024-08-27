@@ -79,7 +79,7 @@ def commands_to_loader(
     return loader
 
 
-def load_data(root, seed, limit=None):
+def load_data(root, seed=33, limit=None):
     """
     NOTE: 
         First shuffle the data -- to take random elements from each class.

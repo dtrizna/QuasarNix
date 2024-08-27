@@ -1,11 +1,12 @@
 # Skipping data
 data/*parquet
+data/velociraptor-sigma-rules/*
 notes*
 *pkl
 *npy
 *cmd*
 events.out*
-hf-*/*
+hf-*
 
 # Model checkpoints
 *model

@@ -6,6 +6,10 @@ from watermark import watermark
 from nltk.tokenize import wordpunct_tokenize
 from lightning.fabric.utilities.seed import seed_everything
 
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+import sys
+sys.path.append(ROOT)
+
 from src.augmentation import REVERSE_SHELL_TEMPLATES, NixCommandAugmentation
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
 from src.data_utils import commands_to_loader, load_nl2bash, load_data, create_dataloader
@@ -52,8 +56,7 @@ EPOCHS = 10
 LIT_SANITY_STEPS = 1
 LIMIT = None
 DATALOADER_WORKERS = 4
-LOGS_FOLDER = os.path.join("logs_augm_no_augm", f"real_{int(time.time())}")
-
+LOGS_FOLDER = os.path.join(ROOT, "experiments", "logs_augm_no_augm", f"real_test_set_{int(time.time())}")
 
 def generate_sets(random_state, log_folder=None):
     templates = REVERSE_SHELL_TEMPLATES
@@ -63,7 +66,7 @@ def generate_sets(random_state, log_folder=None):
     # nl2bash = load_nl2bash(ROOT)
     # train_cmd_base, test_cmd_base = train_test_split(nl2bash, test_size=TEST_SIZE, random_state=random_state)
     # 2. real environment
-    *_, train_cmd_base, _, test_cmd_base = load_data(ROOT, RANDOM_SEED, limit=LIMIT)
+    _, _, X_test_cmds, y_test, _, train_cmd_base, _, test_cmd_base = load_data(ROOT, RANDOM_SEED, limit=LIMIT)
     
     # split templates to train and test
     train_templates, test_templates = train_test_split(templates, train_size=TRAIN_TEMPLATE_RATIO, random_state=random_state)
@@ -91,14 +94,21 @@ def generate_sets(random_state, log_folder=None):
     train_y_not_augmented = np.array([0] * len(train_cmd_base) + [1] * len(train_cmd_rvrs_1), dtype=np.int8)
 
     # generate test set
-    augmented_test = NixCommandAugmentation(templates=test_templates, random_state=random_state)
-    test_cmd_rvrs = augmented_test.generate_commands(number_of_examples_per_template=1)
-    test_cmd = test_cmd_base + test_cmd_rvrs
-    test_y = np.array([0] * len(test_cmd_base) + [1] * len(test_cmd_rvrs), dtype=np.int8)
+
+    # imbalanced test set
+    # augmented_test = NixCommandAugmentation(templates=test_templates, random_state=random_state)
+    # test_cmd_rvrs = augmented_test.generate_commands(number_of_examples_per_template=1)
+    # test_cmd = test_cmd_base + test_cmd_rvrs
+    # test_y = np.array([0] * len(test_cmd_base) + [1] * len(test_cmd_rvrs), dtype=np.int8)
+    # print(f"[!] Generated {len(test_cmd)} test commands (imbalanced).")
+    
+    # balanced test set
+    test_cmd = X_test_cmds
+    test_y = y_test
+    print(f"[!] Loaded {len(test_cmd)} test commands.")
 
     print(f"[!] Generated {len(train_cmd_augmented)} augmented train commands (balanced).")
     print(f"[!] Generated {len(train_cmd_not_augmented)} non-augmented train commands (imbalanced).")
-    print(f"[!] Generated {len(test_cmd)} test commands (imbalanced).")
     print(f"    Size of train set: {len(train_cmd_base)}")
     print(f"    Size of test set: {len(test_cmd_base)}")
 
@@ -220,7 +230,6 @@ if __name__ == "__main__":
 
     TOKENIZER = wordpunct_tokenize
     seed_everything(RANDOM_SEED)
-    ROOT = os.path.dirname(os.path.abspath(__file__))
     os.makedirs(LOGS_FOLDER, exist_ok=True)
 
     # ===========================================

@@ -7,14 +7,13 @@ notes*
 *cmd*
 events.out*
 hf-*
+*tokenized*json
+*counter.json
 
 # Model checkpoints
 *model
 *.ckpt
-
-# TEMP: remove results of poisoning experiments
-logs_adversarial_poisoning_pollution/*
-logs_adversarial_poisoning_backdoor/*
+*xgboost
 
 # Compiled Python files
 __pycache__/

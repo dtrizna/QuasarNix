@@ -1,0 +1,9 @@
+...
+[*] One-Hot encoding: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 100000/100000 [00:27<00:00, 3670.11it/s]
+2024-08-30 08:52:16,336 root  INFO     [!] One-Hot encoding finished!
+[*] Training xgboost_slp model...
+/home/dtrizna/.local/lib/python3.10/site-packages/xgboost/core.py:158: UserWarning: [08:52:33] WARNING: /workspace/src/c_api/c_api.cc:1374: Saving model in the UBJSON format as default.  You can use file extension: `json`, `ubj` or `deprecated` to choose between formats.
+  warnings.warn(smsg, UserWarning)
+[!] xgboost_slp model scores: train_tpr=1.0000, train_f1=1.0000, train_acc=1.0000, train_auc=1.0000
+[!] xgboost_slp model scores: val_tpr=0.0000, val_f1=0.0000, val_acc=0.5000, val_auc=0.8427
+[!] Training and scoring of xgboost_slp ended:  Fri Aug 30 08:52:33 2024  | Took: 15.50 seconds

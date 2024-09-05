@@ -86,15 +86,15 @@ def load_data(root, seed=33, limit=None):
         limit//2 -- since there are 2 classes, so full data size is limit.
         Second shuffle the data -- to mix the two classes.
     """
-    train_base_parquet_file = [x for x in os.listdir(os.path.join(root,'data/train_baseline.parquet/')) if x.endswith('.parquet')][0]
-    test_base_parquet_file = [x for x in os.listdir(os.path.join(root,'data/test_baseline.parquet/')) if x.endswith('.parquet')][0]
-    train_rvrs_parquet_file = [x for x in os.listdir(os.path.join(root,'data/train_rvrs.parquet/')) if x.endswith('.parquet')][0]
-    test_rvrs_parquet_file = [x for x in os.listdir(os.path.join(root,'data/test_rvrs.parquet/')) if x.endswith('.parquet')][0]
+    train_base_parquet_file = [x for x in os.listdir(os.path.join(root,'data/nix_shell/train_baseline.parquet/')) if x.endswith('.parquet')][0]
+    test_base_parquet_file = [x for x in os.listdir(os.path.join(root,'data/nix_shell/test_baseline.parquet/')) if x.endswith('.parquet')][0]
+    train_rvrs_parquet_file = [x for x in os.listdir(os.path.join(root,'data/nix_shell/train_rvrs.parquet/')) if x.endswith('.parquet')][0]
+    test_rvrs_parquet_file = [x for x in os.listdir(os.path.join(root,'data/nix_shell/test_rvrs.parquet/')) if x.endswith('.parquet')][0]
 
-    train_baseline_df = pd.read_parquet(os.path.join(root,'data/train_baseline.parquet/', train_base_parquet_file))
-    test_baseline_df = pd.read_parquet(os.path.join(root,'data/test_baseline.parquet/', test_base_parquet_file))
-    train_malicious_df = pd.read_parquet(os.path.join(root,'data/train_rvrs.parquet/', train_rvrs_parquet_file))
-    test_malicious_df = pd.read_parquet(os.path.join(root,'data/test_rvrs.parquet/', test_rvrs_parquet_file))
+    train_baseline_df = pd.read_parquet(os.path.join(root,'data/nix_shell/train_baseline.parquet/', train_base_parquet_file))
+    test_baseline_df = pd.read_parquet(os.path.join(root,'data/nix_shell/test_baseline.parquet/', test_base_parquet_file))
+    train_malicious_df = pd.read_parquet(os.path.join(root,'data/nix_shell/train_rvrs.parquet/', train_rvrs_parquet_file))
+    test_malicious_df = pd.read_parquet(os.path.join(root,'data/nix_shell/test_rvrs.parquet/', test_rvrs_parquet_file))
 
     if limit is not None:
         X_train_baseline_cmd = shuffle(train_baseline_df['cmd'].values.tolist(), random_state=seed)[:limit//2]
@@ -119,7 +119,7 @@ def load_data(root, seed=33, limit=None):
 
 
 def load_nl2bash(root):
-    with open(os.path.join(root, "data", "nl2bash.cm"), "r", encoding="utf-8") as f:
+    with open(os.path.join(root, "data", "nix_shell", "nl2bash.cm"), "r", encoding="utf-8") as f:
         baseline = f.readlines()
     return baseline
 

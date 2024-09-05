@@ -1,6 +1,6 @@
 # Skipping data
-data/*parquet
-data/velociraptor-sigma-rules/*
+data/nix_shell/*parquet
+data/signatures/velociraptor-sigma-rules-repo/*
 notes*
 *pkl
 *npy

@@ -1,6 +1,9 @@
 # Skipping data
 data/nix_shell/*parquet
 data/signatures/velociraptor-sigma-rules-repo/*
+data/powershell/*parquet
+data/powershell/pan42/*
+data/powershell/pwsh_collection/*
 notes*
 *pkl
 *npy

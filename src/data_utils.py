@@ -6,11 +6,14 @@ from .preprocessors import CommandTokenizer, OneHotCustomVectorizer
 from typing import List, Union, Callable
 
 import os
+import re
 import time
 import pickle
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 from sklearn.utils import shuffle
+from sklearn.model_selection import train_test_split
 from nltk.tokenize import wordpunct_tokenize
 
 
@@ -160,3 +163,74 @@ def load_tokenizer(
             tokenizer.dump_vocab(vocab_file)
     
     return tokenizer
+
+# powershell collections
+def read_powershell_pan_enc(root: str):
+    file = os.path.join(root, "data", "powershell", "pan42", "ps_encodedcommand_data_clean.txt")
+    with open(file, "r") as f:
+        lines = f.readlines()
+    return lines
+
+
+def read_powershell_offensive(root: str):
+    folder = os.path.join(root, "data", "powershell", "offensive-powershell", "data")
+    for parquet_file in os.listdir(folder):
+        if parquet_file.endswith(".parquet"):
+            if "train" in parquet_file:
+                train_df = pd.read_parquet(os.path.join(folder, parquet_file))
+            elif "dev" in parquet_file:
+                dev_df = pd.read_parquet(os.path.join(folder, parquet_file))
+            elif "test" in parquet_file:
+                test_df = pd.read_parquet(os.path.join(folder, parquet_file))
+    all_pwsh = np.concatenate([train_df['code'].values, dev_df['code'].values, test_df['code'].values]).tolist()
+    return all_pwsh
+
+
+def convert_powershell_ps1_to_oneliner(script: str) -> str:
+    lines = script.splitlines()
+    lines = [line for line in lines if not line.strip().startswith("#")]
+    lines = [line for line in lines if line.strip()]
+    oneliner = ' '.join('; '.join(lines).split())
+    # remove param block using regex
+    oneliner = re.sub(r"param\s*\([^)]*\)", "", oneliner)
+    return oneliner.lstrip("; .")
+
+def read_powershell_corpus(root: str):
+    dataset = []     
+    corpus_folder = os.path.join(root, "data", "powershell", "pwsh_collection")
+    for dirpath, dirnames, filenames in tqdm(os.walk(corpus_folder), desc="[*] Reading PowerShell corpus"):
+        for filename in filenames:
+            if filename.endswith(".ps1") or filename.endswith(".psm1"):
+                filepath = os.path.join(dirpath, filename)
+                # UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0
+                with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+                    script = f.read()
+                oneliner = convert_powershell_ps1_to_oneliner(script)
+                dataset.append(oneliner)
+    return dataset
+
+def read_powershell_data(root: str, seed: int = 33, split_train_test: bool = False):
+    pan_pwsh = read_powershell_pan_enc(root)
+    huggingface_pwsh = read_powershell_offensive(root)
+    powershell_collection_pwsh = read_powershell_corpus(root)
+
+    malicious = pan_pwsh + huggingface_pwsh
+    benign = powershell_collection_pwsh
+
+    malicious_labels = [1] * len(malicious)
+    benign_labels = [0] * len(benign)
+
+    X = malicious + benign
+    y = malicious_labels + benign_labels
+    X, y = shuffle(X, y, random_state=seed)
+
+    if split_train_test:
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=seed)
+        return X_train, X_test, y_train, y_test
+    else:
+        return X, y
+
+def read_powershell_parquet(root: str, seed: int = 33):
+    train_df = pd.read_parquet(os.path.join(root, "data", "powershell", f"train_pwsh_seed_{seed}.parquet"))
+    test_df = pd.read_parquet(os.path.join(root, "data", "powershell", f"test_pwsh_seed_{seed}.parquet"))
+    return train_df, test_df

@@ -12,6 +12,7 @@ events.out*
 hf-*
 *tokenized*json
 *counter.json
+experiments/logs*poisoning*/*
 
 # Model checkpoints
 *model

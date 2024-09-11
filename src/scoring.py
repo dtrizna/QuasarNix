@@ -6,8 +6,8 @@ import torch
 from torch.utils.data.dataloader import DataLoader
 import lightning as L
 
-from typing import Union
-from .models import PyTorchLightningModel
+from typing import Union, Tuple
+from .lit_utils import PyTorchLightningModel
 from xgboost import XGBClassifier
 from scipy.sparse import csr_matrix
 
@@ -17,7 +17,13 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 
-def predict(loader, trainer, lightning_model, decision_threshold=0.5, dump_logits=False):
+def predict(
+        loader: DataLoader,
+        trainer: L.Trainer,
+        lightning_model: PyTorchLightningModel,
+        decision_threshold: float = 0.5,
+        dump_logits: bool = False
+) -> Tuple[np.ndarray, np.ndarray]:
     """Get scores out of a loader."""
     y_pred_logits = trainer.predict(model=lightning_model, dataloaders=loader)
     y_pred_logits = torch.cat(y_pred_logits, dim=0)

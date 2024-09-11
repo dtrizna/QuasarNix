@@ -14,6 +14,9 @@ from sklearn.metrics import roc_curve
 
 
 class PyTorchLightningModel(L.LightningModule):
+    """
+    NOTE: Deprecated, use .lit_utils.PyTorchLightningModel instead.
+    """
     def __init__(
             self,
             model: nn.Module,

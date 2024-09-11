@@ -6,32 +6,41 @@ import json
 import os
 
 class OneHotCustomVectorizer:
-    def __init__(self, tokenizer, max_features=1024):
+    def __init__(self, tokenizer=wordpunct_tokenize, max_features=4096):
         self.tokenizer = tokenizer
         self.max_features = max_features
         self.vocab = {}
         self.__name__ = "OneHotCustomVectorizer"
         
     def fit(self, sequences):
-        # Tokenize and lowercase sequences
         tokenized_sequences = [self.tokenizer(seq.lower()) for seq in sequences]
         all_tokens = [token for sublist in tokenized_sequences for token in sublist]
         
-        # Build vocabulary
         common_tokens = [item[0] for item in Counter(all_tokens).most_common(self.max_features)]
         self.vocab = {token: idx for idx, token in enumerate(common_tokens)}
         return self
+
+    def save_vocab(self, vocab_file):
+        vocab_file_folder = os.path.dirname(vocab_file)
+        os.makedirs(vocab_file_folder, exist_ok=True)
+        with open(vocab_file, 'w') as f:
+            json.dump(self.vocab, f, indent=4)
+    
+    def load_vocab(self, vocab_file):
+        with open(vocab_file, 'r') as f:
+            self.vocab = json.load(f)
 
     def tokenize(self, sequences):
         return [self.tokenizer(seq.lower()) for seq in sequences]
 
     def detokenize(self, idx_sequence):
+        assert self.vocab != {}, "Vocabulary not built yet. Call fit() or load_vocab() first."
         return [list(self.vocab.keys())[idx] for idx in idx_sequence]
     
     def transform(self, sequences):
+        assert self.vocab != {}, "Vocabulary not built yet. Call fit() or load_vocab() first."
         tokenized_sequences = self.tokenize(sequences)
         
-        # One-hot encode
         onehot_encoded = lil_matrix((len(sequences), self.max_features))
         for idx, sequence in enumerate(tokenized_sequences):
             for token in sequence:

@@ -166,14 +166,14 @@ def load_tokenizer(
 
 # powershell collections
 def read_powershell_pan_enc(root: str):
-    file = os.path.join(root, "data", "powershell", "pan42", "ps_encodedcommand_data_clean.txt")
+    file = os.path.join(root, "data", "dtrizna", "powershell", "pan42", "ps_encodedcommand_data_clean.txt")
     with open(file, "r") as f:
         lines = f.readlines()
     return lines
 
 
 def read_powershell_offensive(root: str):
-    folder = os.path.join(root, "data", "powershell", "offensive-powershell", "data")
+    folder = os.path.join(root, "data", "dtrizna", "powershell", "offensive-powershell", "data")
     for parquet_file in os.listdir(folder):
         if parquet_file.endswith(".parquet"):
             if "train" in parquet_file:
@@ -195,34 +195,46 @@ def convert_powershell_ps1_to_oneliner(script: str) -> str:
     oneliner = re.sub(r"param\s*\([^)]*\)", "", oneliner)
     return oneliner.lstrip("; .")
 
-def read_powershell_corpus(root: str):
+def read_powershell_corpus(root: str, limit: int = None):
     dataset = []     
-    corpus_folder = os.path.join(root, "data", "powershell", "pwsh_collection")
-    for dirpath, dirnames, filenames in tqdm(os.walk(corpus_folder), desc="[*] Reading PowerShell corpus"):
+    
+    corpus_folder = os.path.join(root, "data", "dtrizna", "powershell", "powershell_collection")
+    if not os.path.exists(corpus_folder):
+        raise FileNotFoundError(f"Corpus folder '{corpus_folder}' does not exist.")
+    
+    l = limit if limit is not None else None
+    for dirpath, _, filenames in tqdm(os.walk(corpus_folder), desc="[*] Reading PowerShell corpus", total=l):
         for filename in filenames:
             if filename.endswith(".ps1") or filename.endswith(".psm1"):
                 filepath = os.path.join(dirpath, filename)
                 # UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0
-                with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+                with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                     script = f.read()
                 oneliner = convert_powershell_ps1_to_oneliner(script)
                 dataset.append(oneliner)
+
+                if limit is not None and len(dataset) >= limit:
+                    return dataset
+                
     return dataset
 
-def read_powershell_data(root: str, seed: int = 33, split_train_test: bool = False):
+def read_powershell_data(root: str, seed: int = 33, split_train_test: bool = True, limit: int = None):
     pan_pwsh = read_powershell_pan_enc(root)
     huggingface_pwsh = read_powershell_offensive(root)
-    powershell_collection_pwsh = read_powershell_corpus(root)
+    powershell_collection_pwsh = read_powershell_corpus(root, limit=limit)
 
     malicious = pan_pwsh + huggingface_pwsh
     benign = powershell_collection_pwsh
 
-    malicious_labels = [1] * len(malicious)
-    benign_labels = [0] * len(benign)
+    malicious_labels = np.array([1] * len(malicious), dtype=np.int8)
+    benign_labels = np.array([0] * len(benign), dtype=np.int8)
 
     X = malicious + benign
-    y = malicious_labels + benign_labels
+    y = np.concatenate([malicious_labels, benign_labels])
     X, y = shuffle(X, y, random_state=seed)
+
+    if limit is not None:
+        X, y = X[:limit], y[:limit]
 
     if split_train_test:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=seed)
@@ -230,7 +242,19 @@ def read_powershell_data(root: str, seed: int = 33, split_train_test: bool = Fal
     else:
         return X, y
 
-def read_powershell_parquet(root: str, seed: int = 33):
+def read_powershell_parquet(root: str, seed: int = 33, limit: int = None):
     train_df = pd.read_parquet(os.path.join(root, "data", "powershell", f"train_pwsh_seed_{seed}.parquet"))
     test_df = pd.read_parquet(os.path.join(root, "data", "powershell", f"test_pwsh_seed_{seed}.parquet"))
-    return train_df, test_df
+    
+    X_train = train_df['code'].values.tolist()
+    y_train = train_df['label'].values
+
+    X_test = test_df['code'].values.tolist()
+    y_test = test_df['label'].values
+
+    if limit is not None:
+        X_train, y_train = X_train[:limit], y_train[:limit]
+        X_test, y_test = X_test[:limit], y_test[:limit]
+
+    return X_train, X_test, y_train, y_test
+

@@ -36,7 +36,9 @@ def training_tabular(
         with open(f"{logs_folder}/{name}/model.pkl", "wb") as f:
             pickle.dump(model, f)
     if model_file is not None:
-        copyfile(f"{logs_folder}/{name}/model.pkl", model_file)
+        model_saved = [x for x in os.listdir(f"{logs_folder}/{name}") if x.startswith("model")][0]
+        model_saved = os.path.join(f"{logs_folder}/{name}", model_saved)
+        copyfile(model_saved, model_file)
     
     # calculate train metrics
     y_train_preds = model.predict_proba(X_train_encoded)[:,1]

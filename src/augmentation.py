@@ -1,6 +1,7 @@
+import re
 import random
 import string
-from typing import List, Dict, Callable
+from typing import List, Dict, Optional
 from tqdm import tqdm
 
 
@@ -122,3 +123,149 @@ class NixCommandAugmentation:
 
         print(f"[!] Generated total {len(DATASET)} commands.")
         return DATASET
+
+
+class NixCommandAugmentationWithBaseline:
+    def __init__(
+            self,
+            templates: List[str] = None,
+            nix_shells: List[str] = ["sh", "bash", "dash"],
+            nix_shell_folders: List[str] = ["/bin/", "/usr/bin/"],
+            random_state: int = 42,
+            legitimate_baseline: Optional[List[str]] = None
+    ):
+        self.templates = templates
+        self.shell_list = []
+        for shell in nix_shells:
+            shell_fullpaths = [x+shell for x in nix_shell_folders]
+            self.shell_list.extend(shell_fullpaths + [shell])
+        random.seed(random_state)
+        
+        # Extract patterns from baseline if provided
+        self.baseline_patterns = self._analyze_baseline(legitimate_baseline) if legitimate_baseline else {}
+        
+        # Enhanced placeholder sampling functions incorporating baseline patterns
+        self.placeholder_sampling_functions = {
+            'NIX_SHELL': self._create_shell_sampler(),
+            'PROTOCOL_TYPE': self._create_protocol_sampler(),
+            'FD_NUMBER': lambda: self._sample_with_baseline_bias('FD_NUMBER', lambda: 3),
+            'FILE_PATH': self._create_filepath_sampler(),
+            'VARIABLE_NAME': self._create_variable_sampler(),
+            'IP_ADDRESS': self._create_ip_sampler(),
+            'PORT_NUMBER': self._create_port_sampler()
+        }
+
+    def _analyze_baseline(self, baseline_commands: List[str]) -> Dict:
+        """Analyzes baseline commands to extract relevant patterns."""
+        patterns = {
+            'FILE_PATH': set(),
+            'VARIABLE_NAME': set(),
+            'PORT_NUMBER': set(),
+            'IP_ADDRESS': set(),
+            'FD_NUMBER': set()
+        }
+        
+        # Extract patterns from baseline commands
+        for cmd in baseline_commands:
+            # File paths
+            paths = re.findall(r'(?:^|\s)(/[\w/.-]+)', cmd)
+            patterns['FILE_PATH'].update(paths)
+            
+            # Variable names
+            vars = re.findall(r'\$(\w+)', cmd)
+            patterns['VARIABLE_NAME'].update(vars)
+            
+            # Port numbers
+            ports = re.findall(r':(\d{2,5})', cmd)
+            patterns['PORT_NUMBER'].update(map(int, ports))
+            
+            # IP addresses
+            ips = re.findall(r'\b(?:\d{1,3}\.){3}\d{1,3}\b', cmd)
+            patterns['IP_ADDRESS'].update(ips)
+
+        return patterns
+
+    def _sample_with_baseline_bias(self, pattern_type: str, fallback_sampler: callable, 
+                                 baseline_probability: float = 0.7) -> any:
+        """Samples values with a bias towards baseline patterns when available."""
+        if pattern_type in self.baseline_patterns and self.baseline_patterns[pattern_type]:
+            if random.random() < baseline_probability:
+                return random.choice(list(self.baseline_patterns[pattern_type]))
+        return fallback_sampler()
+
+    def _create_shell_sampler(self):
+        return lambda: random.choice(self.shell_list)
+
+    def _create_protocol_sampler(self):
+        return lambda: random.choice(["tcp", "udp"])
+
+    def _create_filepath_sampler(self):
+        def sampler():
+            default_paths = ["/tmp/f", "/tmp/t"] + self.get_random_filepaths(count=5)
+            return self._sample_with_baseline_bias(
+                'FILE_PATH',
+                lambda: random.choice(default_paths)
+            )
+        return sampler
+
+    def _create_variable_sampler(self):
+        def sampler():
+            default_vars = ["port", "host", "cmd", "p", "s", "c"] + \
+                         [self.get_random_string(length=4) for _ in range(5)]
+            return self._sample_with_baseline_bias(
+                'VARIABLE_NAME',
+                lambda: random.choice(default_vars)
+            )
+        return sampler
+
+    def _create_ip_sampler(self):
+        def sampler():
+            default_ips = ["127.0.0.1"] + ["10."+self.get_random_ip(octets=3) for _ in range(5)]
+            return self._sample_with_baseline_bias(
+                'IP_ADDRESS',
+                lambda: random.choice(default_ips)
+            )
+        return sampler
+
+    def _create_port_sampler(self):
+        def sampler():
+            default_ports = [8080, 9001, 80, 443, 53, 22, 8000, 8888] + \
+                          [int(random.uniform(0,65535)) for _ in range(5)]
+            return self._sample_with_baseline_bias(
+                'PORT_NUMBER',
+                lambda: random.choice(default_ports)
+            )
+        return sampler
+
+    @staticmethod
+    def get_random_ip(octets: int = 4) -> str:
+        return ".".join(map(str, (random.randint(0, 255) for _ in range(octets))))
+
+    @staticmethod
+    def get_random_string(length: int = 10) -> str:
+        return "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(length))
+
+    def get_random_filepaths(self, count: int = 1, 
+                           path_roots: List[str] = ["/tmp/", "/home/user/", "/var/www/"]) -> List[str]:
+        folder_lengths = [1, 8]
+        random_paths = []
+        for _ in range(count):
+            random_paths.append(random.choice(path_roots) + 
+                              self.get_random_string(random.choice(folder_lengths)))
+        return random_paths
+
+    def generate_commands(self, number_of_examples_per_template: int) -> List[str]:
+        """Generates a dataset of commands based on templates and sampling functions."""
+        dataset = []
+        
+        print(f"[!] Generating {number_of_examples_per_template} examples per template.")
+        for cmd in self.templates:
+            for _ in range(number_of_examples_per_template):
+                new_cmd = cmd
+                for placeholder, sampling_func in self.placeholder_sampling_functions.items():
+                    if placeholder in new_cmd:
+                        new_cmd = new_cmd.replace(placeholder, str(sampling_func()))
+                dataset.append(new_cmd)
+
+        print(f"[!] Generated total {len(dataset)} commands.")
+        return dataset

@@ -24,7 +24,7 @@ from lightning.fabric.utilities.seed import seed_everything
 from src.models import *
 from src.lit_utils import LitProgressBar
 from src.preprocessors import CommandTokenizer
-from src.data_utils import create_dataloader, commands_to_loader
+from src.data_utils import create_dataloader, commands_to_loader, load_data
 
 from typing import List
 from torch.utils.data import DataLoader
@@ -121,37 +121,6 @@ def train_lit_model(X_train_loader, X_test_loader, pytorch_model, name, log_fold
     return trainer, lightning_model
 
 
-def load_data():
-    train_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_baseline.parquet/')) if x.endswith('.parquet')][0]
-    test_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_baseline.parquet/')) if x.endswith('.parquet')][0]
-    train_rvrs_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_rvrs.parquet/')) if x.endswith('.parquet')][0]
-    test_rvrs_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_rvrs.parquet/')) if x.endswith('.parquet')][0]
-
-    # load as dataframes
-    train_baseline_df = pd.read_parquet(os.path.join(ROOT,'data/train_baseline.parquet/', train_base_parquet_file))
-    test_baseline_df = pd.read_parquet(os.path.join(ROOT,'data/test_baseline.parquet/', test_base_parquet_file))
-    train_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/train_rvrs.parquet/', train_rvrs_parquet_file))
-    test_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/test_rvrs.parquet/', test_rvrs_parquet_file))
-
-    X_train_non_shuffled = train_baseline_df['cmd'].values.tolist() + train_malicious_df['cmd'].values.tolist()
-    y_train = np.array([0] * len(train_baseline_df) + [1] * len(train_malicious_df), dtype=np.int8)
-    X_train_cmds, y_train = shuffle(X_train_non_shuffled, y_train, random_state=SEED)
-
-    X_test_non_shuffled = test_baseline_df['cmd'].values.tolist() + test_malicious_df['cmd'].values.tolist()
-    y_test = np.array([0] * len(test_baseline_df) + [1] * len(test_malicious_df), dtype=np.int8)
-    X_test_cmds, y_test = shuffle(X_test_non_shuffled, y_test, random_state=SEED)
-
-    # ===========================================
-    # DATASET LIMITS FOR TESTING
-    # ===========================================
-    X_train_cmds = X_train_cmds[:LIMIT]
-    y_train = y_train[:LIMIT]
-    
-    X_test_cmds = X_test_cmds[:LIMIT]
-    y_test = y_test[:LIMIT]
-
-    return X_train_cmds, y_train, X_test_cmds, y_test
-
 MODEL_PARAMS = {
     "1M": [1024, 512, 256, 128, 64],
     "300K": [256, 64, 32],
@@ -196,7 +165,7 @@ if __name__ == "__main__":
     # LOADING DATA
     # ===========================================
     ROOT = os.path.dirname(os.path.abspath(__file__))
-    X_train_cmds, y_train, X_test_cmds, y_test = load_data()
+    X_train_cmds, y_train, X_test_cmds, y_test, *_ = load_data(SEED, LIMIT)
     print(f"Sizes of train and test sets: {len(X_train_cmds)}, {len(X_test_cmds)}")
 
     # =============================================

@@ -14,6 +14,7 @@ from sklearn.linear_model import SGDOneClassSVM
 
 # tokenizers
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
+from src.data_utils import load_data
 from nltk.tokenize import wordpunct_tokenize
 
 
@@ -30,36 +31,7 @@ os.makedirs(LOGS_FOLDER, exist_ok=True)
 TOKENIZER = wordpunct_tokenize
 tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
 
-def load_data():
-    train_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_baseline.parquet/')) if x.endswith('.parquet')][0]
-    test_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_baseline.parquet/')) if x.endswith('.parquet')][0]
-    train_rvrs_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_rvrs.parquet/')) if x.endswith('.parquet')][0]
-    test_rvrs_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_rvrs.parquet/')) if x.endswith('.parquet')][0]
-
-    # load as dataframes
-    train_baseline_df = pd.read_parquet(os.path.join(ROOT,'data/train_baseline.parquet/', train_base_parquet_file))
-    test_baseline_df = pd.read_parquet(os.path.join(ROOT,'data/test_baseline.parquet/', test_base_parquet_file))
-    train_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/train_rvrs.parquet/', train_rvrs_parquet_file))
-    test_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/test_rvrs.parquet/', test_rvrs_parquet_file))
-
-    X_train_non_shuffled = train_baseline_df['cmd'].values.tolist() + train_malicious_df['cmd'].values.tolist()
-    y_train = np.array([0] * len(train_baseline_df) + [1] * len(train_malicious_df), dtype=np.int8)
-    X_train_cmds, y_train = shuffle(X_train_non_shuffled, y_train, random_state=SEED)
-
-    X_test_non_shuffled = test_baseline_df['cmd'].values.tolist() + test_malicious_df['cmd'].values.tolist()
-    y_test = np.array([0] * len(test_baseline_df) + [1] * len(test_malicious_df), dtype=np.int8)
-    X_test_cmds, y_test = shuffle(X_test_non_shuffled, y_test, random_state=SEED)
-
-    # ===========================================
-    # DATASET LIMITS FOR TESTING
-    # ===========================================
-    X_train_cmds = X_train_cmds[:LIMIT]
-    y_train = y_train[:LIMIT]
-    
-    X_test_cmds = X_test_cmds[:LIMIT]
-    y_test = y_test[:LIMIT]
-
-    return X_train_cmds, y_train, X_test_cmds, y_test
+    # return X_train_cmds, y_train, X_test_cmds, y_test
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
@@ -81,7 +53,7 @@ def get_tpr_at_fpr(predicted_probs, true_labels, fprNeeded=1e-5):
         #threshold_at_fpr = thresholds[fpr <= fprNeeded][-1]
         return tpr_at_fpr#, threshold_at_fpr
 
-X_train_cmds, y_train, X_test_cmds, y_test = load_data()
+X_train_cmds, y_train, X_test_cmds, y_test, *_ = load_data(SEED, LIMIT)
 if LIMIT is not None:
     X_train_cmds = X_train_cmds[:LIMIT]
     y_train = y_train[:LIMIT]

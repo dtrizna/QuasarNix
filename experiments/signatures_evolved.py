@@ -11,6 +11,7 @@ from sklearn.utils import shuffle
 
 from src.signatures import SignaturesEvolved
 from src.evasion import attack_evasive_tricks
+from src.data_utils import load_data
 
 ROOT = os.path.dirname(os.path.abspath('__file__'))
 sigma_yml_path = os.path.join(ROOT, "data", "rvrs_sigma.yml")
@@ -25,45 +26,6 @@ signature_params = {
 
 LOG_DIR = os.path.join(ROOT, "logs_signatures_evolved")
 os.makedirs(LOG_DIR, exist_ok=True)
-
-
-def load_data(seed):
-    """
-    NOTE: 
-        First shuffle the data -- to take random elements from each class.
-        LIMIT//2 -- since there are 2 classes, so full data size is LIMIT.
-        Second shuffle the data -- to mix the two classes.
-    """
-    train_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_baseline.parquet/')) if x.endswith('.parquet')][0]
-    test_base_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_baseline.parquet/')) if x.endswith('.parquet')][0]
-    train_rvrs_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/train_rvrs.parquet/')) if x.endswith('.parquet')][0]
-    test_rvrs_parquet_file = [x for x in os.listdir(os.path.join(ROOT,'data/test_rvrs.parquet/')) if x.endswith('.parquet')][0]
-
-    train_baseline_df = pd.read_parquet(os.path.join(ROOT,'data/train_baseline.parquet/', train_base_parquet_file))
-    test_baseline_df = pd.read_parquet(os.path.join(ROOT,'data/test_baseline.parquet/', test_base_parquet_file))
-    train_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/train_rvrs.parquet/', train_rvrs_parquet_file))
-    test_malicious_df = pd.read_parquet(os.path.join(ROOT,'data/test_rvrs.parquet/', test_rvrs_parquet_file))
-
-    if LIMIT is not None:
-        X_train_baseline_cmd = shuffle(train_baseline_df['cmd'].values.tolist(), random_state=seed)[:LIMIT//2]
-        X_train_malicious_cmd = shuffle(train_malicious_df['cmd'].values.tolist(), random_state=seed)[:LIMIT//2]
-        X_test_baseline_cmd = shuffle(test_baseline_df['cmd'].values.tolist(), random_state=seed)[:LIMIT//2]
-        X_test_malicious_cmd = shuffle(test_malicious_df['cmd'].values.tolist(), random_state=seed)[:LIMIT//2]
-    else:
-        X_train_baseline_cmd = train_baseline_df['cmd'].values.tolist()
-        X_train_malicious_cmd = train_malicious_df['cmd'].values.tolist()
-        X_test_baseline_cmd = test_baseline_df['cmd'].values.tolist()
-        X_test_malicious_cmd = test_malicious_df['cmd'].values.tolist()
-
-    X_train_non_shuffled = X_train_baseline_cmd + X_train_malicious_cmd
-    y_train = np.array([0] * len(X_train_baseline_cmd) + [1] * len(X_train_malicious_cmd), dtype=np.int8)
-    X_train_cmds, y_train = shuffle(X_train_non_shuffled, y_train, random_state=seed)
-
-    X_test_non_shuffled = X_test_baseline_cmd + X_test_malicious_cmd
-    y_test = np.array([0] * len(X_test_baseline_cmd) + [1] * len(X_test_malicious_cmd), dtype=np.int8)
-    X_test_cmds, y_test = shuffle(X_test_non_shuffled, y_test, random_state=seed)
-
-    return X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd
 
 
 def update_scores_with_metrics(scores, run_type):
@@ -90,7 +52,7 @@ if __name__ == '__main__':
     patterns = sigma['detection']['keywords']
     s = SignaturesEvolved(signatures=patterns, **signature_params)
 
-    *_, X_train_malicious_cmd, X_train_baseline_cmd, _, _ = load_data(seed=SEED)
+    X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd = load_data(SEED, LIMIT)
     
     X_train_malicious_cmd_with_attack_cmd = []
     for cmd in tqdm(X_train_malicious_cmd):

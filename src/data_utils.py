@@ -1,20 +1,23 @@
-import torch
-from torch.utils.data import TensorDataset, Dataset, DataLoader
-from scipy.sparse import csr_matrix
-
-from .preprocessors import CommandTokenizer, OneHotCustomVectorizer
-from typing import List, Union, Callable
-
 import os
 import re
 import time
+import json
 import pickle
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from pathlib import Path
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 from nltk.tokenize import wordpunct_tokenize
+from typing import List, Union, Callable
+
+from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
+from src.augmentation import NixCommandAugmentationWithBaseline, REVERSE_SHELL_TEMPLATES
+
+import torch
+from torch.utils.data import TensorDataset, Dataset, DataLoader
+from scipy.sparse import csr_matrix
 
 
 class CSRTensorDataset(Dataset):
@@ -70,7 +73,7 @@ def commands_to_loader(
         tokenizer: Union[CommandTokenizer, OneHotCustomVectorizer], 
         workers: int, 
         batch_size: int, 
-        y: np.ndarray = None,
+        y: np.ndarray | None = None,
         shuffle: bool = False
 ) -> DataLoader:
     """Convert a list of commands to a DataLoader."""
@@ -82,48 +85,115 @@ def commands_to_loader(
     return loader
 
 
-def load_data(root, seed=33, limit=None):
+def generate_synthetic_data(paths: dict, root: Path, seed: int = 33):
+    baseline = load_nl2bash(root)
+    synthetic_data_generator = NixCommandAugmentationWithBaseline(
+        templates=REVERSE_SHELL_TEMPLATES,
+        legitimate_baseline=baseline,
+        random_state=seed
+    )
+
+    number_of_examples_per_template = len(baseline) // len(REVERSE_SHELL_TEMPLATES)
+    synthetic_malicious = synthetic_data_generator.generate_commands(number_of_examples_per_template)
+
+    # train/test split
+    train_malicious, test_malicious = train_test_split(synthetic_malicious, test_size=0.2, random_state=seed)
+    train_baseline, test_baseline = train_test_split(baseline, test_size=0.2, random_state=seed)
+
+    # transform to dataframe
+    train_malicious_df = pd.DataFrame({'cmd': train_malicious})
+    test_malicious_df = pd.DataFrame({'cmd': test_malicious})
+    train_baseline_df = pd.DataFrame({'cmd': train_baseline})
+    test_baseline_df = pd.DataFrame({'cmd': test_baseline})
+
+    # save to parquet
+    train_malicious_df.to_parquet(paths['train_malicious'])
+    test_malicious_df.to_parquet(paths['test_malicious'])
+    train_baseline_df.to_parquet(paths['train_baseline'])
+    test_baseline_df.to_parquet(paths['test_baseline'])
+
+    print(f"[+] Synthetic data generated and saved to:\n{json.dumps({k: str(v) for k,v in paths.items()}, indent=4)}")
+    return
+
+
+def load_data(seed: int = 33, limit: int = None, root: Path | None = None):
     """
-    NOTE: 
-        First shuffle the data -- to take random elements from each class.
-        limit//2 -- since there are 2 classes, so full data size is limit.
-        Second shuffle the data -- to mix the two classes.
+    Load and prepare training and testing data from parquet files.
+    
+    Args:
+        root: Root directory containing the data folders
+        seed: Random seed for shuffling
+        limit: If set, limits the number of samples per class
+        
+    Returns:
+        Tuple of (train_cmds, train_labels, test_cmds, test_labels,
+                 train_malicious, train_baseline, test_malicious, test_baseline)
     """
-    train_base_parquet_file = [x for x in os.listdir(os.path.join(root,'data/nix_shell/train_baseline.parquet/')) if x.endswith('.parquet')][0]
-    test_base_parquet_file = [x for x in os.listdir(os.path.join(root,'data/nix_shell/test_baseline.parquet/')) if x.endswith('.parquet')][0]
-    train_rvrs_parquet_file = [x for x in os.listdir(os.path.join(root,'data/nix_shell/train_rvrs.parquet/')) if x.endswith('.parquet')][0]
-    test_rvrs_parquet_file = [x for x in os.listdir(os.path.join(root,'data/nix_shell/test_rvrs.parquet/')) if x.endswith('.parquet')][0]
+    if root is None:
+        root = Path(__file__).parent.parent
 
-    train_baseline_df = pd.read_parquet(os.path.join(root,'data/nix_shell/train_baseline.parquet/', train_base_parquet_file))
-    test_baseline_df = pd.read_parquet(os.path.join(root,'data/nix_shell/test_baseline.parquet/', test_base_parquet_file))
-    train_malicious_df = pd.read_parquet(os.path.join(root,'data/nix_shell/train_rvrs.parquet/', train_rvrs_parquet_file))
-    test_malicious_df = pd.read_parquet(os.path.join(root,'data/nix_shell/test_rvrs.parquet/', test_rvrs_parquet_file))
+    data_root = Path(root) / 'data' / 'nix_shell'
+    paths = {
+        'train_baseline': data_root / 'train_baseline.parquet',
+        'test_baseline': data_root / 'test_baseline.parquet',
+        'train_malicious': data_root / 'train_rvrs.parquet',
+        'test_malicious': data_root / 'test_rvrs.parquet'
+    }
 
-    if limit is not None:
-        X_train_baseline_cmd = shuffle(train_baseline_df['cmd'].values.tolist(), random_state=seed)[:limit//2]
-        X_train_malicious_cmd = shuffle(train_malicious_df['cmd'].values.tolist(), random_state=seed)[:limit//2]
-        X_test_baseline_cmd = shuffle(test_baseline_df['cmd'].values.tolist(), random_state=seed)[:limit//2]
-        X_test_malicious_cmd = shuffle(test_malicious_df['cmd'].values.tolist(), random_state=seed)[:limit//2]
-    else:
-        X_train_baseline_cmd = train_baseline_df['cmd'].values.tolist()
-        X_train_malicious_cmd = train_malicious_df['cmd'].values.tolist()
-        X_test_baseline_cmd = test_baseline_df['cmd'].values.tolist()
-        X_test_malicious_cmd = test_malicious_df['cmd'].values.tolist()
+    # if do not exist
+    exist = all(path.exists() for path in paths.values())
+    if not exist:
+        print(f"[-] Data files do not exist in {data_root}")
+        print(f"    Do you want to generate synthetic data from NL2Bash dataset? (Y/n)")
+        if input().lower() in ["y", "yes", ""]:
+            generate_synthetic_data(paths, root, seed)
+        else:
+            raise FileNotFoundError(f"Data files do not exist in {data_root}")
+    
+    def _load_parquet(path: Path):
+        # might be directly parquet file,
+        # might be a folder with parquet file inside
+        if path.is_dir():
+            return pd.read_parquet(next(path.glob('*.parquet')))
+        else:
+            return pd.read_parquet(path)
 
-    X_train_non_shuffled = X_train_baseline_cmd + X_train_malicious_cmd
-    y_train = np.array([0] * len(X_train_baseline_cmd) + [1] * len(X_train_malicious_cmd), dtype=np.int8)
-    X_train_cmds, y_train = shuffle(X_train_non_shuffled, y_train, random_state=seed)
+    # Load dataframes
+    dfs = {
+        name: _load_parquet(path)
+        for name, path in paths.items()
+    }
 
-    X_test_non_shuffled = X_test_baseline_cmd + X_test_malicious_cmd
-    y_test = np.array([0] * len(X_test_baseline_cmd) + [1] * len(X_test_malicious_cmd), dtype=np.int8)
-    X_test_cmds, y_test = shuffle(X_test_non_shuffled, y_test, random_state=seed)
+    # Extract commands with optional limit
+    def get_commands(df, size=None):
+        cmds = df['cmd'].values.tolist()
+        if size is not None:
+            cmds = shuffle(cmds, random_state=seed)[:size]
+        return cmds
 
-    return X_train_cmds, y_train, X_test_cmds, y_test, X_train_malicious_cmd, X_train_baseline_cmd, X_test_malicious_cmd, X_test_baseline_cmd
+    size_per_class = limit // 2 if limit else None
+    
+    X_train_baseline = get_commands(dfs['train_baseline'], size_per_class)
+    X_train_malicious = get_commands(dfs['train_malicious'], size_per_class)
+    X_test_baseline = get_commands(dfs['test_baseline'], size_per_class)
+    X_test_malicious = get_commands(dfs['test_malicious'], size_per_class)
 
+    # Combine and shuffle training data
+    X_train = X_train_baseline + X_train_malicious
+    y_train = np.array([0] * len(X_train_baseline) + [1] * len(X_train_malicious), dtype=np.int8)
+    X_train, y_train = shuffle(X_train, y_train, random_state=seed)
+
+    # Combine and shuffle test data
+    X_test = X_test_baseline + X_test_malicious
+    y_test = np.array([0] * len(X_test_baseline) + [1] * len(X_test_malicious), dtype=np.int8)
+    X_test, y_test = shuffle(X_test, y_test, random_state=seed)
+
+    return X_train, y_train, X_test, y_test, X_train_malicious, X_train_baseline, X_test_malicious, X_test_baseline
 
 def load_nl2bash(root):
-    with open(os.path.join(root, "data", "nix_shell", "nl2bash.cm"), "r", encoding="utf-8") as f:
+    with open(Path(root) / "data" / "nix_shell" / "nl2bash.cm", "r", encoding="utf-8") as f:
         baseline = f.readlines()
+
     return baseline
 
 

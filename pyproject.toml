@@ -1,0 +1,31 @@
+[project]
+name = "quasarnix"
+version = "0.1.0"
+description = "Robust Synthetic Data-Driven Detection of Living-Off-the-Land Reverse Shells"
+requires-python = ">=3.10"
+authors = [
+    { name = "Quasar Security Lab", email = "security@quasar.ai" }
+]
+
+dependencies = [
+    "torch>=2.2.1",
+    "scikit-learn>=1.3.0",
+    "watermark>=2.4.3",
+    "xgboost>=2.0.0",
+    "lightning>=2.0.0",
+    "pyarrow>=14.0.1",
+    "tqdm",
+    "pandas",
+    "numpy",
+    "levenshtein>=0.21.1",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta" 

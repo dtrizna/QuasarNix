@@ -12,7 +12,7 @@ sys.path.append(ROOT)
 
 from src.augmentation import REVERSE_SHELL_TEMPLATES, NixCommandAugmentation
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer
-from src.data_utils import commands_to_loader, load_nl2bash, load_data, create_dataloader
+from src.data_utils import commands_to_loader, load_nl2bash, load_data, create_dataloader, read_template_file
 from src.lit_utils import LitTrainerWrapper
 from src.tabular_utils import training_tabular
 from src.models import (
@@ -59,24 +59,26 @@ DATALOADER_WORKERS = 4
 LOGS_FOLDER = os.path.join(ROOT, "experiments", "logs_augm_no_augm", f"real_test_set_{int(time.time())}")
 
 def generate_sets(random_state, log_folder=None):
-    templates = REVERSE_SHELL_TEMPLATES
-
     # baselines
     # 1. NL2Bash
     # nl2bash = load_nl2bash(ROOT)
     # train_cmd_base, test_cmd_base = train_test_split(nl2bash, test_size=TEST_SIZE, random_state=random_state)
     # 2. real environment
-    _, _, X_test_cmds, y_test, _, train_cmd_base, _, test_cmd_base = load_data(ROOT, RANDOM_SEED, limit=LIMIT)
+    _, _, X_test_cmds, y_test, _, train_cmd_base, _, test_cmd_base = load_data(
+        root=ROOT,
+        seed=RANDOM_SEED,
+        limit=LIMIT,
+        baseline="real",
+    )
     
     # split templates to train and test
-    train_templates, test_templates = train_test_split(templates, train_size=TRAIN_TEMPLATE_RATIO, random_state=random_state)
-
+    train_templates = read_template_file(os.path.join(ROOT, "data", "nix_shell", "templates_train.txt"))
+    
     # generate augmented train set
-    train_entry_count_per_template = len(train_cmd_base) // len(templates)
-    augmented_train = NixCommandAugmentation(templates=train_templates, random_state=random_state)
-    train_cmd_rvrs = augmented_train.generate_commands(number_of_examples_per_template=train_entry_count_per_template)
-    train_cmd_augmented = train_cmd_base + train_cmd_rvrs
-    train_y_augmented = np.array([0] * len(train_cmd_base) + [1] * len(train_cmd_rvrs), dtype=np.int8)
+    gen_train = NixCommandAugmentation(templates=train_templates, random_state=random_state)
+    train_malicious = gen_train.generate_commands(number_of_examples_per_template=len(train_cmd_base) // len(train_templates))
+    train_cmd_augmented = train_cmd_base + train_malicious
+    train_y_augmented = np.array([0] * len(train_cmd_base) + [1] * len(train_malicious), dtype=np.int8)
 
     # generate non-augmented train set
     nonaugmented_train = NixCommandAugmentation(templates=train_templates, random_state=random_state)
@@ -114,12 +116,12 @@ def generate_sets(random_state, log_folder=None):
 
     if log_folder is not None:
         # dump
-        with open(os.path.join(log_folder, "train_cmd_augm.txt"), "w", encoding="utf-8") as f:
-            f.write("\n".join(train_cmd_augmented))
-        with open(os.path.join(log_folder, "train_cmd_not_augm.txt"), "w", encoding="utf-8") as f:
-            f.write("\n".join(train_cmd_not_augmented))
-        with open(os.path.join(log_folder, "test_cmd.txt"), "w", encoding="utf-8") as f:
-            f.write("\n".join(test_cmd))
+        with open(os.path.join(log_folder, "train_cmd_augm.pkl"), "wb") as f:
+            pickle.dump(train_cmd_augmented, f)
+        with open(os.path.join(log_folder, "train_cmd_not_augm.pkl"), "wb") as f:
+            pickle.dump(train_cmd_not_augmented, f)
+        with open(os.path.join(log_folder, "test_cmd.pkl"), "wb") as f:
+            pickle.dump(test_cmd, f)
         np.save(os.path.join(log_folder, "train_y_augm.npy"), train_y_augmented)
         np.save(os.path.join(log_folder, "train_y_not_augm.npy"), train_y_not_augmented)
         np.save(os.path.join(log_folder, "test_y.npy"), test_y)

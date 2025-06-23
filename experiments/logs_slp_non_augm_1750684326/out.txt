@@ -1,0 +1,32 @@
+dtrizna@DiMac QuasarNix % uv run python experiments/ablation_slp.py
+Python implementation: CPython
+Python version       : 3.13.3
+IPython version      : 9.3.0
+
+torch    : 2.7.1
+lightning: 2.5.1.post0
+sklearn  : 1.6.1
+
+[!] Script start time: Mon Jun 23 15:12:06 2025
+Seed set to 33
+[*] Loading data...
+[!] Sizes of train and test sets: 100000, 100000
+[!] Generating 1 number of examples per template.
+100%|████████████████████████████████████████████████████████████████| 23/23 [00:00<00:00, 131429.14it/s]
+[!] Generated total 23 commands.
+[*] Tokenizing commands: 100%|████████████████████████████████████| 50023/50023 [01:30<00:00, 550.26it/s]
+2025-06-23 15:13:38,171 root  INFO     [!] Finished tokenizing 50023 commands | Final bashlex error ratio: 2.00%
+[*] Tokenizing commands: 100%|███████████████████████████████████| 100000/100000 [21:07<00:00, 78.87it/s]
+2025-06-23 15:34:46,220 root  INFO     [!] Finished tokenizing 100000 commands | Final bashlex error ratio: 34.05%
+2025-06-23 15:34:46,559 root  INFO     [!] Starting One-Hot encoding!
+[*] One-Hot encoding: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 50023/50023 [00:11<00:00, 4506.55it/s]
+2025-06-23 15:34:57,659 root  INFO     [!] One-Hot encoding finished!
+2025-06-23 15:34:58,171 root  INFO     [!] Starting One-Hot encoding!
+[*] One-Hot encoding: 100%|█████████████████████████████████████████████████████████████████████████████████████████| 100000/100000 [00:25<00:00, 3872.98it/s]
+2025-06-23 15:35:23,992 root  INFO     [!] One-Hot encoding finished!
+[*] Training xgboost_slp model...
+/Users/dtrizna/Code/QuasarNix/.venv/lib/python3.13/site-packages/xgboost/sklearn.py:1028: UserWarning: [15:35:25] WARNING: /Users/runner/work/xgboost/xgboost/src/c_api/c_api.cc:1427: Saving model in the UBJSON format as default.  You can use file extension: `json`, `ubj` or `deprecated` to choose between formats.
+  self.get_booster().save_model(fname)
+[!] xgboost_slp model scores: train_tpr=1.0000, train_f1=1.0000, train_acc=1.0000, train_auc=1.0000
+[!] xgboost_slp model scores: val_tpr=0.0000, val_f1=0.0000, val_acc=0.5000, val_auc=0.9158
+[!] Training and scoring of xgboost_slp ended:  Mon Jun 23 15:35:25 2025  | Took: 0.62 seconds

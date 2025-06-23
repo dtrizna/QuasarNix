@@ -1,0 +1,6 @@
+[*] Training xgboost_slp model...
+/Users/dtrizna/Code/QuasarNix/.venv/lib/python3.13/site-packages/xgboost/sklearn.py:1028: UserWarning: [16:28:00] WARNING: /Users/runner/work/xgboost/xgboost/src/c_api/c_api.cc:1427: Saving model in the UBJSON format as default.  You can use file extension: `json`, `ubj` or `deprecated` to choose between formats.
+  self.get_booster().save_model(fname)
+[!] xgboost_slp model scores: train_tpr=1.0000, train_f1=1.0000, train_acc=1.0000, train_auc=1.0000
+[!] xgboost_slp model scores: val_tpr=0.9051, val_f1=0.9518, val_acc=0.9540, val_auc=0.9998
+[!] Training and scoring of xgboost_slp ended:  Mon Jun 23 16:28:01 2025  | Took: 1.65 seconds

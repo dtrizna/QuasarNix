@@ -14,7 +14,7 @@ sys.path.append(ROOT)
 from src.data_utils import load_data
 from src.tabular_utils import training_tabular
 from src.slp import ShellTokenizer, ShellEncoder
-from src.augmentation import REVERSE_SHELL_TEMPLATES, NixCommandAugmentation
+from src.augmentation import NixCommandAugmentation, read_template_file
 from xgboost import XGBClassifier
 
 SEED = 33
@@ -23,12 +23,14 @@ EMBEDDED_DIM = 64
 MAX_LEN = 128
 
 # # PROD RUN CONFIG
-DEVICE = "gpu"
+DEVICE = "cpu"
 EPOCHS = 10
 LIT_SANITY_STEPS = 1
 LIMIT = 100000
 DATALOADER_WORKERS = 4
-LOGS_FOLDER = os.path.join(ROOT, "experiments", f"logs_slp_non_augm_{int(time.time())}")
+MODE = "augm" # "augmented" or "non_augmented"
+LOGS_FOLDER = os.path.join(ROOT, "experiments", f"logs_slp_{MODE}_{int(time.time())}")
+
 
 def train_slp(commands):
     tokenizer = ShellTokenizer(verbose=True)
@@ -57,30 +59,36 @@ if __name__ == "__main__":
         X_train_baseline_cmd,
         X_test_malicious_cmd,
         X_test_baseline_cmd
-    ) = load_data(ROOT, SEED, limit=LIMIT)
+    ) = load_data(root=ROOT, seed=SEED, limit=LIMIT)
     
     print(f"[!] Sizes of train and test sets: {len(X_train_cmds)}, {len(X_test_cmds)}")
 
     # ============================================
     # DATA WITHOUT AUGMENTATION
     # ============================================
+    if MODE == "augm":
+        pass
+    elif MODE == "non_augm":
         # generate non-augmented train set
-    nonaugmented_train = NixCommandAugmentation(templates=REVERSE_SHELL_TEMPLATES, random_state=SEED)
-    nonaugmented_train.placeholder_sampling_functions = {
-            'NIX_SHELL': lambda: "/bin/sh",
-            'PROTOCOL_TYPE': lambda: "tcp",
-            'FD_NUMBER': lambda: 3,
-            'FILE_PATH': lambda: "/tmp/f",
-            'VARIABLE_NAME': lambda: "port",
-            'IP_ADDRESS': lambda: "1.2.3.4",
-            'PORT_NUMBER': lambda: 8080,
-        }
-    train_cmd_rvrs_1 = nonaugmented_train.generate_commands(number_of_examples_per_template=1)
-    train_cmd_not_augmented = X_train_baseline_cmd + train_cmd_rvrs_1
-    train_y_not_augmented = np.array([0] * len(X_train_baseline_cmd) + [1] * len(train_cmd_rvrs_1), dtype=np.int8)
+        train_templates = read_template_file(os.path.join(ROOT, "data", "nix_shell", "templates_train.txt"))    
+        nonaugmented_train = NixCommandAugmentation(templates=train_templates, random_state=SEED)
+        nonaugmented_train.placeholder_sampling_functions = {
+                'NIX_SHELL': lambda: "/bin/sh",
+                'PROTOCOL_TYPE': lambda: "tcp",
+                'FD_NUMBER': lambda: 3,
+                'FILE_PATH': lambda: "/tmp/f",
+                'VARIABLE_NAME': lambda: "port",
+                'IP_ADDRESS': lambda: "1.2.3.4",
+                'PORT_NUMBER': lambda: 8080,
+            }
+        train_cmd_rvrs_1 = nonaugmented_train.generate_commands(number_of_examples_per_template=1)
+        train_cmd_not_augmented = X_train_baseline_cmd + train_cmd_rvrs_1
+        train_y_not_augmented = np.array([0] * len(X_train_baseline_cmd) + [1] * len(train_cmd_rvrs_1), dtype=np.int8)
 
-    X_train_cmds = train_cmd_not_augmented
-    y_train = train_y_not_augmented
+        X_train_cmds = train_cmd_not_augmented
+        y_train = train_y_not_augmented
+    else:
+        raise ValueError(f"Invalid mode: {MODE}")
 
     # ============================================
     # TRAINING SLP

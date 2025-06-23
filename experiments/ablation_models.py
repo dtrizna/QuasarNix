@@ -1,5 +1,7 @@
 import os
+import pickle
 import time
+from pathlib import Path
 from watermark import watermark
 
 from sklearn.feature_extraction.text import HashingVectorizer
@@ -28,7 +30,7 @@ LEARNING_RATE = 1e-3
 SCHEDULER = "onecycle"
 
 # # TEST RUN CONFIG
-# DEVICE = "cpu"
+DEVICE = "cpu"
 # EPOCHS = 1
 # LIT_SANITY_STEPS = 0
 # LIMIT = 5000
@@ -36,12 +38,13 @@ SCHEDULER = "onecycle"
 # LOGS_FOLDER = "TEST_logs_models"
 
 # PROD RUN CONFIG
-DEVICE = "gpu"
+# DEVICE = "gpu"
 EPOCHS = 20
 LIT_SANITY_STEPS = 1
 LIMIT = None
 DATALOADER_WORKERS = 4
-LOGS_FOLDER = "logs_models"
+LOGS_FOLDER = Path("experiments/logs_models_ACM_TOPS_v3")
+os.makedirs(LOGS_FOLDER, exist_ok=True)
 
 
 if __name__ == "__main__":
@@ -55,8 +58,8 @@ if __name__ == "__main__":
     # ===========================================
     # LOADING DATA
     # ===========================================
-    ROOT = os.path.dirname(os.path.abspath(__file__))
-    X_train_cmds, y_train, X_test_cmds, y_test, *_ = load_data(ROOT, SEED, limit=LIMIT)
+    ROOT = Path(os.path.dirname(os.path.abspath(__file__))).parent
+    X_train_cmds, y_train, X_test_cmds, y_test, *_ = load_data(root=ROOT, seed=SEED, limit=LIMIT)
     print(f"Sizes of train and test sets: {len(X_train_cmds)}, {len(X_test_cmds)}")
 
     # =============================================
@@ -64,30 +67,57 @@ if __name__ == "__main__":
     # =============================================
     tokenizer = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
 
-    # ========== EMBEDDING ==========
-    print("[*] Building vocab and encoding...")
-    X_train_tokens = tokenizer.tokenize(X_train_cmds)
-    tokenizer.build_vocab(X_train_tokens)
-
+    # ========== TOKENIZING ==========
     vocab_file = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}.json")
-    tokenizer.dump_vocab(vocab_file)
+    if os.path.exists(vocab_file):
+        tokenizer.load_vocab(vocab_file)
+        print(f"[!] Loaded vocab from {vocab_file}")
+    else:
+        print("[*] Building vocab and encoding...")
+        X_train_tokens = tokenizer.tokenize(X_train_cmds)
+        tokenizer.build_vocab(X_train_tokens)
+        tokenizer.dump_vocab(vocab_file)
+        print(f"Vocab size: {len(tokenizer.vocab)}")
 
     # creating dataloaders
-    X_train_loader = commands_to_loader(X_train_cmds, tokenizer, y=y_train, workers=DATALOADER_WORKERS, batch_size=BATCH_SIZE)
-    X_test_loader = commands_to_loader(X_test_cmds, tokenizer, y=y_test, workers=DATALOADER_WORKERS, batch_size=BATCH_SIZE)
+    print("[*] Creating dataloaders...")
+    X_train_loader_path = os.path.join(LOGS_FOLDER, f"X_train_loader_{VOCAB_SIZE}.pt")
+    X_test_loader_path = os.path.join(LOGS_FOLDER, f"X_test_loader_{VOCAB_SIZE}.pt")
+    if os.path.exists(X_train_loader_path) and os.path.exists(X_test_loader_path):
+        X_train_loader = torch.load(X_train_loader_path, weights_only=False)
+        X_test_loader = torch.load(X_test_loader_path, weights_only=False)
+        print(f"[!] Loaded dataloaders from {X_train_loader_path} and {X_test_loader_path}")
+    else:
+        X_train_loader = commands_to_loader(X_train_cmds, tokenizer, y=y_train, workers=DATALOADER_WORKERS, batch_size=BATCH_SIZE, )
+        torch.save(X_train_loader, X_train_loader_path)
+        X_test_loader = commands_to_loader(X_test_cmds, tokenizer, y=y_test, workers=DATALOADER_WORKERS, batch_size=BATCH_SIZE)
+        torch.save(X_test_loader, X_test_loader_path)
 
     # ========== MIN-HASH TABULAR ENCODING ==========
-    minhash = HashingVectorizer(n_features=VOCAB_SIZE, tokenizer=TOKENIZER, token_pattern=None)
-    print("[*] Fitting MinHash encoder...")
-    X_train_minhash = minhash.fit_transform(X_train_cmds)
-    X_test_minhash = minhash.transform(X_test_cmds)
+    # minhash = HashingVectorizer(n_features=VOCAB_SIZE, tokenizer=TOKENIZER, token_pattern=None)
+    # print("[*] Fitting MinHash encoder...")
+    # X_train_minhash = minhash.fit_transform(X_train_cmds)
+    # X_test_minhash = minhash.transform(X_test_cmds)
 
     # ========== ONE-HOT TABULAR ENCODING ===========
     oh = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
 
-    print("[*] Fitting One-Hot encoder...")
-    X_train_onehot = oh.fit_transform(X_train_cmds)
-    X_test_onehot = oh.transform(X_test_cmds)
+    X_train_onehot_path = os.path.join(LOGS_FOLDER, f"X_train_onehot_{VOCAB_SIZE}.pkl")
+    X_test_onehot_path = os.path.join(LOGS_FOLDER, f"X_test_onehot_{VOCAB_SIZE}.pkl")
+    if os.path.exists(X_train_onehot_path) and os.path.exists(X_test_onehot_path):
+        with open(X_train_onehot_path, "rb") as f:
+            X_train_onehot = pickle.load(f)
+        with open(X_test_onehot_path, "rb") as f:
+            X_test_onehot = pickle.load(f)
+        print(f"[!] Loaded One-Hot encoded data from {X_train_onehot_path} and {X_test_onehot_path}")
+    else:
+        print("[*] Fitting One-Hot encoder...")
+        X_train_onehot = oh.fit_transform(X_train_cmds)
+        X_test_onehot = oh.transform(X_test_cmds)
+        with open(X_train_onehot_path, "wb") as f:
+            pickle.dump(X_train_onehot, f)
+        with open(X_test_onehot_path, "wb") as f:
+            pickle.dump(X_test_onehot, f)
 
     # =============================================
     # DEFINING MODELS
@@ -113,14 +143,14 @@ if __name__ == "__main__":
     mlp_tab_model_onehot = SimpleMLP(input_dim=VOCAB_SIZE, output_dim=1, hidden_dim=[64, 32], dropout=DROPOUT) # 264 K params
 
     models = {
-        "_tabular_mlp_minhash": mlp_tab_model_minhash,
-        "_tabular_rf_minhash": rf_model_minhash,
-        "_tabular_xgb_minhash": xgb_model_minhash,
-        "_tabular_log_reg_minhash": log_reg_minhash,
+        # "_tabular_mlp_minhash": mlp_tab_model_minhash,
+        # "_tabular_rf_minhash": rf_model_minhash,
+        # "_tabular_xgb_minhash": xgb_model_minhash,
+        # "_tabular_log_reg_minhash": log_reg_minhash,
         "_tabular_mlp_onehot": mlp_tab_model_onehot,
         "_tabular_rf_onehot": rf_model_onehot,
         "_tabular_xgb_onehot": xgb_model_onehot,
-        "_tabular_log_reg_onehot": log_reg_onehot,
+        # "_tabular_log_reg_onehot": log_reg_onehot,
         "mlp_seq": mlp_seq_model,
         "attpool_transformer": attpool_transformer_model,
         "cls_transformer": cls_transformer_model,
@@ -152,9 +182,9 @@ if __name__ == "__main__":
             if preprocessor == "onehot":
                 x_train = X_train_onehot
                 x_test = X_test_onehot
-            elif preprocessor == "minhash":
-                x_train = X_train_minhash
-                x_test = X_test_minhash
+            # elif preprocessor == "minhash":
+            #     x_train = X_train_minhash
+            #     x_test = X_test_minhash
             
             if "_mlp_" in name:
                 train_loader = create_dataloader(x_train, y_train, batch_size=BATCH_SIZE, workers=DATALOADER_WORKERS)
@@ -168,7 +198,7 @@ if __name__ == "__main__":
                     epochs=EPOCHS,
                     learning_rate=LEARNING_RATE,
                     scheduler=SCHEDULER,
-                    scheduler_budget = EPOCHS * len(X_train_loader)
+                    scheduler_budget = EPOCHS * len(train_loader)
                 )            
             else:
                 training_tabular(

@@ -54,7 +54,7 @@ def create_dataloader(X, y=None, batch_size=1024, shuffle=False, workers=4):
     if isinstance(X, np.ndarray):
         X = torch.from_numpy(X).long()
     if y is not None and isinstance(y, np.ndarray):
-        y = torch.from_numpy(y).float()
+        y = torch.from_numpy(y)
 
     # Handle csr_matrix case
     if isinstance(X, csr_matrix):
@@ -103,8 +103,8 @@ def generate_synthetic_data(
         baseline = load_nl2bash(root)
         train_baseline, test_baseline = train_test_split(baseline, test_size=0.2, random_state=seed)
     elif baseline == "real":
-        train_baseline = pd.read_parquet(paths["real_train_baseline"])
-        test_baseline = pd.read_parquet(paths["real_test_baseline"])
+        train_baseline = pd.read_parquet(paths["enterprise_baseline_train"])
+        test_baseline = pd.read_parquet(paths["enterprise_baseline_test"])
 
     # ======== split baseline into train / test for benign class ========
 
@@ -175,7 +175,7 @@ def load_data(
         root: Path | None = None,
         seed: int = 33,
         limit: int = None,
-        baseline: Literal["nl2bash", "real"] = "nl2bash",
+        baseline: Literal["nl2bash", "real"] = "real",
 ):
     """
     Load and prepare training and testing data from parquet files.
@@ -194,12 +194,12 @@ def load_data(
 
     data_root = Path(root) / 'data' / 'nix_shell'
     paths = {
-        'train_baseline': data_root / 'train_baseline.parquet',
-        'test_baseline': data_root / 'test_baseline.parquet',
-        'train_malicious': data_root / 'train_rvrs.parquet',
-        'test_malicious': data_root / 'test_rvrs.parquet',
-        'real_train_baseline': data_root / 'real_train_baseline.parquet',
-        'real_test_baseline': data_root / 'real_test_baseline.parquet',
+        'train_baseline': data_root / f'train_baseline_{baseline}.parquet',
+        'test_baseline': data_root / f'test_baseline_{baseline}.parquet',
+        'train_malicious': data_root / f'train_rvrs_{baseline}.parquet',
+        'test_malicious': data_root / f'test_rvrs_{baseline}.parquet',
+        'enterprise_baseline_train': data_root / 'enterprise_baseline_train.parquet',
+        'enterprise_baseline_test': data_root / 'enterprise_baseline_test.parquet',
     }
 
     # if do not exist
@@ -389,4 +389,3 @@ def read_powershell_parquet(root: str, seed: int = 33, limit: int = None):
         X_test, y_test = X_test[:limit], y_test[:limit]
 
     return X_train, X_test, y_train, y_test
-

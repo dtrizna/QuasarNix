@@ -4,6 +4,7 @@ from nltk.tokenize import wordpunct_tokenize
 from numpy import array
 import json
 import os
+from tqdm import tqdm
 
 class OneHotCustomVectorizer:
     def __init__(self, tokenizer=wordpunct_tokenize, max_features=4096):
@@ -31,18 +32,18 @@ class OneHotCustomVectorizer:
             self.vocab = json.load(f)
 
     def tokenize(self, sequences):
-        return [self.tokenizer(seq.lower()) for seq in sequences]
+        return [self.tokenizer(seq.lower()) for seq in tqdm(sequences, desc="Tokenizing sequences")]
 
     def detokenize(self, idx_sequence):
         assert self.vocab != {}, "Vocabulary not built yet. Call fit() or load_vocab() first."
-        return [list(self.vocab.keys())[idx] for idx in idx_sequence]
+        return [list(self.vocab.keys())[idx] for idx in tqdm(idx_sequence, desc="Detokenizing sequences")]
     
     def transform(self, sequences):
         assert self.vocab != {}, "Vocabulary not built yet. Call fit() or load_vocab() first."
         tokenized_sequences = self.tokenize(sequences)
         
         onehot_encoded = lil_matrix((len(sequences), self.max_features))
-        for idx, sequence in enumerate(tokenized_sequences):
+        for idx, sequence in enumerate(tqdm(tokenized_sequences, desc="Encoding sequences")):
             for token in sequence:
                 if token in self.vocab:
                     onehot_encoded[idx, self.vocab[token]] = 1
@@ -68,10 +69,10 @@ class CommandTokenizer:
         self.__name__ = "CommandTokenizer"
         
     def tokenize(self, commands):
-        return [self.tokenizer_fn(cmd.lower()) for cmd in commands]
+        return [self.tokenizer_fn(cmd.lower()) for cmd in tqdm(commands, desc="Tokenizing commands")]
     
     def detokenize(self, idx_sequence):
-        return [list(self.vocab.keys())[idx] for idx in idx_sequence]
+        return [list(self.vocab.keys())[idx] for idx in tqdm(idx_sequence, desc="Detokenizing commands")]
 
     def build_vocab(self, tokens_list):
         self.vocab[self.PAD_TOKEN] = 0 # PAD_TOKEN maps to 0

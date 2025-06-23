@@ -23,9 +23,9 @@ SEED = 33
 ROOT = os.path.dirname(os.path.abspath('__file__'))
 VOCAB_SIZE = 4096
 MAX_LEN = 128
-BASELINE = True # whether to train on baseline or malicious data
+BASELINE = False # whether to train on baseline or malicious data
 
-LOGS_FOLDER = "logs_models_one_class_v2"
+LOGS_FOLDER = "logs_models_one_class_v3"
 os.makedirs(LOGS_FOLDER, exist_ok=True)
 
 TOKENIZER = wordpunct_tokenize
@@ -53,7 +53,7 @@ def get_tpr_at_fpr(predicted_probs, true_labels, fprNeeded=1e-5):
         #threshold_at_fpr = thresholds[fpr <= fprNeeded][-1]
         return tpr_at_fpr#, threshold_at_fpr
 
-X_train_cmds, y_train, X_test_cmds, y_test, *_ = load_data(SEED, LIMIT)
+X_train_cmds, y_train, X_test_cmds, y_test, *_ = load_data(seed=SEED, limit=LIMIT)
 if LIMIT is not None:
     X_train_cmds = X_train_cmds[:LIMIT]
     y_train = y_train[:LIMIT]
@@ -145,10 +145,11 @@ for nu in [0.5, 0.9]:
         oc_svm_sgd = SGDOneClassSVM(nu=nu, random_state=SEED, learning_rate='constant', eta0=0.1, tol=tol, max_iter=1000)
         _ = train_and_predict(oc_svm_sgd, X_train_onehot_one_class, X_test_onehot, y_test, name=f"oc_svm_sgd_nu_{nu}_tol_{tol}")
 
-### Isolation Forest
-for contamination in ["auto", 0.1, 0.3, 0.5]:
-    for max_samples in ['auto', 0.01, 0.05, 0.1, 0.3]:
-        print(f"\n[!] Contamination: {contamination} | Max samples: {max_samples}")
-        isolation_forest = IsolationForest(n_estimators=100, max_samples=0.1, contamination=contamination, 
-                                    max_features=1.0, bootstrap=False, n_jobs=-1, random_state=SEED)
-        _ = train_and_predict(isolation_forest, X_train_onehot_one_class, X_test_onehot, y_test, name=f"isolation_forest_cont_{contamination}_max_samples_{max_samples}")
+# Skipped from paper
+# ### Isolation Forest
+# for contamination in ["auto", 0.1, 0.3, 0.5]:
+#     for max_samples in ['auto', 0.01, 0.05, 0.1, 0.3]:
+#         print(f"\n[!] Contamination: {contamination} | Max samples: {max_samples}")
+#         isolation_forest = IsolationForest(n_estimators=100, max_samples=0.1, contamination=contamination, 
+#                                     max_features=1.0, bootstrap=False, n_jobs=-1, random_state=SEED)
+#         _ = train_and_predict(isolation_forest, X_train_onehot_one_class, X_test_onehot, y_test, name=f"isolation_forest_cont_{contamination}_max_samples_{max_samples}")

@@ -1,4 +1,0 @@
-learning_rate: 0.001
-fpr: 0.0001
-scheduler: onecycle
-scheduler_step_budget: 180

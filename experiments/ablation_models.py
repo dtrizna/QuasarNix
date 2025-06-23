@@ -1,6 +1,7 @@
 import os
 import pickle
 import time
+import sys
 from pathlib import Path
 from watermark import watermark
 
@@ -11,6 +12,9 @@ whitespace_tokenize = WhitespaceTokenizer().tokenize
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
+
+ROOT = Path(os.path.dirname(os.path.abspath(__file__))).parent
+sys.path.append(str(ROOT))
 
 from src.models import *
 from src.preprocessors import CommandTokenizer, OneHotCustomVectorizer

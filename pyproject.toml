@@ -24,6 +24,8 @@ dependencies = [
     "scienceplots>=2.1.1",
     "latex>=0.7.0",
     "xgboost>=3.0.2",
+    "bashlex>=0.18",
+    "tensorboard>=2.19.0",
 ]
 
 [tool.setuptools]

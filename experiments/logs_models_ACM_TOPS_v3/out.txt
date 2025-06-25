@@ -1,0 +1,465 @@
+
+dtrizna@tanuki:~/QuasarNix$ python3 experiments/ablation_models.py
+Python implementation: CPython
+Python version       : 3.10.12
+IPython version      : 8.22.2
+
+torch    : 2.2.1
+lightning: 2.2.1
+sklearn  : 1.4.1.post1
+
+[!] Script start time: Mon Jun 23 15:24:30 2025
+Seed set to 33
+Sizes of train and test sets: 533014, 470128
+[!] Loaded vocab from experiments/logs_models_ACM_TOPS_v3/wordpunct_vocab_4096.json
+[*] Creating dataloaders...
+Tokenizing commands: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 533014/533014 [00:04<00:00, 113033.61it/s]
+Tokenizing commands: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 470128/470128 [00:03<00:00, 143357.48it/s]
+[!] Loaded One-Hot encoded data from experiments/logs_models_ACM_TOPS_v3/X_train_onehot_4096.pkl and experiments/logs_models_ACM_TOPS_v3/X_test_onehot_4096.pkl
+/home/dtrizna/.local/lib/python3.10/site-packages/torch/nn/modules/transformer.py:286: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(f"enable_nested_tensor is True, but self.use_nested_tensor is False because {why_not_sparsity_fast_path}")
+[!] Training of _tabular_mlp_onehot already done, skipping...
+[!] Training of _tabular_rf_onehot started:  Mon Jun 23 15:24:54 2025
+[*] Training _tabular_rf_onehot model...
+[!] _tabular_rf_onehot model scores: train_tpr=1.0000, train_f1=0.9972, train_acc=0.9972, train_auc=1.0000
+[!] _tabular_rf_onehot model scores: val_tpr=0.5595, val_f1=0.9519, val_acc=0.9533, val_auc=0.9982
+[!] Training of _tabular_rf_onehot ended:  Mon Jun 23 15:25:06 2025  | Took: 11.82 seconds
+[!] Training of _tabular_xgb_onehot started:  Mon Jun 23 15:25:06 2025
+[*] Training _tabular_xgb_onehot model...
+/home/dtrizna/.local/lib/python3.10/site-packages/xgboost/core.py:158: UserWarning: [15:25:28] WARNING: /workspace/src/c_api/c_api.cc:1374: Saving model in the UBJSON format as default.  You can use file extension: `json`, `ubj` or `deprecated` to choose between formats.
+  warnings.warn(smsg, UserWarning)
+[!] _tabular_xgb_onehot model scores: train_tpr=1.0000, train_f1=1.0000, train_acc=1.0000, train_auc=1.0000
+[!] _tabular_xgb_onehot model scores: val_tpr=0.8237, val_f1=0.9271, val_acc=0.9320, val_auc=0.9998
+[!] Training of _tabular_xgb_onehot ended:  Mon Jun 23 15:25:28 2025  | Took: 22.35 seconds
+[!] Training of mlp_seq started:  Mon Jun 23 15:25:28 2025
+[!] Scheduler: onecycle | Scheduler step budget: 10420
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 experiments/ablation_models.py ...
+GPU available: True (cuda), used: False
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/pytorch/trainer/setup.py:187: GPU available but not used. You can set it by doing `Trainer(accelerator='gpu')`.
+[*] Training 'mlp_seq' model...
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 experiments/ablation_models.py ...
+[!] Setting up onecycle scheduler with step budget 10420
+
+   | Name            | Type                   | Params
+------------------------------------------------------------
+0  | model           | SimpleMLPWithEmbedding | 297 K
+1  | loss            | BCEWithLogitsLoss      | 0
+2  | train_acc       | BinaryAccuracy         | 0
+3  | train_f1        | BinaryF1Score          | 0
+4  | train_auc       | BinaryAUROC            | 0
+5  | train_recall    | BinaryRecall           | 0
+6  | train_precision | BinaryPrecision        | 0
+7  | val_acc         | BinaryAccuracy         | 0
+8  | val_f1          | BinaryF1Score          | 0
+9  | val_auc         | BinaryAUROC            | 0
+10 | val_recall      | BinaryRecall           | 0
+11 | val_precision   | BinaryPrecision        | 0
+------------------------------------------------------------
+297 K     Trainable params
+0         Non-trainable params
+297 K     Total params
+1.189     Total estimated model params size (MB)
+Epoch 0:  50%|██████████████████████████████████████████████████▍                                                  | 260/521 [00:40<00:40,  6.47it/s, v_num=2, train_loss=0.665, memory=0.000, val_f1=0.499, val_tpr=0.0783, val_acc=0.650]Metric val_tpr improved. New best score: 0.078                                                                                                        
+Epoch 0: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████▊| 520/521 [00:59<00:00,  8.70it/s, v_num=2, train_loss=0.245, memory=0.000, val_f1=0.934, val_tpr=0.348, val_acc=0.937]Metric val_tpr improved by 0.269 >= min_delta = 0.0001. New best score: 0.348                                                                         
+Epoch 0: 100%|███████████████████████████████████████████████████| 521/521 [00:59<00:00,  8.70it/s, v_num=2, train_loss=0.218, memory=0.000, val_f1=0.934, val_tpr=0.348, val_acc=0.937, train_f1=0.641, train_tpr=0.0968, train_acc=0.680]
+Epoch 1:  50%|████████████████████████▉                         | 260/521 [00:19<00:19, 13.50it/s, v_num=2, train_loss=0.0264, memory=0.000, val_f1=0.889, val_tpr=0.379, val_acc=0.899, train_f1=0.641, train_tpr=0.0968, train_acc=0.680]Metric val_tpr improved by 0.032 >= min_delta = 0.0001. New best score: 0.379                                                                         
+Epoch 1: 100%|█████████████████████████████████████████████████▉| 520/521 [00:41<00:00, 12.55it/s, v_num=2, train_loss=0.0195, memory=0.000, val_f1=0.820, val_tpr=0.446, val_acc=0.845, train_f1=0.641, train_tpr=0.0968, train_acc=0.680]Metric val_tpr improved by 0.067 >= min_delta = 0.0001. New best score: 0.446                                                                         
+Epoch 1: 100%|███████████████████████████████████████████████████| 521/521 [00:41<00:00, 12.54it/s, v_num=2, train_loss=0.0113, memory=0.000, val_f1=0.820, val_tpr=0.446, val_acc=0.845, train_f1=0.992, train_tpr=0.537, train_acc=0.992]
+Epoch 2:  50%|████████████████████████▉                         | 260/521 [00:09<00:09, 27.14it/s, v_num=2, train_loss=0.00382, memory=0.000, val_f1=0.820, val_tpr=0.446, val_acc=0.845, train_f1=0.992, train_tpr=0.537, train_acc=0.992^[[Bidation DataLoader 0:  65%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                           | 300/460 [00:06<00:03, 43.01it/s^[[Bidation DataLoader 0:  65%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                           | 301/460 [00:06<00:03, 43.07it/s^[[B^[[B^[[BDataLoader 0:  66%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                          | 303/460 [00:07<00:03, 43.18it/s^[[Bidation DataLoader 0:  66%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                          | 304/460 [00:07<00:03, 43.08it/s^Epoch 2:  50%|████████████████████████▉                         | 260/521 [00:19<00:19, 13.22it/s, v_num=2, train_loss=0.00382, memory=0.000, val_f1=0.786, val_tpr=0.557, val_acc=0.822, train_f1=0.992, train_tpr=0.537, train_acc=0.992]Metric val_tpr improved by 0.111 >= min_delta = 0.0001. New best score: 0.557                                                     
+Epoch 2: 100%|█████████████████████████████████████████████████▉| 520/521 [00:40<00:00, 12.71it/s, v_num=2, train_loss=0.00556, memory=0.000, val_f1=0.757, val_tpr=0.620, val_acc=0.804, train_f1=0.992, train_tpr=0.537, train_acc=0.992]Metric val_tpr improved by 0.064 >= min_delta = 0.0001. New best score: 0.620                                                                         
+Epoch 2: 100%|██████████████████████████████████████████████████| 521/521 [00:41<00:00, 12.71it/s, v_num=2, train_loss=0.00232, memory=0.000, val_f1=0.757, val_tpr=0.620, val_acc=0.804, train_f1=0.998, train_tpr=0.870, train_acc=0.998]
+Epoch 3:  50%|████████████████████████▍                        | 260/521 [00:22<00:22, 11.81it/s, v_num=2, train_loss=0.000752, memory=0.000, val_f1=0.746, val_tpr=0.629, val_acc=0.797, train_f1=0.998, train_tpr=0.870, train_acc=0.998]Metric val_tpr improved by 0.009 >= min_delta = 0.0001. New best score: 0.629                                                                         
+Epoch 3: 100%|███████████████████████████████████████████████████| 521/521 [00:42<00:00, 12.18it/s, v_num=2, train_loss=0.0011, memory=0.000, val_f1=0.763, val_tpr=0.624, val_acc=0.808, train_f1=1.000, train_tpr=0.993, train_acc=1.000]
+Epoch 4: 100%|████████████████████████████████████████████████▉| 520/521 [00:42<00:00, 12.31it/s, v_num=2, train_loss=0.000773, memory=0.000, val_f1=0.729, val_tpr=0.637, val_acc=0.787, train_f1=1.000, train_tpr=0.993, train_acc=1.000]Metric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.637                                                                         
+Epoch 4: 100%|█████████████████████████████████████████████████| 521/521 [00:42<00:00, 12.30it/s, v_num=2, train_loss=0.000815, memory=0.000, val_f1=0.729, val_tpr=0.637, val_acc=0.787, train_f1=0.996, train_tpr=0.989, train_acc=0.996]
+Epoch 5:  50%|████████████████████████▍                        | 260/521 [00:20<00:20, 12.44it/s, v_num=2, train_loss=0.000527, memory=0.000, val_f1=0.735, val_tpr=0.638, val_acc=0.790, train_f1=0.996, train_tpr=0.989, train_acc=0.996]Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.638                                                                         
+Epoch 5: 100%|████████████████████████████████████████████████▉| 520/521 [00:42<00:00, 12.33it/s, v_num=2, train_loss=0.000372, memory=0.000, val_f1=0.719, val_tpr=0.639, val_acc=0.780, train_f1=0.996, train_tpr=0.989, train_acc=0.996]Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.639                                                                         
+Epoch 5: 100%|█████████████████████████████████████████████████| 521/521 [00:42<00:00, 12.33it/s, v_num=2, train_loss=0.000247, memory=0.000, val_f1=0.719, val_tpr=0.639, val_acc=0.780, train_f1=1.000, train_tpr=0.995, train_acc=1.000]
+Epoch 6:  50%|████████████████████████▉                         | 260/521 [00:12<00:12, 21.19it/s, v_num=2, train_loss=0.00024, memory=0.000, val_f1=0.730, val_tpr=0.640, val_acc=0.787, train_f1=1.000, train_tpr=0.995, train_acc=1.000]Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.640                                                                         
+Epoch 6: 100%|█████████████████████████████████████████████████| 521/521 [00:21<00:00, 24.11it/s, v_num=2, train_loss=0.000179, memory=0.000, val_f1=0.725, val_tpr=0.638, val_acc=0.785, train_f1=1.000, train_tpr=0.999, train_acc=1.000]
+Epoch 7:  50%|████████████████████████▍                        | 260/521 [00:09<00:09, 28.58it/s, v_num=2, train_loss=0.000216, memory=0.000, val_f1=0.704, val_tpr=0.643, val_acc=0.771, train_f1=1.000, train_tpr=0.999, train_acc=1.000]Metric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.643                                                                         
+Epoch 7: 100%|████████████████████████████████████████████████▉| 520/521 [00:17<00:00, 28.98it/s, v_num=2, train_loss=0.000131, memory=0.000, val_f1=0.707, val_tpr=0.647, val_acc=0.774, train_f1=1.000, train_tpr=0.999, train_acc=1.000]Metric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.647                                                                         
+Epoch 7: 100%|██████████████████████████████████████████████████| 521/521 [00:18<00:00, 28.90it/s, v_num=2, train_loss=3.95e-5, memory=0.000, val_f1=0.707, val_tpr=0.647, val_acc=0.774, train_f1=1.000, train_tpr=0.999, train_acc=1.000]
+Epoch 8: 100%|██████████████████████████████████████████████████| 521/521 [00:17<00:00, 29.29it/s, v_num=2, train_loss=8.74e-5, memory=0.000, val_f1=0.708, val_tpr=0.640, val_acc=0.774, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 9: 100%|██████████████████████████████████████████████████| 521/521 [00:17<00:00, 29.31it/s, v_num=2, train_loss=5.09e-5, memory=0.000, val_f1=0.697, val_tpr=0.640, val_acc=0.767, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 10:  50%|████████████████████████▍                        | 260/521 [00:08<00:09, 28.97it/s, v_num=2, train_loss=7.45e-5, memory=0.000, val_f1=0.700, val_tpr=0.647, val_acc=0.769, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Monitored metric val_tpr did not improve in the last 5 records. Best score: 0.647. Signaling Trainer to stop.                                         
+Epoch 10:  50%|████████████████████████▍                        | 260/521 [00:09<00:09, 28.87it/s, v_num=2, train_loss=7.45e-5, memory=0.000, val_f1=0.700, val_tpr=0.647, val_acc=0.769, train_f1=1.000, train_tpr=0.996, train_acc=1.000]
+Epoch 10:  50%|████████████████████████▍                        | 260/521 [00:09<00:09, 28.86it/s, v_num=2, train_loss=7.45e-5, memory=0.000, val_f1=0.700, val_tpr=0.647, val_acc=0.769, train_f1=1.000, train_tpr=0.996, train_acc=1.000]
+[!] Training of mlp_seq ended:  Mon Jun 23 15:31:24 2025  | Took: 355.71 seconds
+[!] Training of attpool_transformer started:  Mon Jun 23 15:31:24 2025
+[!] Scheduler: onecycle | Scheduler step budget: 10420
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 experiments/ablation_models.py ...
+GPU available: True (cuda), used: False
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/pytorch/trainer/setup.py:187: GPU available but not used. You can set it by doing `Trainer(accelerator='gpu')`.
+[*] Training 'attpool_transformer' model...
+[!] Setting up onecycle scheduler with step budget 10420
+
+   | Name            | Type                               | Params
+------------------------------------------------------------------------
+0  | model           | AttentionPoolingTransformerEncoder | 335 K
+1  | loss            | BCEWithLogitsLoss                  | 0
+2  | train_acc       | BinaryAccuracy                     | 0
+3  | train_f1        | BinaryF1Score                      | 0
+4  | train_auc       | BinaryAUROC                        | 0
+5  | train_recall    | BinaryRecall                       | 0
+6  | train_precision | BinaryPrecision                    | 0
+7  | val_acc         | BinaryAccuracy                     | 0
+8  | val_f1          | BinaryF1Score                      | 0
+9  | val_auc         | BinaryAUROC                        | 0
+10 | val_recall      | BinaryRecall                       | 0
+11 | val_precision   | BinaryPrecision                    | 0
+------------------------------------------------------------------------
+335 K     Trainable params
+0         Non-trainable params
+335 K     Total params
+1.342     Total estimated model params size (MB)
+Epoch 0:  50%|██████████████████████████████████████████████████▍                                                  | 260/521 [05:54<05:56,  0.73it/s, v_num=0, train_loss=0.664, memory=0.000, val_f1=0.913, val_tpr=0.0738, val_acc=0.907]Metric val_tpr improved. New best score: 0.074                                                                                                        
+Epoch 0: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████▊| 520/521 [11:48<00:01,  0.73it/s, v_num=0, train_loss=0.218, memory=0.000, val_f1=0.912, val_tpr=0.272, val_acc=0.904]Metric val_tpr improved by 0.198 >= min_delta = 0.0001. New best score: 0.272                                                                         
+Epoch 0: 100%|███████████████████████████████████████████████████| 521/521 [11:49<00:00,  0.73it/s, v_num=0, train_loss=0.254, memory=0.000, val_f1=0.912, val_tpr=0.272, val_acc=0.904, train_f1=0.636, train_tpr=0.0169, train_acc=0.657]
+Epoch 1:  50%|█████████████████████████▍                         | 260/521 [05:55<05:56,  0.73it/s, v_num=0, train_loss=0.104, memory=0.000, val_f1=0.990, val_tpr=0.471, val_acc=0.990, train_f1=0.636, train_tpr=0.0169, train_acc=0.657]Metric val_tpr improved by 0.199 >= min_delta = 0.0001. New best score: 0.471                                                                         
+Epoch 1: 100%|███████████████████████████████████████████████████| 521/521 [11:50<00:00,  0.73it/s, v_num=0, train_loss=0.0122, memory=0.000, val_f1=0.989, val_tpr=0.401, val_acc=0.989, train_f1=0.973, train_tpr=0.159, train_acc=0.973]
+Epoch 2:  50%|█████████████████████████▍                         | 260/521 [05:57<05:59,  0.73it/s, v_num=0, train_loss=0.0213, memory=0.000, val_f1=0.989, val_tpr=0.638, val_acc=0.989, train_f1=0.973, train_tpr=0.159, train_acc=0.973]Metric val_tpr improved by 0.167 >= min_delta = 0.0001. New best score: 0.638                                                                         
+Epoch 2: 100%|██████████████████████████████████████████████████| 521/521 [11:59<00:00,  0.72it/s, v_num=0, train_loss=0.00514, memory=0.000, val_f1=0.989, val_tpr=0.610, val_acc=0.989, train_f1=0.995, train_tpr=0.335, train_acc=0.995]
+Epoch 3:  50%|█████████████████████████▍                         | 260/521 [05:37<05:39,  0.77it/s, v_num=0, train_loss=0.0106, memory=0.000, val_f1=0.945, val_tpr=0.717, val_acc=0.948, train_f1=0.995, train_tpr=0.335, train_acc=0.995]Metric val_tpr improved by 0.079 >= min_delta = 0.0001. New best score: 0.717                                                                         
+Epoch 3: 100%|██████████████████████████████████████████████████▉| 520/521 [11:18<00:01,  0.77it/s, v_num=0, train_loss=0.0175, memory=0.000, val_f1=0.945, val_tpr=0.729, val_acc=0.948, train_f1=0.995, train_tpr=0.335, train_acc=0.995]Metric val_tpr improved by 0.012 >= min_delta = 0.0001. New best score: 0.729                                                                         
+Epoch 3: 100%|██████████████████████████████████████████████████| 521/521 [11:19<00:00,  0.77it/s, v_num=0, train_loss=0.00432, memory=0.000, val_f1=0.945, val_tpr=0.729, val_acc=0.948, train_f1=0.997, train_tpr=0.667, train_acc=0.997]
+Epoch 4:  50%|████████████████████████▉                         | 260/521 [06:08<06:09,  0.71it/s, v_num=0, train_loss=0.00519, memory=0.000, val_f1=0.948, val_tpr=0.737, val_acc=0.951, train_f1=0.997, train_tpr=0.667, train_acc=0.997]Metric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.737                                                                         
+Epoch 4: 100%|██████████████████████████████████████████████████▉| 520/521 [12:17<00:01,  0.70it/s, v_num=0, train_loss=0.0092, memory=0.000, val_f1=0.949, val_tpr=0.800, val_acc=0.952, train_f1=0.997, train_tpr=0.667, train_acc=0.997]Metric val_tpr improved by 0.063 >= min_delta = 0.0001. New best score: 0.800                                                                         
+Epoch 4: 100%|██████████████████████████████████████████████████| 521/521 [12:18<00:00,  0.71it/s, v_num=0, train_loss=0.00197, memory=0.000, val_f1=0.949, val_tpr=0.800, val_acc=0.952, train_f1=0.998, train_tpr=0.837, train_acc=0.998]
+Epoch 5: 100%|███████████████████████████████████████████████████| 521/521 [12:23<00:00,  0.70it/s, v_num=0, train_loss=0.0016, memory=0.000, val_f1=0.942, val_tpr=0.784, val_acc=0.945, train_f1=0.999, train_tpr=0.902, train_acc=0.999]
+Epoch 6:  50%|████████████████████████▉                         | 260/521 [06:08<06:09,  0.71it/s, v_num=0, train_loss=0.00141, memory=0.000, val_f1=0.939, val_tpr=0.818, val_acc=0.942, train_f1=0.999, train_tpr=0.902, train_acc=0.999]Metric val_tpr improved by 0.019 >= min_delta = 0.0001. New best score: 0.818                                                                         
+Epoch 6: 100%|█████████████████████████████████████████████████| 521/521 [12:27<00:00,  0.70it/s, v_num=0, train_loss=0.000747, memory=0.000, val_f1=0.950, val_tpr=0.809, val_acc=0.952, train_f1=0.999, train_tpr=0.951, train_acc=0.999]
+Epoch 7: 100%|█████████████████████████████████████████████████| 521/521 [11:17<00:00,  0.77it/s, v_num=0, train_loss=0.000608, memory=0.000, val_f1=0.950, val_tpr=0.803, val_acc=0.952, train_f1=0.999, train_tpr=0.966, train_acc=0.999]
+Epoch 8: 100%|█████████████████████████████████████████████████▉| 520/521 [11:58<00:01,  0.72it/s, v_num=0, train_loss=0.00177, memory=0.000, val_f1=0.937, val_tpr=0.814, val_acc=0.941, train_f1=0.999, train_tpr=0.966, train_acc=0.999]Monitored metric val_tpr did not improve in the last 5 records. Best score: 0.818. Signaling Trainer to stop.                                         
+Epoch 8: 100%|█████████████████████████████████████████████████▉| 520/521 [11:58<00:01,  0.72it/s, v_num=0, train_loss=0.00177, memory=0.000, val_f1=0.937, val_tpr=0.814, val_acc=0.941, train_f1=0.999, train_tpr=0.980, train_acc=0.999]
+Epoch 8: 100%|█████████████████████████████████████████████████▉| 520/521 [11:58<00:01,  0.72it/s, v_num=0, train_loss=0.00177, memory=0.000, val_f1=0.937, val_tpr=0.814, val_acc=0.941, train_f1=0.999, train_tpr=0.980, train_acc=0.999]
+[!] Training of attpool_transformer ended:  Mon Jun 23 17:18:50 2025  | Took: 6446.19 seconds
+[!] Training of cls_transformer started:  Mon Jun 23 17:18:50 2025
+[!] Scheduler: onecycle | Scheduler step budget: 10420
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 experiments/ablation_models.py ...
+GPU available: True (cuda), used: False
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/pytorch/trainer/setup.py:187: GPU available but not used. You can set it by doing `Trainer(accelerator='gpu')`.
+[*] Training 'cls_transformer' model...
+[!] Setting up onecycle scheduler with step budget 10420
+
+   | Name            | Type                  | Params
+-----------------------------------------------------------
+0  | model           | CLSTransformerEncoder | 335 K
+1  | loss            | BCEWithLogitsLoss     | 0
+2  | train_acc       | BinaryAccuracy        | 0
+3  | train_f1        | BinaryF1Score         | 0
+4  | train_auc       | BinaryAUROC           | 0
+5  | train_recall    | BinaryRecall          | 0
+6  | train_precision | BinaryPrecision       | 0
+7  | val_acc         | BinaryAccuracy        | 0
+8  | val_f1          | BinaryF1Score         | 0
+9  | val_auc         | BinaryAUROC           | 0
+10 | val_recall      | BinaryRecall          | 0
+11 | val_precision   | BinaryPrecision       | 0
+-----------------------------------------------------------
+335 K     Trainable params
+0         Non-trainable params
+335 K     Total params
+1.342     Total estimated model params size (MB)
+Epoch 0:  50%|█████████████████████████████████████████████████▉                                                  | 260/521 [05:53<05:55,  0.74it/s, v_num=0, train_loss=0.687, memory=0.000, val_f1=0.684, val_tpr=0.00157, val_acc=0.696]Metric val_tpr improved. New best score: 0.002                                                                                                        
+Epoch 0: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████▊| 520/521 [11:43<00:01,  0.74it/s, v_num=0, train_loss=0.139, memory=0.000, val_f1=0.919, val_tpr=0.211, val_acc=0.911]Metric val_tpr improved by 0.209 >= min_delta = 0.0001. New best score: 0.211                                                                         
+Epoch 0: 100%|███████████████████████████████████████████████████| 521/521 [11:44<00:00,  0.74it/s, v_num=0, train_loss=0.171, memory=0.000, val_f1=0.919, val_tpr=0.211, val_acc=0.911, train_f1=0.637, train_tpr=0.0224, train_acc=0.650]
+Epoch 1:  13%|█████████████████                                                                                                                  | 68/521 [01:17<08:36,  0.88it/s, v_num=0, train_loss=0.061, memory=0.000, val_f1=0.919, val_tpr=0.211, val_acc=0.911, train_f1=0.637, train_tpr=0.0224, train_acc=0.650]Epoch 1:  22%|████████████████████████████▍                                                                                                    | 115/521 [02:06<07:27,  0.91it/s, v_num=0, train_loss=0.0708, memory=0.000, val_f1=0.919, Epoch 1:  22%|███████████████████▊                                                                     | 116/521 [02:07<07:25,  0.91it/s, v_num=0, train_loss=0.0708, memory=0.000, val_f1=0.919, val_tpr=0.211, val_acc=0.911, train_f1=0.637, train_tpr=0.0224, train_acc=0.650]Epoch 1:  89%|███████████████████████████████████████████████████████████████████████████████▎         | 464Epoch 1:  89%|▉| 465/521 [09:31<01:08,  0.81it/s, v_num=0, train_loss=0.0124, memory=0.000, val_f1=0.985, val_tpr=0.153, val_acc=0.984, train_f1=0.637, train_tpr=0.0224, train_acc=0.650]Epoch 1:  89%|█▊| 465/521 [09:31<01:08,  0.81it/s, v_num=0, train_loss=0.021, memory=0.000, val_f1=0.985, val_tpr=0.153, val_acc=0.984, train_f1=0.637, train_tpr=0.0224, train_acc=0.650]Epoch 1:  89%|█▊| 466/521 [09:32<01:07,  0.81it/s, v_num=0, train_loss=0.031, memory=0.000, val_f1=0.985, val_tpr=0.153, val_acc=0.984, train_f1=0.637, train_tpr=0.0224, train_acc=0.650]Epoch 1:  90%|▉| 467/521 [09:33<01:06,  0.81it/s, v_num=0, train_loss=0.0341, memory=0.000, val_f1=0.985, val_tpr=0.153, val_acc=0.984, train_f1=0.637, train_tpr=0.0224, train_acc=0.650tEpoch 1:  90%|█▊| 468/521 [09:34<01:05,  0.81it/s, v_num=0, train_loss=0.018, memory=0.000, val_f1=0.985, val_tpr=0.153, val_acc=0.984, train_f1=0.637, train_tpr=0.0224, train_acc=0.650]Epoch 1:  90%|▉| 470/521 [09:36<01:02,  0.81it/s, v_num=0, train_loss=0.0364, memory=0.000, val_f1=0.985, val_Epoch 1:  90%|██████████▊ | 471/521 [09:37<01:01,  0.82it/s, v_num=0, train_loss=0.0181, memory=0.000, val_f1=0.985, val_tpr=0.153, val_acc=0.984, train_f1=0.637, train_tpr=0.0224, train_acc=0.650]
+
+Epoch 1:  91%|██████████▉ | 475/521 [09:41<00:56,  0.82it/s, v_num=0, train_loss=0.0317, memory=0.000, val_f1=0.985, val_tpr=0.153, val_acc=0.984, train_f1=0.637, train_tpr=0.0224, train_acc=0.650]Epoch 1: 100%|███████████▉| 520/521 [11:49<00:01,  0.73it/s, v_num=0, train_loss=0.0374, memory=0.000, val_f1=0.990, val_tpr=0.686, val_acc=0.990, train_f1=0.637, train_tpr=0.0224, train_acc=0.650]Metric val_tpr improved by 0.475 >= min_delta = 0.0001. New best score: 0.686
+Epoch 1: 100%|█████████████| 521/521 [11:49<00:00,  0.73it/s, v_num=0, train_loss=0.0132, memory=0.000, val_f1=0.990, val_tpr=0.686, val_acc=0.990, train_f1=0.989, train_tpr=0.328, train_acc=0.989]
+Epoch 2:  50%|█████▉      | 260/521 [05:47<05:48,  0.75it/s, v_num=0, train_loss=0.00991, memory=0.000, val_f1=0.994, val_tpr=0.887, val_acc=0.994, train_f1=0.989, train_tpr=0.328, train_acc=0.989]Metric val_tpr improved by 0.201 >= min_delta = 0.0001. New best score: 0.887                                                                                                               
+Epoch 2: 100%|████████████▉| 520/521 [11:40<00:01,  0.74it/s, v_num=0, train_loss=0.0198, memory=0.000, val_f1=0.998, val_tpr=0.912, val_acc=0.998, train_f1=0.989, train_tpr=0.328, train_acc=0.989]Metric val_tpr improved by 0.025 >= min_delta = 0.0001. New best score: 0.912                                                                                                               
+Epoch 2: 100%|█████████████| 521/521 [11:40<00:00,  0.74it/s, v_num=0, train_loss=0.0011, memory=0.000, val_f1=0.998, val_tpr=0.912, val_acc=0.998, train_f1=0.997, train_tpr=0.807, train_acc=0.997]
+Epoch 3:  15%|██▏           | 80/521 [01:25<07:50,  0.94it/s, v_num=0, train_loss=0.0068, memory=0.000, val_f1=0.998, val_tpr=0.912, val_acc=0.998, train_f1=0.997, train_tpr=0.807, trainEpoch 3:  16%|▍  | 81/521 [01:26<07:49,  0.94it/s, v_num=0, train_loss=0.0068, memory=0.000, val_f1=0.998, val_tpr=0.912, val_acc=0.998, train_f1=0.997, train_tpr=0.807, train_acc=0.997]Epoch 3:  16%|▎ | 82/521 [01:27<07:47,  0.94it/s, v_num=0, train_loss=0.00789, memory=0.000, val_f1=0.998, val_tpr=0.912, val_acc=0.998, train_f1=0.997, train_tpr=0.807, train_acc=0.997]Epoch 3:  16%|▍  | 83/521 [01:28<07:46,  0.94it/s, v_num=0, train_loss=0.0112, memory=0.000, val_f1=0.998, val_tpr=0.912, val_acc=0.998, train_f1=0.997, train_tpr=0.807, train_acc=0.997]Epoch 3:  25%|▏| 129/521 [02:16<06:5EpocEpoch 3:  40%|████▊       | 210/521 [03:41<05:27,  0.95it/s, v_num=0, train_loss=0.0032, memory=0.000, val_f1=0.998, val_tpr=0.912, val_acc=0.998, train_f1=0.997, traEpoch 3:  40%|▍| 211/521 [03:42<05:26,  0.95it/s, v_num=0, train_loss=0.0032, memory=0.000, val_f1=0.998, val_tpr=0.912,                                                                      Epoch 3:  50%|██▍  | 260/521 [05:56<05:57,  0.73it/s, v_num=0, train_loss=0.00285, memory=0.000, val_f1=0.998, val_tpr=0.930, val_acc=0.998, train_f1=0.997, train_tpr=0.807, train_acc=0.997]Metric val_tpr improved by 0.018 >= min_delta = 0.0001. New best score: 0.930
+Epoch 3: 100%|████| 521/521 [11:52<00:00,  0.73it/s, v_num=0, train_loss=0.000175, memory=0.000, val_f1=0.998, val_tpr=0.924, val_acc=0.998, train_f1=0.999, train_tpr=0.957, train_acc=0.999]
+Epoch 4:  97%|██████████▋| 504/521 [09:23<00:19,  0.89it/s, v_num=0, train_loss=7.58e-5, memory=0.000, val_f1=0.967, val_tpr=0.903, val_acc=0.968, train_f1=0.999, train_tpr=0.957, train_acc=0.999]Epoch 4: 100%|██████████| 521/521 [10:35<00:00,  0.82it/s, v_num=0, train_loss=0.000698, memory=0.000, val_f1=0.992, val_tpr=0.925, val_acc=0.992, train_f1=1.000, train_tpr=0.992, train_acc=1.000]
+Epoch 5:  12%|█▎         | 65/521 [01:07<07:51,  0.97it/s, v_num=0, train_loss=0.000325, memory=0.000, val_f1=0.992, val_tpr=0.925, val_acc=0.992, train_f1=1.000, train_tpr=0.992, train_acc=1.000]Epoch 5:  13%|█▌          | 66/521 [01:08<07:50,  0.97it/s, v_num=0, train_loss=0.00134, memory=0.000, val_f1=0.992, val_tpr=0.925, val_acc=0.992, train_f1=1.000, train_tpr=0.992, train_acc=1.000]Epoch 5: 100%|██████████▉| 520/521 [11:51<00:01,  0.73it/s, v_num=0, train_loss=7.11e-5, memory=0.000, val_f1=0.993, val_tpr=0.881, val_acc=0.993, train_f1=1.000, train_tpr=0.992, train_acc=1.000]Monitored metric val_tpr did not improve in the last 5 records. Best score: 0.930. Signaling Trainer to stop.                                                                         
+Epoch 5: 100%|██████████▉| 520/521 [11:51<00:01,  0.73it/s, v_num=0, train_loss=7.11e-5, memory=0.000, val_f1=0.993, val_tpr=0.881, val_acc=0.993, train_f1=1.000, train_tpr=0.999, train_acc=1.000]
+Epoch 5: 100%|██████████▉| 520/521 [11:51<00:01,  0.73it/s, v_num=0, train_loss=7.11e-5, memory=0.000, val_f1=0.993, val_tpr=0.881, val_acc=0.993, train_f1=1.000, train_tpr=0.999, train_acc=1.000]
+[!] Training of cls_transformer ended:  Mon Jun 23 18:28:26 2025  | Took: 4175.85 seconds
+[!] Training of mean_transformer started:  Mon Jun 23 18:28:26 2025
+[!] Scheduler: onecycle | Scheduler step budget: 10420
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 experiments/ablation_models.py ...
+GPU available: True (cuda), used: False
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/pytorch/trainer/setup.py:187: GPU available but not used. You can set it by doing `Trainer(accelerator='gpu')`.
+[*] Training 'mean_transformer' model...
+[!] Setting up onecycle scheduler with step budget 10420
+
+   | Name            | Type                   | Params
+------------------------------------------------------------
+0  | model           | MeanTransformerEncoder | 335 K
+1  | loss            | BCEWithLogitsLoss      | 0
+2  | train_acc       | BinaryAccuracy         | 0
+3  | train_f1        | BinaryF1Score          | 0
+4  | train_auc       | BinaryAUROC            | 0
+5  | train_recall    | BinaryRecall           | 0
+6  | train_precision | BinaryPrecision        | 0
+7  | val_acc         | BinaryAccuracy         | 0
+8  | val_f1          | BinaryF1Score          | 0
+9  | val_auc         | BinaryAUROC            | 0
+10 | val_recall      | BinaryRecall           | 0
+11 | val_precision   | BinaryPrecision        | 0
+------------------------------------------------------------
+335 K     Trainable params
+0         Non-trainable params
+335 K     Total params
+1.341     Total estimated model params size (MB)
+Epoch 0:  50%|█████████████████████████████████████████████████████████████████████▎                                                                     | 260/521 [05:47<05:49,  0.75it/s, v_num=0, train_loss=0.668, memory=0.000, val_f1=0.416, val_tpr=0.0137, val_acc=0.628]Metric val_tpr improved. New best score: 0.014                                                                  
+Epoch 0: 100%|█████████████████████████████████████████████████████████████████████████████████████| 521/521 [11:35<00:00,  0.75it/s, v_num=0, train_loss=0.0456, memory=0.000, val_f1=0.923, val_tpr=0.000182, val_acc=0.916, train_f1=0.653, train_tpr=0.0671, train_acc=0.673]
+Epoch 1: 100%|███████████████████████████████████████████████████████████████████████████████████████▊| 520/521 [11:33<00:01,  0.75it/s, v_num=0, train_loss=0.0236, memory=0.000, val_f1=0.968, val_tpr=0.324, val_acc=0.968, train_f1=0.653, train_tpr=0.0671, train_acc=0.673]Metric val_tpr improved by 0.310 >= min_delta = 0.0001. New best score: 0.324                                   
+Epoch 1: 100%|████████████████████████████████████████████████████████████████████████████████████████| 521/521 [11:34<00:00,  0.75it/s, v_num=0, train_loss=0.00556, memory=0.000, val_f1=0.968, val_tpr=0.324, val_acc=0.968, train_f1=0.995, train_tpr=0.326, train_acc=0.995]
+Epoch 2:  50%|███████████████████████████████████████████▉                                            | 260/521 [05:47<05:49,  0.75it/s, v_num=0, train_loss=0.00207, memory=0.000, val_f1=0.927, val_tpr=0.549, val_acc=0.932, train_f1=0.995, train_tpr=0.326, train_acc=0.995]Metric val_tpr improved by 0.225 >= min_delta = 0.0001. New best score: 0.549                                   
+Epoch 2: 100%|███████████████████████████████████████████████████████████████████████████████████████▊| 520/521 [11:39<00:01,  0.74it/s, v_num=0, train_loss=0.00487, memory=0.000, val_f1=0.925, val_tpr=0.571, val_acc=0.930, train_f1=0.995, train_tpr=0.326, train_acc=0.995]Metric val_tpr improved by 0.022 >= min_delta = 0.0001. New best score: 0.571                                   
+Epoch 2: 100%|████████████████████████████████████████████████████████████████████████████████████████| 521/521 [11:39<00:00,  0.74it/s, v_num=0, train_loss=0.00124, memory=0.000, val_f1=0.925, val_tpr=0.571, val_acc=0.930, train_f1=0.999, train_tpr=0.843, train_acc=0.999]
+Epoch 3:  50%|███████████████████████████████████████████▍                                           | 260/521 [05:45<05:47,  0.75it/s, v_num=0, train_loss=0.000775, memory=0.000, val_f1=0.917, val_tpr=0.595, val_acc=0.923, train_f1=0.999, train_tpr=0.843, train_acc=0.999]Metric val_tpr improved by 0.024 >= min_delta = 0.0001. New best score: 0.595                                   
+Epoch 3: 100%|███████████████████████████████████████████████████████████████████████████████████████| 521/521 [11:59<00:00,  0.72it/s, v_num=0, train_loss=0.000744, memory=0.000, val_f1=0.915, val_tpr=0.529, val_acc=0.921, train_f1=1.000, train_tpr=0.968, train_acc=1.000]
+Epoch 4: 100%|██████████████████████████████████████████████████████████████████████████████████████▊| 520/521 [12:18<00:01,  0.70it/s, v_num=0, train_loss=0.000521, memory=0.000, val_f1=0.890, val_tpr=0.693, val_acc=0.900, train_f1=1.000, train_tpr=0.968, train_acc=1.000]Metric val_tpr improved by 0.099 >= min_delta = 0.0001. New best score: 0.693                                   
+Epoch 4: 100%|████████████████████████████████████████████████████████████████████████████████████████| 521/521 [12:18<00:00,  0.71it/s, v_num=0, train_loss=0.00045, memory=0.000, val_f1=0.890, val_tpr=0.693, val_acc=0.900, train_f1=1.000, train_tpr=0.993, train_acc=1.000]
+Epoch 5:  50%|███████████████████████████████████████████▍                                           | 260/521 [06:27<06:28,  0.67it/s, v_num=0, train_loss=0.000699, memory=0.000, val_f1=0.897, val_tpr=0.716, val_acc=0.906, train_f1=1.000, train_tpr=0.993, train_acc=1.000]Metric val_tpr improved by 0.022 >= min_delta = 0.0001. New best score: 0.716                                   
+Epoch 5: 100%|███████████████████████████████████████████████████████████████████████████████████████▊| 520/521 [11:45<00:01,  0.74it/s, v_num=0, train_loss=8.17e-6, memory=0.000, val_f1=0.897, val_tpr=0.716, val_acc=0.906, train_f1=1.000, train_tpr=0.993, train_acc=1.000]
+Epoch 5: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [13:09<00:01,  0.66it/s, v_num=0, train_loss=8.17e-6, memory=0.000, val_f1=0.885, val_tpr=0.753, val_acc=0.897, train_f1=1.000, train_tpr=0.993, train_acc=1.000]Metric val_tpr improved by 0.038 >= min_delta = 0.0001. New best score: 0.753
+Epoch 5: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [13:10<00:00,  0.66it/s, v_num=0, train_loss=5.31e-5, memory=0.000, val_f1=0.885, val_tpr=0.753, val_acc=0.897, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 6: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [13:30<00:00,  0.64it/s, v_num=0, train_loss=1.07e-6, memory=0.000, val_f1=0.863, val_tpr=0.721, val_acc=0.880, train_f1=1.000, train_tpr=0.999, train_acc=1.000]
+Epoch 7: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [13:28<00:00,  0.64it/s, v_num=0, train_loss=0.000161, memory=0.000, val_f1=0.865, val_tpr=0.735, val_acc=0.881, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 8:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [06:03<06:04,  0.72it/s, v_num=0, train_loss=3.84e-6, memory=0.000, val_f1=0.850, val_tpr=0.738, val_acc=0.870, train_f1=1.000, train_tpr=0.998, train_acc=1.000]Monitored metric val_tpr did not improve in the last 5 records. Best score: 0.753. Signaling Trainer to stop.
+Epoch 8:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [06:03<06:04,  0.72it/s, v_num=0, train_loss=3.84e-6, memory=0.000, val_f1=0.850, val_tpr=0.738, val_acc=0.870, train_f1=1.000, train_tpr=0.996, train_acc=1.000]
+Epoch 8:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [06:03<06:04,  0.72it/s, v_num=0, train_loss=3.84e-6, memory=0.000, val_f1=0.850, val_tpr=0.738, val_acc=0.870, train_f1=1.000, train_tpr=0.996, train_acc=1.000]
+[!] Training of mean_transformer ended:  Mon Jun 23 20:13:47 2025  | Took: 6321.30 seconds
+[!] Training of neurlux started:  Mon Jun 23 20:13:47 2025
+[!] Scheduler: onecycle | Scheduler step budget: 10420
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 experiments/ablation_models.py ...
+GPU available: True (cuda), used: False
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/pytorch/trainer/setup.py:187: GPU available but not used. You can set it by doing `Trainer(accelerator='gpu')`.
+[*] Training 'neurlux' model...
+[!] Setting up onecycle scheduler with step budget 10420
+
+   | Name            | Type              | Params
+-------------------------------------------------------
+0  | model           | NeurLuxModel      | 402 K
+1  | loss            | BCEWithLogitsLoss | 0
+2  | train_acc       | BinaryAccuracy    | 0
+3  | train_f1        | BinaryF1Score     | 0
+4  | train_auc       | BinaryAUROC       | 0
+5  | train_recall    | BinaryRecall      | 0
+6  | train_precision | BinaryPrecision   | 0
+7  | val_acc         | BinaryAccuracy    | 0
+8  | val_f1          | BinaryF1Score     | 0
+9  | val_auc         | BinaryAUROC       | 0
+10 | val_recall      | BinaryRecall      | 0
+11 | val_precision   | BinaryPrecision   | 0
+-------------------------------------------------------
+402 K     Trainable params
+0         Non-trainable params
+402 K     Total params
+1.609     Total estimated model params size (MB)
+Epoch 0:  50%|█████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                              | 260/521 [00:55<00:55,  4.72it/s, v_num=0, train_loss=0.026, memory=0.000, val_f1=0.742, val_tpr=0.508, val_acc=0.793]Metric val_tpr improved. New best score: 0.508                  
+Epoch 0: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [01:50<00:00,  4.69it/s, v_num=0, train_loss=0.00168, memory=0.000, val_f1=0.716, val_tpr=0.686, val_acc=0.779]Metric val_tpr improved by 0.178 >= min_delta = 0.0001. New best score: 0.686
+Epoch 0: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [01:51<00:00,  4.69it/s, v_num=0, train_loss=0.000689, memory=0.000, val_f1=0.716, val_tpr=0.686, val_acc=0.779, train_f1=0.933, train_tpr=0.610, train_acc=0.933]
+Epoch 1: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [01:58<00:00,  4.41it/s, v_num=0, train_loss=0.000543, memory=0.000, val_f1=0.646, val_tpr=0.658, val_acc=0.739, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 2: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [02:06<00:00,  4.13it/s, v_num=0, train_loss=2.84e-5, memory=0.000, val_f1=0.649, val_tpr=0.614, val_acc=0.740, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 3:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [00:57<00:57,  4.50it/s, v_num=0, train_loss=3.06e-5, memory=0.000, val_f1=0.677, val_tpr=0.600, val_acc=0.756, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Monitored metric val_tpr did not improve in the last 5 records. Best score: 0.686. Signaling Trainer to stop.
+Epoch 3:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [00:57<00:58,  4.50it/s, v_num=0, train_loss=3.06e-5, memory=0.000, val_f1=0.677, val_tpr=0.600, val_acc=0.756, train_f1=1.000, train_tpr=0.996, train_acc=1.000]
+Epoch 3:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [00:57<00:58,  4.50it/s, v_num=0, train_loss=3.06e-5, memory=0.000, val_f1=0.677, val_tpr=0.600, val_acc=0.756, train_f1=1.000, train_tpr=0.996, train_acc=1.000]
+[!] Training of neurlux ended:  Mon Jun 23 20:20:41 2025  | Took: 413.94 seconds
+[!] Training of cnn started:  Mon Jun 23 20:20:41 2025
+[!] Scheduler: onecycle | Scheduler step budget: 10420
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 experiments/ablation_models.py ...
+GPU available: True (cuda), used: False
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/pytorch/trainer/setup.py:187: GPU available but not used. You can set it by doing `Trainer(accelerator='gpu')`.
+[*] Training 'cnn' model...
+[!] Setting up onecycle scheduler with step budget 10420
+
+   | Name            | Type              | Params
+-------------------------------------------------------
+0  | model           | CNN1DGroupedModel | 301 K
+1  | loss            | BCEWithLogitsLoss | 0
+2  | train_acc       | BinaryAccuracy    | 0
+3  | train_f1        | BinaryF1Score     | 0
+4  | train_auc       | BinaryAUROC       | 0
+5  | train_recall    | BinaryRecall      | 0
+6  | train_precision | BinaryPrecision   | 0
+7  | val_acc         | BinaryAccuracy    | 0
+8  | val_f1          | BinaryF1Score     | 0
+9  | val_auc         | BinaryAUROC       | 0
+10 | val_recall      | BinaryRecall      | 0
+11 | val_precision   | BinaryPrecision   | 0
+-------------------------------------------------------
+301 K     Trainable params
+0         Non-trainable params
+301 K     Total params
+1.205     Total estimated model params size (MB)
+Epoch 0:  50%|█████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                              | 260/521 [00:53<00:53,  4.87it/s, v_num=0, train_loss=0.270, memory=0.000, val_f1=0.953, val_tpr=0.372, val_acc=0.951]Metric val_tpr improved. New best score: 0.372                  
+Epoch 0: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [01:48<00:00,  4.80it/s, v_num=0, train_loss=0.0358, memory=0.000, val_f1=0.992, val_tpr=0.530, val_acc=0.992]Metric val_tpr improved by 0.158 >= min_delta = 0.0001. New best score: 0.530
+Epoch 0: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [01:48<00:00,  4.80it/s, v_num=0, train_loss=0.017, memory=0.000, val_f1=0.992, val_tpr=0.530, val_acc=0.992, train_f1=0.866, train_tpr=0.260, train_acc=0.876]
+Epoch 1:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [00:45<00:46,  5.67it/s, v_num=0, train_loss=0.00464, memory=0.000, val_f1=0.999, val_tpr=0.928, val_acc=0.999, train_f1=0.866, train_tpr=0.260, train_acc=0.876]Metric val_tpr improved by 0.398 >= min_delta = 0.0001. New best score: 0.928
+Epoch 1: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [01:30<00:00,  5.77it/s, v_num=0, train_loss=0.00109, memory=0.000, val_f1=0.998, val_tpr=0.980, val_acc=0.998, train_f1=0.866, train_tpr=0.260, train_acc=0.876]Metric val_tpr improved by 0.053 >= min_delta = 0.0001. New best score: 0.980
+Epoch 1: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [01:30<00:00,  5.77it/s, v_num=0, train_loss=0.00082, memory=0.000, val_f1=0.998, val_tpr=0.980, val_acc=0.998, train_f1=0.998, train_tpr=0.897, train_acc=0.998]
+Epoch 2:  50%|███████████████████████████████████████████████████████████████████▎                                                                   | 260/521 [00:44<00:44,  5.82it/s, v_num=0, train_loss=0.000544, memory=0.000, val_f1=0.994, val_tpr=0.982, val_acc=0.994, train_f1=0.998, train_tpr=0.897, train_acc=0.998]Metric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.982
+Epoch 2: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [01:27<00:00,  5.97it/s, v_num=0, train_loss=0.00132, memory=0.000, val_f1=0.962, val_tpr=0.982, val_acc=0.964, train_f1=0.998, train_tpr=0.897, train_acc=0.998]Metric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.982
+Epoch 2: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [01:27<00:00,  5.97it/s, v_num=0, train_loss=0.000128, memory=0.000, val_f1=0.962, val_tpr=0.982, val_acc=0.964, train_f1=1.000, train_tpr=0.997, train_acc=1.000]
+Epoch 3:  50%|███████████████████████████████████████████████████████████████████▎                                                                   | 260/521 [00:42<00:42,  6.11it/s, v_num=0, train_loss=0.000202, memory=0.000, val_f1=0.997, val_tpr=0.983, val_acc=0.997, train_f1=1.000, train_tpr=0.997, train_acc=1.000]Metric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.983
+Epoch 3: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [01:40<00:00,  5.15it/s, v_num=0, train_loss=0.000213, memory=0.000, val_f1=0.977, val_tpr=0.983, val_acc=0.977, train_f1=1.000, train_tpr=0.997, train_acc=1.000]Metric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.983
+Epoch 3: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [01:41<00:00,  5.15it/s, v_num=0, train_loss=0.000488, memory=0.000, val_f1=0.977, val_tpr=0.983, val_acc=0.977, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 4: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [02:29<00:00,  3.49it/s, v_num=0, train_loss=9.92e-6, memory=0.000, val_f1=0.913, val_tpr=0.982, val_acc=0.920, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 5:  50%|████████████████████████████████████████████████████████████████████▎                                                                    | 260/521 [00:45<00:45,  5.77it/s, v_num=0, train_loss=2.2e-5, memory=0.000, val_f1=0.850, val_tpr=0.984, val_acc=0.869, train_f1=1.000, train_tpr=0.998, train_acc=1.000]Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.984
+Epoch 5: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [01:26<00:00,  6.02it/s, v_num=0, train_loss=1.28e-5, memory=0.000, val_f1=0.975, val_tpr=0.983, val_acc=0.975, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 6: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [01:30<00:00,  5.76it/s, v_num=0, train_loss=6.91e-5, memory=0.000, val_f1=0.895, val_tpr=0.986, val_acc=0.905, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.002 >= min_delta = 0.0001. New best score: 0.986
+Epoch 6: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [01:30<00:00,  5.76it/s, v_num=0, train_loss=5.61e-5, memory=0.000, val_f1=0.895, val_tpr=0.986, val_acc=0.905, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 7: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [01:31<00:00,  5.66it/s, v_num=0, train_loss=9.53e-6, memory=0.000, val_f1=0.968, val_tpr=0.986, val_acc=0.969, train_f1=1.000, train_tpr=0.998, train_acc=1.000]Metric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.986
+Epoch 7: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [01:31<00:00,  5.67it/s, v_num=0, train_loss=1.58e-6, memory=0.000, val_f1=0.968, val_tpr=0.986, val_acc=0.969, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 8: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [01:29<00:00,  5.85it/s, v_num=0, train_loss=7.56e-7, memory=0.000, val_f1=0.974, val_tpr=0.986, val_acc=0.974, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 9:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [00:44<00:44,  5.82it/s, v_num=0, train_loss=1.71e-6, memory=0.000, val_f1=0.900, val_tpr=0.995, val_acc=0.909, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.009 >= min_delta = 0.0001. New best score: 0.995
+Epoch 9: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [01:29<00:00,  5.79it/s, v_num=0, train_loss=0.000741, memory=0.000, val_f1=0.966, val_tpr=0.995, val_acc=0.967, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.995
+Epoch 9: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [01:29<00:00,  5.79it/s, v_num=0, train_loss=1.71e-7, memory=0.000, val_f1=0.966, val_tpr=0.995, val_acc=0.967, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 10:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [00:44<00:44,  5.87it/s, v_num=0, train_loss=2.7e-5, memory=0.000, val_f1=0.930, val_tpr=1.000, val_acc=0.935, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 1.000
+Epoch 10: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [01:29<00:00,  5.81it/s, v_num=0, train_loss=8.8e-6, memory=0.000, val_f1=0.846, val_tpr=0.999, val_acc=0.867, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 11: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [01:27<00:00,  5.94it/s, v_num=0, train_loss=1.46e-5, memory=0.000, val_f1=0.950, val_tpr=1.000, val_acc=0.952, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 12: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [01:26<00:00,  5.99it/s, v_num=0, train_loss=2.22e-6, memory=0.000, val_f1=0.938, val_tpr=1.000, val_acc=0.941, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Monitored metric val_tpr did not improve in the last 5 records. Best score: 1.000. Signaling Trainer to stop.
+Epoch 12: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [01:26<00:00,  5.98it/s, v_num=0, train_loss=2.22e-6, memory=0.000, val_f1=0.938, val_tpr=1.000, val_acc=0.941, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 12: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [01:26<00:00,  5.98it/s, v_num=0, train_loss=2.22e-6, memory=0.000, val_f1=0.938, val_tpr=1.000, val_acc=0.941, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+[!] Training of cnn ended:  Mon Jun 23 20:41:31 2025  | Took: 1249.22 seconds
+[!] Training of lstm started:  Mon Jun 23 20:41:31 2025
+[!] Scheduler: onecycle | Scheduler step budget: 10420
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 experiments/ablation_models.py ...
+GPU available: True (cuda), used: False
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/pytorch/trainer/setup.py:187: GPU available but not used. You can set it by doing `Trainer(accelerator='gpu')`.
+[*] Training 'lstm' model...
+[!] Setting up onecycle scheduler with step budget 10420
+
+   | Name            | Type              | Params
+-------------------------------------------------------
+0  | model           | BiLSTMModel       | 318 K
+1  | loss            | BCEWithLogitsLoss | 0
+2  | train_acc       | BinaryAccuracy    | 0
+3  | train_f1        | BinaryF1Score     | 0
+4  | train_auc       | BinaryAUROC       | 0
+5  | train_recall    | BinaryRecall      | 0
+6  | train_precision | BinaryPrecision   | 0
+7  | val_acc         | BinaryAccuracy    | 0
+8  | val_f1          | BinaryF1Score     | 0
+9  | val_auc         | BinaryAUROC       | 0
+10 | val_recall      | BinaryRecall      | 0
+11 | val_precision   | BinaryPrecision   | 0
+-------------------------------------------------------
+318 K     Trainable params
+0         Non-trainable params
+318 K     Total params
+1.274     Total estimated model params size (MB)
+Epoch 0:  50%|█████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                             | 260/521 [02:00<02:01,  2.16it/s, v_num=0, train_loss=0.598, memory=0.000, val_f1=0.820, val_tpr=0.0982, val_acc=0.841]Metric val_tpr improved. New best score: 0.098                  
+Epoch 0: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [03:56<00:00,  2.20it/s, v_num=0, train_loss=0.0951, memory=0.000, val_f1=0.900, val_tpr=0.00918, val_acc=0.907, train_f1=0.747, train_tpr=0.155, train_acc=0.784]
+Epoch 1:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [01:57<01:58,  2.21it/s, v_num=0, train_loss=0.00942, memory=0.000, val_f1=0.539, val_tpr=0.370, val_acc=0.683, train_f1=0.747, train_tpr=0.155, train_acc=0.784]Metric val_tpr improved by 0.272 >= min_delta = 0.0001. New best score: 0.370
+Epoch 1: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [03:56<00:00,  2.20it/s, v_num=0, train_loss=0.00132, memory=0.000, val_f1=0.540, val_tpr=0.569, val_acc=0.685, train_f1=0.747, train_tpr=0.155, train_acc=0.784]Metric val_tpr improved by 0.199 >= min_delta = 0.0001. New best score: 0.569
+Epoch 1: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [03:56<00:00,  2.20it/s, v_num=0, train_loss=0.000643, memory=0.000, val_f1=0.540, val_tpr=0.569, val_acc=0.685, train_f1=0.998, train_tpr=0.776, train_acc=0.998]
+Epoch 2:  50%|███████████████████████████████████████████████████████████████████▎                                                                   | 260/521 [02:30<02:31,  1.72it/s, v_num=0, train_loss=0.000422, memory=0.000, val_f1=0.544, val_tpr=0.587, val_acc=0.687, train_f1=0.998, train_tpr=0.776, train_acc=0.998]Metric val_tpr improved by 0.018 >= min_delta = 0.0001. New best score: 0.587
+Epoch 2: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:30<00:00,  1.93it/s, v_num=0, train_loss=0.000219, memory=0.000, val_f1=0.533, val_tpr=0.550, val_acc=0.682, train_f1=1.000, train_tpr=0.995, train_acc=1.000]
+Epoch 3: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:00<00:00,  2.16it/s, v_num=0, train_loss=7.12e-5, memory=0.000, val_f1=0.533, val_tpr=0.591, val_acc=0.682, train_f1=1.000, train_tpr=0.995, train_acc=1.000]Metric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.591
+Epoch 3: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:01<00:00,  2.16it/s, v_num=0, train_loss=0.000209, memory=0.000, val_f1=0.533, val_tpr=0.591, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 4: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:01<00:00,  2.15it/s, v_num=0, train_loss=6.2e-5, memory=0.000, val_f1=0.534, val_tpr=0.599, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.599
+Epoch 4: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:01<00:00,  2.15it/s, v_num=0, train_loss=1.06e-5, memory=0.000, val_f1=0.534, val_tpr=0.599, val_acc=0.682, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 5:  50%|███████████████████████████████████████████████████████████████████▎                                                                   | 260/521 [02:05<02:05,  2.07it/s, v_num=0, train_loss=0.000119, memory=0.000, val_f1=0.534, val_tpr=0.619, val_acc=0.682, train_f1=1.000, train_tpr=0.998, train_acc=1.000]Metric val_tpr improved by 0.020 >= min_delta = 0.0001. New best score: 0.619
+Epoch 5: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:08<00:00,  2.09it/s, v_num=0, train_loss=5.2e-5, memory=0.000, val_f1=0.536, val_tpr=0.629, val_acc=0.683, train_f1=1.000, train_tpr=0.998, train_acc=1.000]Metric val_tpr improved by 0.010 >= min_delta = 0.0001. New best score: 0.629
+Epoch 5: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:08<00:00,  2.09it/s, v_num=0, train_loss=3.15e-5, memory=0.000, val_f1=0.536, val_tpr=0.629, val_acc=0.683, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 6:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [02:01<02:01,  2.14it/s, v_num=0, train_loss=1.14e-5, memory=0.000, val_f1=0.537, val_tpr=0.634, val_acc=0.684, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.005 >= min_delta = 0.0001. New best score: 0.634
+Epoch 6: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:05<00:00,  2.12it/s, v_num=0, train_loss=0.00013, memory=0.000, val_f1=0.540, val_tpr=0.646, val_acc=0.685, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.646
+Epoch 6: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:06<00:00,  2.12it/s, v_num=0, train_loss=1.17e-5, memory=0.000, val_f1=0.540, val_tpr=0.646, val_acc=0.685, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 7:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [02:07<02:07,  2.04it/s, v_num=0, train_loss=5.43e-5, memory=0.000, val_f1=0.539, val_tpr=0.647, val_acc=0.685, train_f1=1.000, train_tpr=0.998, train_acc=1.000]Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.647
+Epoch 7: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:17<00:00,  2.02it/s, v_num=0, train_loss=4.11e-6, memory=0.000, val_f1=0.542, val_tpr=0.653, val_acc=0.686, train_f1=1.000, train_tpr=0.998, train_acc=1.000]Metric val_tpr improved by 0.006 >= min_delta = 0.0001. New best score: 0.653
+Epoch 7: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:17<00:00,  2.02it/s, v_num=0, train_loss=3.74e-5, memory=0.000, val_f1=0.542, val_tpr=0.653, val_acc=0.686, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 8:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [02:09<02:10,  2.00it/s, v_num=0, train_loss=1.36e-5, memory=0.000, val_f1=0.544, val_tpr=0.667, val_acc=0.687, train_f1=1.000, train_tpr=0.998, train_acc=1.000]Metric val_tpr improved by 0.014 >= min_delta = 0.0001. New best score: 0.667
+Epoch 8: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:21<00:00,  1.99it/s, v_num=0, train_loss=6.17e-5, memory=0.000, val_f1=0.550, val_tpr=0.676, val_acc=0.690, train_f1=1.000, train_tpr=0.998, train_acc=1.000]Metric val_tpr improved by 0.010 >= min_delta = 0.0001. New best score: 0.676
+Epoch 8: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:21<00:00,  1.99it/s, v_num=0, train_loss=1.19e-5, memory=0.000, val_f1=0.550, val_tpr=0.676, val_acc=0.690, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 9: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:22<00:00,  1.99it/s, v_num=0, train_loss=1.11e-5, memory=0.000, val_f1=0.533, val_tpr=0.675, val_acc=0.682, train_f1=1.000, train_tpr=0.994, train_acc=1.000]
+Epoch 10:  50%|███████████████████████████████████████████████████████████████████▎                                                                   | 260/521 [02:12<02:12,  1.96it/s, v_num=0, train_loss=1.05e-5, memory=0.000, val_f1=0.533, val_tpr=0.683, val_acc=0.682, train_f1=1.000, train_tpr=0.994, train_acc=1.000]Metric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.683
+Epoch 10: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:25<00:00,  1.96it/s, v_num=0, train_loss=4.77e-6, memory=0.000, val_f1=0.533, val_tpr=0.697, val_acc=0.682, train_f1=1.000, train_tpr=0.994, train_acc=1.000]Metric val_tpr improved by 0.014 >= min_delta = 0.0001. New best score: 0.697
+Epoch 10: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:25<00:00,  1.96it/s, v_num=0, train_loss=6.81e-7, memory=0.000, val_f1=0.533, val_tpr=0.697, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 11: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:28<00:00,  1.94it/s, v_num=0, train_loss=3.27e-7, memory=0.000, val_f1=0.533, val_tpr=0.680, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 12: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:32<00:00,  1.91it/s, v_num=0, train_loss=6.25e-7, memory=0.000, val_f1=0.533, val_tpr=0.708, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.011 >= min_delta = 0.0001. New best score: 0.708
+Epoch 12: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:33<00:00,  1.91it/s, v_num=0, train_loss=2.31e-6, memory=0.000, val_f1=0.533, val_tpr=0.708, val_acc=0.682, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 13:  50%|███████████████████████████████████████████████████████████████████▎                                                                   | 260/521 [02:17<02:17,  1.90it/s, v_num=0, train_loss=1.53e-5, memory=0.000, val_f1=0.533, val_tpr=0.709, val_acc=0.682, train_f1=1.000, train_tpr=0.998, train_acc=1.000]Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.709
+Epoch 13: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:37<00:00,  1.87it/s, v_num=0, train_loss=4.17e-5, memory=0.000, val_f1=0.533, val_tpr=0.716, val_acc=0.682, train_f1=1.000, train_tpr=0.998, train_acc=1.000]Metric val_tpr improved by 0.007 >= min_delta = 0.0001. New best score: 0.716
+Epoch 13: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:38<00:00,  1.87it/s, v_num=0, train_loss=0.000253, memory=0.000, val_f1=0.533, val_tpr=0.716, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 14: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:40<00:00,  1.86it/s, v_num=0, train_loss=3.69e-6, memory=0.000, val_f1=0.533, val_tpr=0.717, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.717
+Epoch 14: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:40<00:00,  1.86it/s, v_num=0, train_loss=2.47e-5, memory=0.000, val_f1=0.533, val_tpr=0.717, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 15: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:42<00:00,  1.84it/s, v_num=0, train_loss=8.49e-6, memory=0.000, val_f1=0.533, val_tpr=0.738, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.021 >= min_delta = 0.0001. New best score: 0.738
+Epoch 15: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:43<00:00,  1.84it/s, v_num=0, train_loss=3.49e-7, memory=0.000, val_f1=0.533, val_tpr=0.738, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 16:  50%|███████████████████████████████████████████████████████████████████▎                                                                   | 260/521 [02:22<02:22,  1.83it/s, v_num=0, train_loss=1.92e-7, memory=0.000, val_f1=0.533, val_tpr=0.742, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.742
+Epoch 16: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:42<00:00,  1.84it/s, v_num=0, train_loss=2.29e-6, memory=0.000, val_f1=0.533, val_tpr=0.744, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.003 >= min_delta = 0.0001. New best score: 0.744
+Epoch 16: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:43<00:00,  1.84it/s, v_num=0, train_loss=4.4e-7, memory=0.000, val_f1=0.533, val_tpr=0.744, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 17:  50%|███████████████████████████████████████████████████████████████████▎                                                                   | 260/521 [02:23<02:23,  1.81it/s, v_num=0, train_loss=6.44e-6, memory=0.000, val_f1=0.533, val_tpr=0.745, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.745
+Epoch 17: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:47<00:00,  1.81it/s, v_num=0, train_loss=4.32e-6, memory=0.000, val_f1=0.533, val_tpr=0.747, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.001 >= min_delta = 0.0001. New best score: 0.747
+Epoch 17: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:47<00:00,  1.81it/s, v_num=0, train_loss=1.48e-6, memory=0.000, val_f1=0.533, val_tpr=0.747, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 18:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [02:23<02:24,  1.81it/s, v_num=0, train_loss=2.2e-6, memory=0.000, val_f1=0.533, val_tpr=0.747, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.747
+Epoch 18: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [04:45<00:00,  1.82it/s, v_num=0, train_loss=2.36e-6, memory=0.000, val_f1=0.533, val_tpr=0.747, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.747
+Epoch 18: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:46<00:00,  1.82it/s, v_num=0, train_loss=7.63e-6, memory=0.000, val_f1=0.533, val_tpr=0.747, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 19:  50%|███████████████████████████████████████████████████████████████████▎                                                                   | 260/521 [02:22<02:22,  1.83it/s, v_num=0, train_loss=1.74e-6, memory=0.000, val_f1=0.533, val_tpr=0.747, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.000 >= min_delta = 0.0001. New best score: 0.747
+Epoch 19: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:47<00:00,  1.81it/s, v_num=0, train_loss=5.67e-6, memory=0.000, val_f1=0.533, val_tpr=0.747, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+`Trainer.fit` stopped: `max_epochs=20` reached.
+Epoch 19: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [04:47<00:00,  1.81it/s, v_num=0, train_loss=5.67e-6, memory=0.000, val_f1=0.533, val_tpr=0.747, val_acc=0.682, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+[!] Training of lstm ended:  Mon Jun 23 22:09:47 2025  | Took: 5296.71 seconds
+[!] Training of cnn_lstm started:  Mon Jun 23 22:09:47 2025
+[!] Scheduler: onecycle | Scheduler step budget: 10420
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/fabric/plugins/environments/slurm.py:204: The `srun` command is available on your system but is not used. HINT: If your intention is to run Lightning on SLURM, prepend your python command with `srun` like so: srun python3 experiments/ablation_models.py ...
+GPU available: True (cuda), used: False
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+/home/dtrizna/.local/lib/python3.10/site-packages/lightning/pytorch/trainer/setup.py:187: GPU available but not used. You can set it by doing `Trainer(accelerator='gpu')`.
+[*] Training 'cnn_lstm' model...
+[!] Setting up onecycle scheduler with step budget 10420
+
+   | Name            | Type               | Params
+--------------------------------------------------------
+0  | model           | CNN1D_BiLSTM_Model | 316 K
+1  | loss            | BCEWithLogitsLoss  | 0
+2  | train_acc       | BinaryAccuracy     | 0
+3  | train_f1        | BinaryF1Score      | 0
+4  | train_auc       | BinaryAUROC        | 0
+5  | train_recall    | BinaryRecall       | 0
+6  | train_precision | BinaryPrecision    | 0
+7  | val_acc         | BinaryAccuracy     | 0
+8  | val_f1          | BinaryF1Score      | 0
+9  | val_auc         | BinaryAUROC        | 0
+10 | val_recall      | BinaryRecall       | 0
+11 | val_precision   | BinaryPrecision    | 0
+--------------------------------------------------------
+316 K     Trainable params
+0         Non-trainable params
+316 K     Total params
+1.266     Total estimated model params size (MB)
+Epoch 0:  50%|█████████████████████████████████████████████████████████████████████████████████████████████▊                                                                                              | 260/521 [01:52<01:52,  2.31it/s, v_num=0, train_loss=0.556, memory=0.000, val_f1=0.860, val_tpr=0.285, val_acc=0.867]Metric val_tpr improved. New best score: 0.285                  
+Epoch 0: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [03:40<00:00,  2.37it/s, v_num=0, train_loss=0.0281, memory=0.000, val_f1=0.896, val_tpr=0.246, val_acc=0.905, train_f1=0.819, train_tpr=0.185, train_acc=0.798]
+Epoch 1:  50%|███████████████████████████████████████████████████████████████████▊                                                                    | 260/521 [01:46<01:46,  2.44it/s, v_num=0, train_loss=0.00341, memory=0.000, val_f1=0.763, val_tpr=0.777, val_acc=0.808, train_f1=0.819, train_tpr=0.185, train_acc=0.798]Metric val_tpr improved by 0.492 >= min_delta = 0.0001. New best score: 0.777
+Epoch 1: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [03:31<00:00,  2.46it/s, v_num=0, train_loss=0.00137, memory=0.000, val_f1=0.736, val_tpr=0.756, val_acc=0.791, train_f1=0.999, train_tpr=0.862, train_acc=0.999]
+Epoch 2:  50%|███████████████████████████████████████████████████████████████████▎                                                                   | 260/521 [01:43<01:43,  2.51it/s, v_num=0, train_loss=0.000401, memory=0.000, val_f1=0.662, val_tpr=0.821, val_acc=0.747, train_f1=0.999, train_tpr=0.862, train_acc=0.999]Metric val_tpr improved by 0.044 >= min_delta = 0.0001. New best score: 0.821
+Epoch 2: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [03:28<00:00,  2.50it/s, v_num=0, train_loss=8.13e-5, memory=0.000, val_f1=0.677, val_tpr=0.800, val_acc=0.756, train_f1=1.000, train_tpr=0.992, train_acc=1.000]
+Epoch 3: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [03:28<00:00,  2.50it/s, v_num=0, train_loss=0.000208, memory=0.000, val_f1=0.715, val_tpr=0.805, val_acc=0.778, train_f1=1.000, train_tpr=1.000, train_acc=1.000]
+Epoch 4:  50%|███████████████████████████████████████████████████████████████████▎                                                                   | 260/521 [01:45<01:46,  2.46it/s, v_num=0, train_loss=0.000418, memory=0.000, val_f1=0.725, val_tpr=0.829, val_acc=0.785, train_f1=1.000, train_tpr=1.000, train_acc=1.000]Metric val_tpr improved by 0.008 >= min_delta = 0.0001. New best score: 0.829
+Epoch 4: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [03:33<00:00,  2.44it/s, v_num=0, train_loss=0.000486, memory=0.000, val_f1=0.568, val_tpr=0.476, val_acc=0.698, train_f1=1.000, train_tpr=0.994, train_acc=1.000]
+Epoch 5: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 521/521 [03:41<00:00,  2.36it/s, v_num=0, train_loss=2.18e-5, memory=0.000, val_f1=0.567, val_tpr=0.503, val_acc=0.698, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 6: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [03:45<00:00,  2.30it/s, v_num=0, train_loss=0.000162, memory=0.000, val_f1=0.567, val_tpr=0.516, val_acc=0.698, train_f1=1.000, train_tpr=0.998, train_acc=1.000]Monitored metric val_tpr did not improve in the last 5 records. Best score: 0.829. Signaling Trainer to stop.
+Epoch 6: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [03:45<00:00,  2.30it/s, v_num=0, train_loss=0.000162, memory=0.000, val_f1=0.567, val_tpr=0.516, val_acc=0.698, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+Epoch 6: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋| 520/521 [03:45<00:00,  2.30it/s, v_num=0, train_loss=0.000162, memory=0.000, val_f1=0.567, val_tpr=0.516, val_acc=0.698, train_f1=1.000, train_tpr=0.998, train_acc=1.000]
+[!] Training of cnn_lstm ended:  Mon Jun 23 22:34:58 2025  | Took: 1510.64 seconds
+[!] Script end time: Mon Jun 23 22:34:58 2025

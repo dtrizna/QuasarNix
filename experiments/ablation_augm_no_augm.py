@@ -43,7 +43,7 @@ LEARNING_RATE = 1e-3
 SCHEDULER = "onecycle"
 
 # # TEST RUN CONFIG
-# DEVICE = "cpu"
+DEVICE = "cpu"
 # EPOCHS = 1
 # LIT_SANITY_STEPS = 0
 # LIMIT = 5000
@@ -51,12 +51,12 @@ SCHEDULER = "onecycle"
 # LOGS_FOLDER = "TEST_logs_augm_no_augm"
 
 # # PROD RUN CONFIG
-DEVICE = "gpu"
+# DEVICE = "gpu"
 EPOCHS = 10
 LIT_SANITY_STEPS = 1
 LIMIT = None
 DATALOADER_WORKERS = 4
-LOGS_FOLDER = os.path.join(ROOT, "experiments", "logs_augm_no_augm", f"real_test_set_{int(time.time())}")
+LOGS_FOLDER = os.path.join(ROOT, "experiments", "logs_augm_no_augm", f"real_test_set_cnn_{int(time.time())}")
 
 def generate_sets(random_state, log_folder=None):
     # baselines
@@ -169,10 +169,10 @@ def train_models(run_name, X_train_onehot, X_test_onehot, X_train_loader, X_test
     xgb_model_onehot = XGBClassifier(n_estimators=100, max_depth=10, random_state=RANDOM_SEED)
 
     models = {
-        "xgb_onehot": xgb_model_onehot,
+        # "xgb_onehot": xgb_model_onehot,
         # "mlp_onehot": mlp_tab_model_onehot,
         # "mean_transformer": mean_transformer_model,
-        # "cnn": cnn_model,
+        "cnn": cnn_model,
     }
 
     for name in models:

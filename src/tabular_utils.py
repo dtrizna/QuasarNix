@@ -52,11 +52,17 @@ def training_tabular(
     # calculate test metrics
     y_test_preds = model.predict_proba(X_test_encoded)[:,1]
     tpr = get_tpr_at_fpr(y_test, y_test_preds, fprNeeded=1e-4, logits=False)
+    tpr_1e5 = get_tpr_at_fpr(y_test, y_test_preds, fprNeeded=1e-5, logits=False)
+    tpr_1e6 = get_tpr_at_fpr(y_test, y_test_preds, fprNeeded=1e-6, logits=False)
+    tpr_1e7 = get_tpr_at_fpr(y_test, y_test_preds, fprNeeded=1e-7, logits=False)
     f1 = f1_score(y_test, y_test_preds.round())
     acc = accuracy_score(y_test, y_test_preds.round())
     auc = roc_auc_score(y_test, y_test_preds)
     print(f"[!] {name} model scores: val_tpr={tpr:.4f}, val_f1={f1:.4f}, val_acc={acc:.4f}, val_auc={auc:.4f}")
-    metrics_csv["val_tpr"] = tpr
+    metrics_csv["val_tpr_1e4"] = tpr
+    metrics_csv["val_tpr_1e5"] = tpr_1e5
+    metrics_csv["val_tpr_1e6"] = tpr_1e6
+    metrics_csv["val_tpr_1e7"] = tpr_1e7
     metrics_csv["val_f1"] = f1
     metrics_csv["val_acc"] = acc
     metrics_csv["val_auc"] = auc

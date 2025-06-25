@@ -34,7 +34,7 @@ LEARNING_RATE = 1e-3
 SCHEDULER = "onecycle"
 
 # # TEST RUN CONFIG
-DEVICE = "cpu"
+#DEVICE = "cpu"
 # EPOCHS = 1
 # LIT_SANITY_STEPS = 0
 # LIMIT = 5000
@@ -42,7 +42,7 @@ DEVICE = "cpu"
 # LOGS_FOLDER = "TEST_logs_models"
 
 # PROD RUN CONFIG
-# DEVICE = "gpu"
+DEVICE = "gpu"
 EPOCHS = 20
 LIT_SANITY_STEPS = 1
 LIMIT = None

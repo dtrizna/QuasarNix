@@ -54,7 +54,7 @@ def create_dataloader(X, y=None, batch_size=1024, shuffle=False, workers=4):
     if isinstance(X, np.ndarray):
         X = torch.from_numpy(X).long()
     if y is not None and isinstance(y, np.ndarray):
-        y = torch.from_numpy(y)
+        y = torch.from_numpy(y).float()
 
     # Handle csr_matrix case
     if isinstance(X, csr_matrix):
@@ -109,7 +109,7 @@ def generate_synthetic_data(
     # ======== split baseline into train / test for benign class ========
 
     # ======== read template files ========
-    data_root = Path(root) / "data" / "nix_shell"
+    data_root = root / "data" / "nix_shell"
     train_template_path = data_root / "templates_train.txt"
     test_template_path = data_root / "templates_test.txt"
 

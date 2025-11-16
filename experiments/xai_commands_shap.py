@@ -53,7 +53,7 @@ TEMPLATE_TEST_PATH = DATA_ROOT / "templates_test.txt"
 
 # Output directory for results with timestamp
 TIMESTAMP = int(time.time())
-OUT_DIR = ROOT / "experiments" / f"results_commands_xai_{TIMESTAMP}"
+OUT_DIR = ROOT / "experiments" / f"logs_xai_commands_shap_{TIMESTAMP}"
 OUT_DIR.mkdir(exist_ok=True, parents=True)
 
 TOKENIZER = wordpunct_tokenize
@@ -357,7 +357,7 @@ def plot_group_violins(grouped_shap: np.ndarray, group_names: List[str], out_png
     # Labels and title
     ax.set_xlabel('SHAP Value per Sample\n(← Benign-indicating | Malicious-indicating →)', 
                  fontsize=12, fontweight='bold')
-    ax.set_ylabel('Attack Tactic', fontsize=12, fontweight='bold')
+    ax.set_ylabel('Attack Component', fontsize=12, fontweight='bold')
     
     if title:
         ax.set_title(title + '\n(Positive SHAP pushes toward malicious; Negative toward benign)', 
@@ -464,7 +464,7 @@ def plot_group_swarm_strip(grouped_shap: np.ndarray, group_names: List[str], out
     # Labels and title
     ax.set_xlabel('SHAP Value per Sample\n(← Benign-indicating | Malicious-indicating →)',
                  fontsize=12, fontweight='bold')
-    ax.set_ylabel('Attack Tactic', fontsize=12, fontweight='bold')
+    ax.set_ylabel('Attack Component', fontsize=12, fontweight='bold')
     
     if title:
         ax.set_title(title + '\n(Positive SHAP pushes toward malicious; Negative toward benign)',

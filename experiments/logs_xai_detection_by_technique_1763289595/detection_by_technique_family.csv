@@ -1,0 +1,4 @@
+technique_family,tpr,mean_score,num_samples
+scripting,1.0,0.9609,6468
+named_pipe,0.8781,0.8896,2772
+shell,0.8106,0.8486,924

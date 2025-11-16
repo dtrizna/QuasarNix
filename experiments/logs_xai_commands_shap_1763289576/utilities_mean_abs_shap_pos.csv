@@ -1,0 +1,16 @@
+group,mean_abs_shap
+nc,1.009761
+bash,0.396678
+python,0.143345
+perl,0.000000
+php,0.000000
+ruby,0.000000
+node,0.000000
+socat,0.000000
+telnet,0.000000
+openssl,0.000000
+curl,0.000000
+wget,0.000000
+ssh,0.000000
+busybox,0.000000
+nmap,0.000000

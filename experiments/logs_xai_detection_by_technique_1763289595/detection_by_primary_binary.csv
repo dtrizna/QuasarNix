@@ -1,0 +1,9 @@
+primary_binary,tpr,mean_score,num_samples
+awk,1.0,0.9408,924
+lua,1.0,0.9999,924
+perl,1.0,1.0,924
+php,1.0,1.0,924
+python3,1.0,0.9998,924
+ruby,1.0,0.9999,924
+zsh,1.0,0.7857,924
+bash,0.8612,0.8793,3696

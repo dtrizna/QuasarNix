@@ -1,5 +1,6 @@
 # Skipping data
 data/nix_shell/*parquet
+data/nix_shell/bash_commands_private/*
 data/signatures/velociraptor-sigma-rules-repo/*
 data/powershell/*parquet
 data/powershell/pan42/*
@@ -14,6 +15,10 @@ hf-*
 *counter.json
 experiments/logs*poisoning*/*
 *.pt
+
+# Paper data
+paper_latex/
+paper_TOPS/
 
 # Model checkpoints
 *model

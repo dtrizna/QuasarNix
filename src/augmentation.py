@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import re
 import random
 import string
@@ -125,20 +126,62 @@ class NixCommandAugmentation:
         print(f"[!] Generated total {len(DATASET)} commands.")
         return DATASET
 
+@dataclass
+class NixCommandAugmentationConfig:
+    # for shell sampling
+    nix_shells: List[str] = None
+    nix_shell_folders: List[str] = None
+    # for file path sampling
+    default_filepaths: List[str] = None
+    path_roots: List[str] = None
+    folder_lengths: List[int] = None
+    nr_of_random_filepaths: int = 5
+    # for variable sampling
+    default_variable_names: List[str] = None
+    nr_of_random_variables: int = 5
+    # for ip sampling
+    default_ips: List[str] = None
+    nr_of_random_ips: int = 5
+    # for port sampling
+    default_ports: List[int] = None
+    nr_of_random_ports: int = 5
+    # for fd number sampling
+    default_fd_number: int = 3
+    nr_of_random_fd_numbers: int = 5
+
+    def __post_init__(self):
+        # Set defaults if None
+        if self.nix_shells is None:
+            self.nix_shells = ["sh", "bash", "dash"]
+        if self.nix_shell_folders is None:
+            self.nix_shell_folders = ["/bin/", "/usr/bin/"]
+        if self.default_filepaths is None:
+            self.default_filepaths = ["/tmp/f", "/tmp/t"]
+        if self.path_roots is None:
+            self.path_roots = ["/tmp/", "/home/user/", "/var/www/"]
+        if self.folder_lengths is None:
+            self.folder_lengths = [1, 8]
+        if self.default_variable_names is None:
+            self.default_variable_names = ["port", "host", "cmd", "p", "s", "c"]
+        if self.default_ips is None:
+            self.default_ips = ["127.0.0.1"]
+        if self.default_ports is None:
+            self.default_ports = [8080, 9001, 80, 443, 53, 22, 8000, 8888]
+
 
 class NixCommandAugmentationWithBaseline:
     def __init__(
             self,
             templates: List[str] = None,
-            nix_shells: List[str] = ["sh", "bash", "dash"],
-            nix_shell_folders: List[str] = ["/bin/", "/usr/bin/"],
             random_state: int = 42,
-            legitimate_baseline: Optional[List[str]] = None
+            legitimate_baseline: Optional[List[str]] = None,
+            config: NixCommandAugmentationConfig = NixCommandAugmentationConfig(),
     ):
         self.templates = templates
+        self.config = config
         self.shell_list = []
-        for shell in nix_shells:
-            shell_fullpaths = [x+shell for x in nix_shell_folders]
+        for shell in self.config.nix_shells:
+            shell_fullpaths = [x+shell for x in self.config.nix_shell_folders]
             self.shell_list.extend(shell_fullpaths + [shell])
         random.seed(random_state)
         
@@ -202,7 +245,7 @@ class NixCommandAugmentationWithBaseline:
 
     def _create_filepath_sampler(self):
         def sampler():
-            default_paths = ["/tmp/f", "/tmp/t"] + self.get_random_filepaths(count=5)
+            default_paths = self.config.default_filepaths + self.get_random_filepaths(count=self.config.nr_of_random_filepaths)
             return self._sample_with_baseline_bias(
                 'FILE_PATH',
                 lambda: random.choice(default_paths)
@@ -211,8 +254,8 @@ class NixCommandAugmentationWithBaseline:
 
     def _create_variable_sampler(self):
         def sampler():
-            default_vars = ["port", "host", "cmd", "p", "s", "c"] + \
-                         [self.get_random_string(length=4) for _ in range(5)]
+            default_vars = self.config.default_variable_names + \
+                           [self.get_random_string(length=4) for _ in range(self.config.nr_of_random_variables)]
             return self._sample_with_baseline_bias(
                 'VARIABLE_NAME',
                 lambda: random.choice(default_vars)
@@ -221,7 +264,7 @@ class NixCommandAugmentationWithBaseline:
 
     def _create_ip_sampler(self):
         def sampler():
-            default_ips = ["127.0.0.1"] + ["10."+self.get_random_ip(octets=3) for _ in range(5)]
+            default_ips = self.config.default_ips + ["10."+self.get_random_ip(octets=3) for _ in range(self.config.nr_of_random_ips)]
             return self._sample_with_baseline_bias(
                 'IP_ADDRESS',
                 lambda: random.choice(default_ips)
@@ -230,11 +273,11 @@ class NixCommandAugmentationWithBaseline:
 
     def _create_port_sampler(self):
         def sampler():
-            default_ports = [8080, 9001, 80, 443, 53, 22, 8000, 8888] + \
-                          [int(random.uniform(0,65535)) for _ in range(5)]
+            default_ports = self.config.default_ports + \
+                          [int(random.uniform(0,65535)) for _ in range(self.config.nr_of_random_ports)]
             return self._sample_with_baseline_bias(
                 'PORT_NUMBER',
-                lambda: random.choice(default_ports)
+                lambda: random.choice(self.config.default_ports)
             )
         return sampler
 
@@ -246,13 +289,14 @@ class NixCommandAugmentationWithBaseline:
     def get_random_string(length: int = 10) -> str:
         return "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(length))
 
-    def get_random_filepaths(self, count: int = 1, 
-                           path_roots: List[str] = ["/tmp/", "/home/user/", "/var/www/"]) -> List[str]:
-        folder_lengths = [1, 8]
+    def get_random_filepaths(
+            self, 
+            count: int = 1,
+        ) -> List[str]:
         random_paths = []
         for _ in range(count):
-            random_paths.append(random.choice(path_roots) + 
-                              self.get_random_string(random.choice(folder_lengths)))
+            random_paths.append(random.choice(self.config.path_roots) + 
+                              self.get_random_string(random.choice(self.config.folder_lengths)))
         return random_paths
 
     def generate_commands(self, number_of_examples_per_template: int) -> List[str]:

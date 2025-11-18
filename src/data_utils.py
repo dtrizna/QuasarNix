@@ -176,6 +176,7 @@ def load_data(
         seed: int = 33,
         limit: int = None,
         baseline: Literal["nl2bash", "real"] = "real",
+        dtype: Literal["vanilla", "oversampled"] = "vanilla",
 ):
     """
     Load and prepare training and testing data from parquet files.
@@ -192,19 +193,30 @@ def load_data(
     if root is None:
         root = Path(__file__).parent.parent
 
+    if dtype == "oversampled" and baseline != "real":
+        raise ValueError("dtype='oversampled' is only supported for baseline='real'.")
+
     data_root = Path(root) / 'data' / 'nix_shell'
+
+    suffix = "" if dtype == "vanilla" else "_ovsampling"
+
     paths = {
-        'train_baseline': data_root / f'train_baseline_{baseline}.parquet',
-        'test_baseline': data_root / f'test_baseline_{baseline}.parquet',
-        'train_malicious': data_root / f'train_rvrs_{baseline}.parquet',
-        'test_malicious': data_root / f'test_rvrs_{baseline}.parquet',
-        'enterprise_baseline_train': data_root / 'enterprise_baseline_train.parquet',
-        'enterprise_baseline_test': data_root / 'enterprise_baseline_test.parquet',
+        'train_baseline': data_root / f'train_baseline_{baseline}{suffix}.parquet',
+        'test_baseline': data_root / f'test_baseline_{baseline}{suffix}.parquet',
+        'train_malicious': data_root / f'train_rvrs_{baseline}{suffix}.parquet',
+        'test_malicious': data_root / f'test_rvrs_{baseline}{suffix}.parquet',
+        'enterprise_baseline_train': data_root / f'enterprise_baseline_train{suffix}.parquet',
+        'enterprise_baseline_test': data_root / f'enterprise_baseline_test{suffix}.parquet',
     }
 
     # if do not exist
     exist = all(path.exists() for path in paths.values())
     if not exist:
+        if dtype == "oversampled":
+            raise FileNotFoundError(
+                f"Oversampled data files do not exist in {data_root}. "
+                f"Please run 'src/oversample_enterprise.py' to generate them."
+            )
         print(f"[-] Data files do not exist in {data_root}")
         print(f"    Do you want to generate synthetic data from {baseline} dataset? (Y/n)")
         if input().lower() in ["y", "yes", ""]:

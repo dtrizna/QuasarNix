@@ -1,0 +1,62 @@
+[
+  {
+    "group": "python",
+    "mean_abs_shap": 0.5759562253952026
+  },
+  {
+    "group": "nc",
+    "mean_abs_shap": 0.4212494492530823
+  },
+  {
+    "group": "bash",
+    "mean_abs_shap": 0.026603830978274345
+  },
+  {
+    "group": "perl",
+    "mean_abs_shap": 0.0
+  },
+  {
+    "group": "php",
+    "mean_abs_shap": 0.0
+  },
+  {
+    "group": "ruby",
+    "mean_abs_shap": 0.0
+  },
+  {
+    "group": "node",
+    "mean_abs_shap": 0.0
+  },
+  {
+    "group": "socat",
+    "mean_abs_shap": 0.0
+  },
+  {
+    "group": "telnet",
+    "mean_abs_shap": 0.0
+  },
+  {
+    "group": "openssl",
+    "mean_abs_shap": 0.0
+  },
+  {
+    "group": "curl",
+    "mean_abs_shap": 0.0
+  },
+  {
+    "group": "wget",
+    "mean_abs_shap": 0.0
+  },
+  {
+    "group": "ssh",
+    "mean_abs_shap": 0.0
+  },
+  {
+    "group": "busybox",
+    "mean_abs_shap": 0.0
+  },
+  {
+    "group": "nmap",
+    "mean_abs_shap": 0.0
+  }
+]

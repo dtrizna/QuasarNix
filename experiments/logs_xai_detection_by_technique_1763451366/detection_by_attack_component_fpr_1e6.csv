@@ -1,8 +1,0 @@
-component,tpr,mean_score,num_samples
-interpreter,0.9207,1.0,85455
-net_utility,0.6287,0.9659,85526
-shell_invoker,0.5777,0.9875,234993
-ip_tokens,0.5777,0.9875,234993
-fd_redirection,0.5574,0.9862,213630
-obfuscation,0.4845,0.9998,85608
-wrappers,0.0,0.9711,1

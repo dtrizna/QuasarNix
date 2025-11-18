@@ -1,0 +1,30 @@
+[
+  {
+    "group": "ip_tokens",
+    "mean_abs_shap": 2.250356674194336
+  },
+  {
+    "group": "net_utility",
+    "mean_abs_shap": 0.4212494492530823
+  },
+  {
+    "group": "interpreter",
+    "mean_abs_shap": 0.24213235080242157
+  },
+  {
+    "group": "obfuscation",
+    "mean_abs_shap": 0.17089959979057312
+  },
+  {
+    "group": "fd_redirection",
+    "mean_abs_shap": 0.0825314149260521
+  },
+  {
+    "group": "shell_invoker",
+    "mean_abs_shap": 0.026603830978274345
+  },
+  {
+    "group": "wrappers",
+    "mean_abs_shap": 0.0
+  }
+]

@@ -31,6 +31,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
+import scienceplots  # type: ignore
+
+plt.style.use(["science", "no-latex"])
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.augmentation import NixCommandAugmentationWithBaseline, read_template_file
@@ -253,21 +256,13 @@ def plot_bar_by_indexed_metric(
     ax.set_xlim(0, 105)
 
     for i, (idx, row) in enumerate(df.iterrows()):
+        # Percentage label at the end of each bar
         ax.text(
             row["metric"] * 100 + 1,
             i,
             f"{row['metric'] * 100:.1f}%",
             va="center",
             fontsize=10,
-        )
-        ax.text(
-            3,
-            i,
-            f"N={int(row['num_samples']):,}",
-            va="center",
-            fontsize=9,
-            color="white",
-            fontweight="bold",
         )
 
     plt.tight_layout()
@@ -499,71 +494,33 @@ def main() -> None:
         )
     
     # ========================================================================
-    # OVERSAMPLED DATASET ANALYSIS AT FPR = 1e-6
+    # ATTACK COMPONENT ANALYSIS AT FPR = 1e-6 (SAME DATASET)
     # ========================================================================
     
     print("\n" + "=" * 80)
-    print("LOADING OVERSAMPLED DATASET FOR FPR=1e-6 ANALYSIS")
+    print("DETECTION BY ATTACK COMPONENT - FPR = 1e-6")
     print("=" * 80)
-    
-    try:
-        X_train_os, y_train_os, X_test_os, y_test_os, *_ = load_data(
-            root=ROOT, 
-            seed=SEED, 
-            limit=None,  # Use full dataset for FPR=1e-6
-            baseline="real", 
-            dtype="oversampled"
-        )
-        
-        print(f"[+] Oversampled train size: {len(X_train_os)} ({int(y_train_os.sum())} malicious)")
-        print(f"[+] Oversampled test size: {len(X_test_os)} ({int(y_test_os.sum())} malicious)")
-        
-        print("\n[+] Encoding oversampled data...")
-        X_train_os_enc = encoder.transform(X_train_os)
-        X_test_os_enc = encoder.transform(X_test_os)
-        
-        print("\n[+] Training model on oversampled data...")
-        model_os = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
-        trained_os = training_tabular(
-            model=model_os,
-            name="xgb_detection_oversampled",
-            X_train_encoded=X_train_os_enc,
-            X_test_encoded=X_test_os_enc,
-            y_train=y_train_os,
-            y_test=y_test_os,
-            logs_folder=str(OUT_DIR / "xgboost_training_oversampled"),
-            model_file=None,
-        )
-        
-        y_pred_proba_os = trained_os.predict_proba(X_test_os_enc)[:, 1]
-        
-        print("\n" + "=" * 80)
-        print("DETECTION BY ATTACK COMPONENT - OVERSAMPLED DATA AT FPR = 1e-6")
-        print("=" * 80)
-        
-        threshold_1e6 = get_threshold_at_fpr(y_test_os, y_pred_proba_os, target_fpr=1e-6)
-        print(f"[+] Threshold at FPR=1e-6: {threshold_1e6:.6f}")
-        
-        by_component_1e6 = detection_by_attack_component(
-            X_test=X_test_os,
-            y_test=y_test_os,
-            y_pred_proba=y_pred_proba_os,
-            threshold=threshold_1e6,
-        )
-        by_component_1e6.to_csv(OUT_DIR / "detection_by_attack_component_fpr_1e6.csv")
-        print(by_component_1e6)
 
-        if not by_component_1e6.empty:
-            plot_bar_by_indexed_metric(
-                series=by_component_1e6["tpr"],
-                num_samples=by_component_1e6["num_samples"],
-                xlabel="True Positive Rate (%)",
-                title=f"Detection by Attack Component (FPR = $10^{{-6}}$, threshold={threshold_1e6:.4f})",
-                out_path=PLOTS_DIR / "detection_by_attack_component_fpr_1e6",
-            )
-    
-    except FileNotFoundError as e:
-        print(f"[!] Skipping oversampled dataset analysis: {e}")
+    threshold_1e6 = get_threshold_at_fpr(y_test, y_pred_proba, target_fpr=1e-6)
+    print(f"[+] Threshold at FPR=1e-6: {threshold_1e6:.6f}")
+
+    by_component_1e6 = detection_by_attack_component(
+        X_test=X_test,
+        y_test=y_test,
+        y_pred_proba=y_pred_proba,
+        threshold=threshold_1e6,
+    )
+    by_component_1e6.to_csv(OUT_DIR / "detection_by_attack_component_fpr_1e6.csv")
+    print(by_component_1e6)
+
+    if not by_component_1e6.empty:
+        plot_bar_by_indexed_metric(
+            series=by_component_1e6["tpr"],
+            num_samples=by_component_1e6["num_samples"],
+            xlabel="True Positive Rate (%)",
+            title=f"Detection by Attack Component (FPR = $10^{{-6}}$, threshold={threshold_1e6:.4f})",
+            out_path=PLOTS_DIR / "detection_by_attack_component_fpr_1e6",
+        )
 
     print("\n[+] Key technique-family contrasts:")
     for family in by_family.index:

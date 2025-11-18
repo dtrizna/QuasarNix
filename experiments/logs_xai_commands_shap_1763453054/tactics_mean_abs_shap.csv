@@ -1,0 +1,8 @@
+group,mean_abs_shap
+ip_tokens,2.250357
+net_utility,0.421249
+interpreter,0.242132
+obfuscation,0.170900
+fd_redirection,0.082531
+shell_invoker,0.026604
+wrappers,0.000000

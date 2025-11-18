@@ -586,13 +586,14 @@ def load_lit_model(
         log_folder: str,
         epochs: int,
         device: str,
-        lit_sanity_steps: int
+        lit_sanity_steps: int,
+        val_check_times: int = 2
 ):
     """ 
     Deprecated: use LitTrainerWrapper instead
     """
     lightning_model = PyTorchLightningModel.load_from_checkpoint(checkpoint_path=model_file, model=pytorch_model)
-    trainer = configure_trainer(name, log_folder, epochs, device=device, lit_sanity_steps=lit_sanity_steps)
+    trainer = configure_trainer(name, log_folder, epochs, device=device, lit_sanity_steps=lit_sanity_steps, val_check_times=val_check_times)
     return trainer, lightning_model
 
 
@@ -609,13 +610,14 @@ def train_lit_model(
         model_file: Union[None, str] = None,
         device: str = "cpu",
         lit_sanity_steps: int = 1,
-        early_stop_patience: int = 5
+        early_stop_patience: int = 5,
+        val_check_times: int = 2
 ):
     """ 
     Deprecated: use LitTrainerWrapper instead
     """
     lightning_model = PyTorchLightningModel(model=pytorch_model, learning_rate=learning_rate, scheduler=scheduler, scheduler_step_budget=scheduler_budget)
-    trainer = configure_trainer(name, log_folder, epochs, device=device, lit_sanity_steps=lit_sanity_steps, early_stop_patience=early_stop_patience)
+    trainer = configure_trainer(name, log_folder, epochs, device=device, lit_sanity_steps=lit_sanity_steps, early_stop_patience=early_stop_patience, val_check_times=val_check_times)
 
     print(f"[*] Training '{name}' model...")
     trainer.fit(lightning_model, X_train_loader, X_test_loader)

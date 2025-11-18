@@ -48,6 +48,8 @@ from src.models import (
 )
 from src.lit_utils import train_lit_model
 
+NUM_RUNS = 10 # 10 for production run
+TIMESTAMP = int(time.time())
 
 # Mirror core hyperparameters from ablation_models.py for consistency
 VOCAB_SIZE = 4096
@@ -57,7 +59,7 @@ BATCH_SIZE = 1024
 DROPOUT = 0.5
 LEARNING_RATE = 1e-3
 SCHEDULER = "onecycle"
-EPOCHS = 2
+EPOCHS = 20
 DATALOADER_WORKERS = 4
 
 
@@ -87,11 +89,6 @@ if os.getenv("MC_DEVICE_PRINTED", "0") != "1":
     print(f"[MC] Using Torch device: {DEVICE}")
     os.environ["MC_DEVICE_PRINTED"] = "1"
 
-# MC RUNS
-NUM_RUNS = 2
-
-timestamp = int(time.time())
-
 
 @dataclass
 class MonteCarloConfig:
@@ -101,7 +98,7 @@ class MonteCarloConfig:
     seeds: List[int] = None
     vocab_size: int = 4096
     max_len: int = 128
-    logs_folder: Path = Path(f"experiments/logs_mc_stability_gpt5_{timestamp}")
+    logs_folder: Path = Path(f"experiments/logs_mc_repeated_training_{TIMESTAMP}")
     baseline: str = "real"
 
     def __post_init__(self) -> None:
@@ -178,9 +175,9 @@ def generate_malicious_with_config(
     return generator.generate_commands(examples_per_template)
 
 
-def monte_carlo_xgb(mc_cfg: MonteCarloConfig) -> None:
+def monte_carlo_run(mc_cfg: MonteCarloConfig) -> None:
     """
-    Run Monte Carlo repeated training for XGB with different augmentation presets and seeds.
+    Run Monte Carlo repeated training with different augmentation presets and seeds.
     """
     root = Path(__file__).parent.parent
 
@@ -221,7 +218,7 @@ def monte_carlo_xgb(mc_cfg: MonteCarloConfig) -> None:
         vocab_size=VOCAB_SIZE,
         max_len=MAX_LEN,
         tokenizer_fn=wordpunct_tokenize,
-        suffix="_mc_xgb",
+        suffix="_mc_run",
         logs_folder=str(mc_cfg.logs_folder),
     )
 
@@ -254,7 +251,7 @@ def monte_carlo_xgb(mc_cfg: MonteCarloConfig) -> None:
         seed = mc_cfg.seeds[run_idx]
         preset = presets[run_idx % len(presets)]
 
-        print(f"\n[MC-XGB] Run {run_idx + 1}/{mc_cfg.num_runs} | seed={seed}")
+        print(f"\n[MC-RUN] Run {run_idx + 1}/{mc_cfg.num_runs} | seed={seed}")
         print(f"[MC-XGB] Using augmentation preset index {run_idx % len(presets)}")
 
         # ===== Variable components per run: malicious training synthesis + model seed =====
@@ -265,7 +262,7 @@ def monte_carlo_xgb(mc_cfg: MonteCarloConfig) -> None:
         per_template = max(1, original_malicious_count // templates_count)
 
         print(
-            f"[MC-XGB] Generating malicious training data: "
+            f"[MC-RUN] Generating malicious training data: "
             f"{per_template} examples/template for {templates_count} templates "
             f"(~{per_template * templates_count} total)."
         )
@@ -462,6 +459,8 @@ def monte_carlo_xgb(mc_cfg: MonteCarloConfig) -> None:
                     scheduler_budget=EPOCHS * len(X_train_tab_loader),
                     device=DEVICE,
                     lit_sanity_steps=1,
+                    early_stop_patience=5,
+                    val_check_times=2,
                 )
                 elapsed = time.time() - start
                 # Predict with Lightning
@@ -496,6 +495,8 @@ def monte_carlo_xgb(mc_cfg: MonteCarloConfig) -> None:
                     scheduler_budget=EPOCHS * len(X_train_seq_loader),
                     device=DEVICE,
                     lit_sanity_steps=1,
+                    early_stop_patience=5,
+                    val_check_times=2,
                 )
                 elapsed = time.time() - start
                 import lightning as L
@@ -543,10 +544,10 @@ def monte_carlo_xgb(mc_cfg: MonteCarloConfig) -> None:
     results_df = pd.DataFrame(results)
     summary_path = mc_cfg.logs_folder / "mc_models_summary.csv"
     results_df.to_csv(summary_path, index=False)
-    print(f"[MC-XGB] Monte Carlo summary saved to '{summary_path}'")
+    print(f"[MC-RUN] Monte Carlo summary saved to '{summary_path}'")
 
     # Print aggregate metrics (mean ± std) across runs in a paper-ready style.
-    print("\n[MC-XGB] Aggregate metrics across runs (values in % where applicable):")
+    print("\n[MC-RUN] Aggregate metrics across runs (values in % where applicable):")
     metric_columns = ["test_auc", "test_f1", "test_acc", "tpr_at_1e6"]
     for model_name in sorted(results_df["model_name"].unique()):
         print(f"\n  Model: {model_name}")
@@ -564,4 +565,4 @@ def monte_carlo_xgb(mc_cfg: MonteCarloConfig) -> None:
 
 if __name__ == "__main__":
     cfg = MonteCarloConfig()
-    monte_carlo_xgb(cfg)
+    monte_carlo_run(cfg)

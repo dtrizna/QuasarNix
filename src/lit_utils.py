@@ -158,7 +158,9 @@ class PyTorchLightningModelBase(L.LightningModule):
         self.log('train_loss', loss, prog_bar=True)
         learning_rate = self.optimizers().param_groups[0]['lr']
         self.log('lr', learning_rate, on_step=True, prog_bar=False)
-        self.log('memory', float(torch.cuda.memory_allocated()), on_step=True, prog_bar=True)
+        # Log CUDA memory only when CUDA is actually available (avoids crashes on CPU/MPS)
+        if torch.cuda.is_available():
+            self.log('memory', float(torch.cuda.memory_allocated()), on_step=True, prog_bar=True)
         self.train_f1(self.logits, self.y)
         self.log('train_f1', self.train_f1, on_step=False, on_epoch=True, prog_bar=True)
         train_tpr = self.train_tpr(self.logits, self.y, fprNeeded=self.fpr)
@@ -232,7 +234,9 @@ class PyTorchLightningModelLM(PyTorchLightningModelBase):
         self.log('train_loss', loss, prog_bar=True)
         learning_rate = self.optimizers().param_groups[0]['lr']
         self.log('lr', learning_rate, on_step=True, prog_bar=True)
-        self.log('memory', float(torch.cuda.memory_allocated()), on_step=True, prog_bar=True)
+        # Log CUDA memory only when CUDA is actually available (avoids crashes on CPU/MPS)
+        if torch.cuda.is_available():
+            self.log('memory', float(torch.cuda.memory_allocated()), on_step=True, prog_bar=True)
         return loss
 
 

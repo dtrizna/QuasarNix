@@ -64,8 +64,20 @@ def create_dataloader(X, y=None, batch_size=1024, shuffle=False, workers=4):
         dataset = TensorDataset(X, y) if y is not None else TensorDataset(X)
     else:
         raise ValueError("Unsupported type for X. Supported types are numpy arrays, torch tensors, and scipy CSR matrices.")
-    
-    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=workers, persistent_workers=True, pin_memory=True)
+
+    # On Apple Silicon (MPS), pin_memory is not supported and raises a warning.
+    # We disable pin_memory in that case while keeping it enabled elsewhere.
+    use_pin_memory = True
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        use_pin_memory = False
+    return DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        num_workers=workers,
+        persistent_workers=True,
+        pin_memory=use_pin_memory,
+    )
 
 
 def commands_to_loader(

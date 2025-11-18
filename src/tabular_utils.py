@@ -31,7 +31,9 @@ def training_tabular(
     # save trained model to LOGS_FOLDER/name
     os.makedirs(f"{logs_folder}/{name}", exist_ok=True)
     if isinstance(model, XGBClassifier):
-        model.save_model(f"{logs_folder}/{name}/model.xgboost")
+        # Explicitly choose JSON model format to avoid XGBoost UBJSON warning
+        # and keep the artifact human-inspectable if needed.
+        model.save_model(f"{logs_folder}/{name}/model.json")
     else:
         with open(f"{logs_folder}/{name}/model.pkl", "wb") as f:
             pickle.dump(model, f)

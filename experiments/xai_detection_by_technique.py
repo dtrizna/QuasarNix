@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 from nltk.tokenize import wordpunct_tokenize
 from sklearn.utils import shuffle
+from sklearn.metrics import roc_curve
 from xgboost import XGBClassifier
 
 import matplotlib
@@ -35,6 +36,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.augmentation import NixCommandAugmentationWithBaseline, read_template_file
 from src.preprocessors import OneHotCustomVectorizer
 from src.tabular_utils import training_tabular
+from src.data_utils import load_data
 from src.template_detection_analysis import (
     aggregate_detection_by_primary_binary,
     aggregate_detection_by_technique_family,
@@ -70,6 +72,29 @@ plt.rcParams["axes.labelsize"] = 13
 plt.rcParams["axes.titlesize"] = 14
 plt.rcParams["xtick.labelsize"] = 11
 plt.rcParams["ytick.labelsize"] = 11
+
+
+def get_threshold_at_fpr(y_true: np.ndarray, y_pred_proba: np.ndarray, target_fpr: float) -> float:
+    """
+    Find threshold that achieves target FPR.
+    """
+    fpr, tpr, thresholds = roc_curve(y_true, y_pred_proba)
+    valid_idx = np.where(fpr <= target_fpr)[0]
+    if len(valid_idx) == 0:
+        return 1.0  # No threshold achieves this FPR
+    return float(thresholds[valid_idx[-1]])
+
+
+def get_threshold_with_highest_f1(y_true: np.ndarray, y_pred_proba: np.ndarray) -> float:
+    """
+    Find threshold that maximizes F1 score using ROC curve approximation.
+    """
+    fpr, tpr, thresholds = roc_curve(y_true, y_pred_proba)
+    # F1 approximation: 2 * TPR * (1 - FPR) / (TPR + 1 - FPR)
+    # Simplified for ROC: 2 * tpr * (1 - fpr)
+    f1_scores = 2 * tpr * (1 - fpr)
+    best_idx = np.argmax(f1_scores)
+    return float(thresholds[best_idx])
 
 
 def build_attack_component_groups() -> Dict[str, List[str]]:
@@ -254,8 +279,8 @@ def plot_bar_by_indexed_metric(
 def detection_by_attack_component(
     X_test: List[str],
     y_test: np.ndarray,
-    y_pred: np.ndarray,
     y_pred_proba: np.ndarray,
+    threshold: float,
 ) -> pd.DataFrame:
     """
     Compute detection metrics conditioned on presence of attack components.
@@ -266,8 +291,12 @@ def detection_by_attack_component(
         - num_samples: number of such malicious commands
         - tpr: fraction correctly classified as malicious
         - mean_score: mean predicted malicious probability
+    
+    Args:
+        threshold: Classification threshold (y_pred_proba > threshold → malicious)
     """
     groups = build_attack_component_groups()
+    y_pred = (y_pred_proba > threshold).astype(int)
 
     malicious_indices = np.where(y_test == 1)[0]
     if malicious_indices.size == 0:
@@ -415,27 +444,126 @@ def main() -> None:
         out_path=PLOTS_DIR / "detection_by_technique_family_barplot",
     )
 
+    # ========================================================================
+    # ATTACK COMPONENT ANALYSIS WITH MULTIPLE THRESHOLDS
+    # ========================================================================
+    
     print("\n" + "=" * 80)
-    print("DETECTION BY ATTACK COMPONENT (TOKEN-GROUP PARADIGM)")
+    print("DETECTION BY ATTACK COMPONENT - THRESHOLD WITH HIGHEST F1")
     print("=" * 80)
-
-    by_component = detection_by_attack_component(
+    
+    threshold_f1 = get_threshold_with_highest_f1(y_test, y_pred_proba)
+    print(f"[+] Threshold with highest F1: {threshold_f1:.6f}")
+    
+    by_component_f1 = detection_by_attack_component(
         X_test=X_test,
         y_test=y_test,
-        y_pred=y_pred,
         y_pred_proba=y_pred_proba,
+        threshold=threshold_f1,
     )
-    by_component.to_csv(OUT_DIR / "detection_by_attack_component.csv")
-    print(by_component)
+    by_component_f1.to_csv(OUT_DIR / "detection_by_attack_component_f1.csv")
+    print(by_component_f1)
 
-    if not by_component.empty:
+    if not by_component_f1.empty:
         plot_bar_by_indexed_metric(
-            series=by_component["tpr"],
-            num_samples=by_component["num_samples"],
+            series=by_component_f1["tpr"],
+            num_samples=by_component_f1["num_samples"],
             xlabel="True Positive Rate (%)",
-            title="Detection Rates by Attack Component",
-            out_path=PLOTS_DIR / "detection_by_attack_component_barplot",
+            title=f"Detection by Attack Component (F1-optimal threshold={threshold_f1:.4f})",
+            out_path=PLOTS_DIR / "detection_by_attack_component_f1",
         )
+    
+    print("\n" + "=" * 80)
+    print("DETECTION BY ATTACK COMPONENT - FPR = 1e-4")
+    print("=" * 80)
+    
+    threshold_1e4 = get_threshold_at_fpr(y_test, y_pred_proba, target_fpr=1e-4)
+    print(f"[+] Threshold at FPR=1e-4: {threshold_1e4:.6f}")
+    
+    by_component_1e4 = detection_by_attack_component(
+        X_test=X_test,
+        y_test=y_test,
+        y_pred_proba=y_pred_proba,
+        threshold=threshold_1e4,
+    )
+    by_component_1e4.to_csv(OUT_DIR / "detection_by_attack_component_fpr_1e4.csv")
+    print(by_component_1e4)
+
+    if not by_component_1e4.empty:
+        plot_bar_by_indexed_metric(
+            series=by_component_1e4["tpr"],
+            num_samples=by_component_1e4["num_samples"],
+            xlabel="True Positive Rate (%)",
+            title=f"Detection by Attack Component (FPR = $10^{{-4}}$, threshold={threshold_1e4:.4f})",
+            out_path=PLOTS_DIR / "detection_by_attack_component_fpr_1e4",
+        )
+    
+    # ========================================================================
+    # OVERSAMPLED DATASET ANALYSIS AT FPR = 1e-6
+    # ========================================================================
+    
+    print("\n" + "=" * 80)
+    print("LOADING OVERSAMPLED DATASET FOR FPR=1e-6 ANALYSIS")
+    print("=" * 80)
+    
+    try:
+        X_train_os, y_train_os, X_test_os, y_test_os, *_ = load_data(
+            root=ROOT, 
+            seed=SEED, 
+            limit=None,  # Use full dataset for FPR=1e-6
+            baseline="real", 
+            dtype="oversampled"
+        )
+        
+        print(f"[+] Oversampled train size: {len(X_train_os)} ({int(y_train_os.sum())} malicious)")
+        print(f"[+] Oversampled test size: {len(X_test_os)} ({int(y_test_os.sum())} malicious)")
+        
+        print("\n[+] Encoding oversampled data...")
+        X_train_os_enc = encoder.transform(X_train_os)
+        X_test_os_enc = encoder.transform(X_test_os)
+        
+        print("\n[+] Training model on oversampled data...")
+        model_os = XGBClassifier(n_estimators=100, max_depth=10, random_state=SEED)
+        trained_os = training_tabular(
+            model=model_os,
+            name="xgb_detection_oversampled",
+            X_train_encoded=X_train_os_enc,
+            X_test_encoded=X_test_os_enc,
+            y_train=y_train_os,
+            y_test=y_test_os,
+            logs_folder=str(OUT_DIR / "xgboost_training_oversampled"),
+            model_file=None,
+        )
+        
+        y_pred_proba_os = trained_os.predict_proba(X_test_os_enc)[:, 1]
+        
+        print("\n" + "=" * 80)
+        print("DETECTION BY ATTACK COMPONENT - OVERSAMPLED DATA AT FPR = 1e-6")
+        print("=" * 80)
+        
+        threshold_1e6 = get_threshold_at_fpr(y_test_os, y_pred_proba_os, target_fpr=1e-6)
+        print(f"[+] Threshold at FPR=1e-6: {threshold_1e6:.6f}")
+        
+        by_component_1e6 = detection_by_attack_component(
+            X_test=X_test_os,
+            y_test=y_test_os,
+            y_pred_proba=y_pred_proba_os,
+            threshold=threshold_1e6,
+        )
+        by_component_1e6.to_csv(OUT_DIR / "detection_by_attack_component_fpr_1e6.csv")
+        print(by_component_1e6)
+
+        if not by_component_1e6.empty:
+            plot_bar_by_indexed_metric(
+                series=by_component_1e6["tpr"],
+                num_samples=by_component_1e6["num_samples"],
+                xlabel="True Positive Rate (%)",
+                title=f"Detection by Attack Component (FPR = $10^{{-6}}$, threshold={threshold_1e6:.4f})",
+                out_path=PLOTS_DIR / "detection_by_attack_component_fpr_1e6",
+            )
+    
+    except FileNotFoundError as e:
+        print(f"[!] Skipping oversampled dataset analysis: {e}")
 
     print("\n[+] Key technique-family contrasts:")
     for family in by_family.index:

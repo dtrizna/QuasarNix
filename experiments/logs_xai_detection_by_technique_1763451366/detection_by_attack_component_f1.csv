@@ -1,0 +1,8 @@
+component,tpr,mean_score,num_samples
+interpreter,1.0,0.9985,3716
+obfuscation,0.9992,0.9677,3874
+shell_invoker,0.9989,0.9211,10164
+ip_tokens,0.9989,0.9211,10164
+fd_redirection,0.9988,0.9132,9240
+net_utility,0.997,0.8814,3697
+wrappers,0.9524,0.7538,21

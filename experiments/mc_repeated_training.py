@@ -252,7 +252,7 @@ def monte_carlo_run(mc_cfg: MonteCarloConfig) -> None:
         preset = presets[run_idx % len(presets)]
 
         print(f"\n[MC-RUN] Run {run_idx + 1}/{mc_cfg.num_runs} | seed={seed}")
-        print(f"[MC-XGB] Using augmentation preset index {run_idx % len(presets)}")
+        print(f"[MC-RUN] Using augmentation preset index {run_idx % len(presets)}")
 
         # ===== Variable components per run: malicious training synthesis + model seed =====
         # Determine how many synthetic examples per template to generate to roughly
@@ -459,7 +459,7 @@ def monte_carlo_run(mc_cfg: MonteCarloConfig) -> None:
                     scheduler_budget=EPOCHS * len(X_train_tab_loader),
                     device=DEVICE,
                     lit_sanity_steps=1,
-                    early_stop_patience=5,
+                    early_stop_patience=10,
                     val_check_times=2,
                 )
                 elapsed = time.time() - start
@@ -495,7 +495,7 @@ def monte_carlo_run(mc_cfg: MonteCarloConfig) -> None:
                     scheduler_budget=EPOCHS * len(X_train_seq_loader),
                     device=DEVICE,
                     lit_sanity_steps=1,
-                    early_stop_patience=5,
+                    early_stop_patience=10,
                     val_check_times=2,
                 )
                 elapsed = time.time() - start

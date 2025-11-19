@@ -34,7 +34,7 @@ class PyTorchLightningModelBase(L.LightningModule):
             self,
             model: torch.nn.Module,
             learning_rate: float = 1e-3,
-            fpr: float = 1e-4,
+            fpr: float = 1e-5,
             scheduler: Union[None, str] = None,
             scheduler_step_budget: Union[None, int] = None,
             # NOTE: scheduler_step_budget = epochs * len(train_loader)
@@ -637,7 +637,7 @@ def predict_lit_model(
         trainer: L.Trainer, 
         lightning_model: PyTorchLightningModel, 
         decision_threshold: int = 0.5, 
-        dump_logits: bool = False
+        dump_logits: bool | str = False
 ) -> np.ndarray:
     """
     Get scores out of a loader. 

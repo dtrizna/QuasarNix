@@ -1,0 +1,100 @@
+[MC-RES] Aggregate metrics across runs (values in % where applicable):
+
+  Model: _tabular_mlp_onehot
+    test_auc: 99.80 ± 0.17
+    test_f1: 94.00 ± 0.46
+    test_acc: 94.34 ± 0.41
+    tpr_at_1e4: 73.25 ± 2.02
+    tpr_at_1e5: 55.86 ± 1.97
+    tpr_at_1e6: 54.16 ± 2.14
+    elapsed_sec: 111.91 ± 4.62 s
+
+  Model: _tabular_rf_onehot
+    test_auc: 99.84 ± 0.08
+    test_f1: 96.07 ± 1.93
+    test_acc: 96.21 ± 1.83
+    tpr_at_1e4: 61.11 ± 11.33
+    tpr_at_1e5: 45.56 ± 7.26
+    tpr_at_1e6: 42.23 ± 6.27
+    elapsed_sec: 7.34 ± 0.08 s
+
+  Model: _tabular_xgb_onehot
+    test_auc: 99.89 ± 0.06
+    test_f1: 89.92 ± 0.05
+    test_acc: 90.84 ± 0.04
+    tpr_at_1e4: 81.67 ± 0.08
+    tpr_at_1e5: 79.49 ± 1.60
+    tpr_at_1e6: 60.20 ± 8.22
+    elapsed_sec: 3.27 ± 0.04 s
+
+  Model: attpool_transformer
+    test_auc: 98.85 ± 2.26
+    test_f1: 87.82 ± 6.52
+    test_acc: 89.41 ± 5.19
+    tpr_at_1e4: 13.34 ± 28.43
+    tpr_at_1e5: 0.00 ± 0.00
+    tpr_at_1e6: 0.00 ± 0.00
+    elapsed_sec: 1761.73 ± 453.71 s
+
+  Model: cls_transformer
+    test_auc: 99.38 ± 1.61
+    test_f1: 78.55 ± 8.21
+    test_acc: 82.67 ± 5.51
+    tpr_at_1e4: 0.00 ± 0.00
+    tpr_at_1e5: 0.00 ± 0.00
+    tpr_at_1e6: 0.00 ± 0.00
+    elapsed_sec: 1928.22 ± 518.11 s
+
+  Model: cnn
+    test_auc: 99.99 ± 0.03
+    test_f1: 85.97 ± 9.32
+    test_acc: 88.20 ± 6.85
+    tpr_at_1e4: 86.56 ± 5.12
+    tpr_at_1e5: 47.49 ± 33.42
+    tpr_at_1e6: 46.42 ± 32.67
+    elapsed_sec: 534.47 ± 197.09 s
+
+  Model: cnn_lstm
+    test_auc: 98.21 ± 2.44
+    test_f1: 58.92 ± 7.32
+    test_acc: 71.06 ± 3.95
+    tpr_at_1e4: 48.52 ± 8.80
+    tpr_at_1e5: 42.46 ± 6.40
+    tpr_at_1e6: 20.48 ± 22.08
+    elapsed_sec: 439.07 ± 102.64 s
+
+  Model: lstm
+    test_auc: 99.75 ± 0.12
+    test_f1: 64.16 ± 10.63
+    test_acc: 74.05 ± 6.26
+    tpr_at_1e4: 44.45 ± 26.35
+    tpr_at_1e5: 30.07 ± 27.98
+    tpr_at_1e6: 21.52 ± 23.66
+    elapsed_sec: 612.94 ± 195.49 s
+
+  Model: mean_transformer
+    test_auc: 98.78 ± 1.64
+    test_f1: 83.39 ± 7.62
+    test_acc: 86.07 ± 5.34
+    tpr_at_1e4: 3.72 ± 11.75
+    tpr_at_1e5: 0.00 ± 0.00
+    tpr_at_1e6: 0.00 ± 0.00
+    elapsed_sec: 6168.25 ± 13534.66 s
+
+  Model: mlp_seq
+    test_auc: 89.15 ± 3.31
+    test_f1: 67.70 ± 2.37
+    test_acc: 75.60 ± 1.34
+    tpr_at_1e4: 31.40 ± 16.90
+    tpr_at_1e5: 11.02 ± 17.75
+    tpr_at_1e6: 10.76 ± 17.32
+    elapsed_sec: 228.26 ± 61.45 s
+
+  Model: neurlux
+    test_auc: 98.46 ± 4.08
+    test_f1: 62.53 ± 9.69
+    test_acc: 73.08 ± 5.30
+    tpr_at_1e4: 51.54 ± 13.00
+    tpr_at_1e5: 25.14 ± 22.14
+    tpr_at_1e6: 17.19 ± 22.59
+    elapsed_sec: 425.32 ± 136.66 s

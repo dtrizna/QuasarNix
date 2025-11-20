@@ -24,6 +24,7 @@ paper_TOPS/
 *model
 *.ckpt
 *xgboost
+hparams.yaml
 
 # Compiled Python files
 __pycache__/

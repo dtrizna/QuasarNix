@@ -28,6 +28,7 @@ dependencies = [
     "tensorboard>=2.19.0",
     "shap>=0.49.1",
     "seaborn>=0.13.2",
+    "pysigma>=0.11.23",
 ]
 
 [tool.setuptools]

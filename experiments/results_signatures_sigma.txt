@@ -1,0 +1,11 @@
+=== Sigma rule-set metrics on test set ===
+AUC:        62.230000%
+Accuracy:   62.2300%
+F1-score:   39.4032%
+Precision:  99.5945%
+Recall:     24.5600%
+
+TPR at fixed FPR thresholds:
+  TPR @ FPR=1e-4: 0.0000%
+  TPR @ FPR=1e-5: 0.0000%
+  TPR @ FPR=1e-6: 0.0000%

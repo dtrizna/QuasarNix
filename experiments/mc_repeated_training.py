@@ -62,6 +62,28 @@ SCHEDULER = "onecycle"
 EPOCHS = 20
 DATALOADER_WORKERS = 4
 
+LOGS_FOLDER = Path("experiments/logs_mc_repeated_training_1763474762")
+if not LOGS_FOLDER.exists():
+    LOGS_FOLDER = Path(f"experiments/logs_mc_repeated_training_{TIMESTAMP}")
+    LOGS_FOLDER.mkdir(parents=True, exist_ok=True)
+
+
+# Expected model names used across all Monte Carlo runs. This is kept in sync
+# with the `models` dictionary defined later in `monte_carlo_run`.
+MODEL_NAMES: List[str] = [
+    "_tabular_rf_onehot",
+    "_tabular_xgb_onehot",
+    "_tabular_mlp_onehot",
+    "mlp_seq",
+    "attpool_transformer",
+    "cls_transformer",
+    "mean_transformer",
+    "neurlux",
+    "cnn",
+    "lstm",
+    "cnn_lstm",
+]
+
 
 def detect_device() -> str:
     """
@@ -98,7 +120,7 @@ class MonteCarloConfig:
     seeds: List[int] = None
     vocab_size: int = 4096
     max_len: int = 128
-    logs_folder: Path = Path(f"experiments/logs_mc_repeated_training_{TIMESTAMP}")
+    logs_folder: Path = LOGS_FOLDER
     baseline: str = "real"
 
     def __post_init__(self) -> None:
@@ -175,10 +197,91 @@ def generate_malicious_with_config(
     return generator.generate_commands(examples_per_template)
 
 
+def _tabular_artifacts_exist(full_name: str, logs_folder: Path) -> bool:
+    """
+    Check whether a tabular model (RF / XGB) has already been trained.
+
+    training_tabular() saves models under:
+        <logs_folder>/<full_name>/{model.pkl,model.json}
+    """
+    model_dir = logs_folder / full_name
+    if not model_dir.is_dir():
+        return False
+    if (model_dir / "model.pkl").exists():
+        return True
+    if (model_dir / "model.json").exists():
+        return True
+    return False
+
+
+def _lightning_artifacts_exist(full_name: str, logs_folder: Path) -> bool:
+    """
+    Check whether a Lightning model (sequence or tabular MLP) has already been trained.
+
+    train_lit_model() logs checkpoints under:
+        <logs_folder>/<full_name>_csv/version_*/checkpoints/*.ckpt
+    """
+    csv_root = logs_folder / f"{full_name}_csv"
+    if not csv_root.is_dir():
+        return False
+
+    version_dirs = [
+        d for d in csv_root.iterdir()
+        if d.is_dir() and d.name.startswith("version_")
+    ]
+    if not version_dirs:
+        return False
+
+    for version_dir in version_dirs:
+        ckpt_dir = version_dir / "checkpoints"
+        if ckpt_dir.is_dir() and any(ckpt_dir.glob("*.ckpt")):
+            return True
+    return False
+
+
+def _artifacts_exist_for_model(
+    model_name: str,
+    full_name: str,
+    logs_folder: Path,
+) -> bool:
+    """
+    Decide which artifact pattern to use based on model type.
+    """
+    if model_name.startswith("_tabular") and "mlp" not in model_name:
+        # RF / XGB on one-hot features
+        return _tabular_artifacts_exist(full_name, logs_folder)
+    # Lightning-based models (tabular MLP + all sequence models)
+    return _lightning_artifacts_exist(full_name, logs_folder)
+
+
 def monte_carlo_run(mc_cfg: MonteCarloConfig) -> None:
     """
     Run Monte Carlo repeated training with different augmentation presets and seeds.
     """
+    import pandas as pd
+
+    # Load any existing summary so we can:
+    #   - reuse metrics for models we skip re-training
+    #   - append new results without losing old runs
+    summary_path = mc_cfg.logs_folder / "mc_models_summary.csv"
+    existing_summary = None
+    if summary_path.exists():
+        try:
+            existing_summary = pd.read_csv(summary_path)
+            if existing_summary.empty:
+                existing_summary = None
+            else:
+                print(
+                    f"[MC-RUN] Loaded existing summary with "
+                    f"{len(existing_summary)} rows from '{summary_path}'."
+                )
+        except Exception as exc:
+            print(
+                f"[MC-RUN] Found existing summary at '{summary_path}' but failed to read it "
+                f"({exc!r}); it will be ignored and rebuilt from this run."
+            )
+            existing_summary = None
+
     root = Path(__file__).parent.parent
 
     # ===== Fixed components across runs =====
@@ -252,6 +355,41 @@ def monte_carlo_run(mc_cfg: MonteCarloConfig) -> None:
         preset = presets[run_idx % len(presets)]
 
         print(f"\n[MC-RUN] Run {run_idx + 1}/{mc_cfg.num_runs} | seed={seed}")
+
+        # ------------------------------------------------------------
+        # Cheap per-run check before we generate any synthetic data:
+        # if *all* models for this (run_idx, seed) already have both
+        # artifacts on disk and a row in the existing summary, we can
+        # skip dataset generation and training entirely for this run.
+        # ------------------------------------------------------------
+        if existing_summary is not None:
+            all_models_done = True
+            for model_name in MODEL_NAMES:
+                full_name = f"{model_name}_mc_run_{run_idx}_seed_{seed}"
+
+                # Require both artifacts and a matching metrics row
+                if not _artifacts_exist_for_model(
+                    model_name, full_name, mc_cfg.logs_folder
+                ):
+                    all_models_done = False
+                    break
+
+                mask = (
+                    (existing_summary["run_idx"] == run_idx)
+                    & (existing_summary["seed"] == seed)
+                    & (existing_summary["model_name"] == model_name)
+                )
+                if not existing_summary[mask].shape[0]:
+                    all_models_done = False
+                    break
+
+            if all_models_done:
+                print(
+                    f"[MC-RUN] All models for run {run_idx} (seed={seed}) already have "
+                    "artifacts and metrics; skipping dataset generation and training."
+                )
+                continue
+
         print(f"[MC-RUN] Using augmentation preset index {run_idx % len(presets)}")
 
         # ===== Variable components per run: malicious training synthesis + model seed =====
@@ -429,6 +567,50 @@ def monte_carlo_run(mc_cfg: MonteCarloConfig) -> None:
         # Train and evaluate all models for this run
         for model_name, model in models.items():
             full_name = f"{model_name}_mc_run_{run_idx}_seed_{seed}"
+
+            # ------------------------------------------------------------
+            # Skip expensive training if artifacts already exist on disk.
+            # When possible, also pull metrics from an existing summary row.
+            # ------------------------------------------------------------
+            if _artifacts_exist_for_model(model_name, full_name, mc_cfg.logs_folder):
+                print(
+                    f"\n[MC] Artifacts for '{full_name}' already present in "
+                    f"'{mc_cfg.logs_folder}'. Skipping training."
+                )
+
+                if existing_summary is not None:
+                    # Match an existing row for this (run, seed, model_name)
+                    if {"run_idx", "seed", "model_name"}.issubset(
+                        existing_summary.columns
+                    ):
+                        mask = (
+                            (existing_summary["run_idx"] == run_idx)
+                            & (existing_summary["seed"] == seed)
+                            & (existing_summary["model_name"] == model_name)
+                        )
+                        prev_rows = existing_summary[mask]
+                        if not prev_rows.empty:
+                            row = prev_rows.iloc[-1]
+                            run_result = {
+                                "run_idx": int(row["run_idx"]),
+                                "seed": int(row["seed"]),
+                                "preset_index": int(
+                                    row.get("preset_index", run_idx % len(presets))
+                                ),
+                                "model_name": row["model_name"],
+                                "test_auc": float(row["test_auc"]),
+                                "test_f1": float(row["test_f1"]),
+                                "test_acc": float(row["test_acc"]),
+                                "tpr_at_1e6": float(
+                                    row.get("tpr_at_1e6", np.nan)
+                                ),
+                                "elapsed_sec": float(
+                                    row.get("elapsed_sec", np.nan)
+                                ),
+                            }
+                            results.append(run_result)
+                continue
+
             print(f"\n[MC] Training '{full_name}'...")
             start = time.time()
 
@@ -538,20 +720,28 @@ def monte_carlo_run(mc_cfg: MonteCarloConfig) -> None:
             }
             results.append(run_result)
 
-    # Persist MC summary for quick inspection
-    import pandas as pd
+    # Persist MC summary for quick inspection.
+    new_results_df = pd.DataFrame(results)
 
-    results_df = pd.DataFrame(results)
+    if existing_summary is not None:
+        # Concatenate and drop duplicates in case any combinations were re-run.
+        combined_df = pd.concat([existing_summary, new_results_df], ignore_index=True)
+        combined_df = combined_df.drop_duplicates(
+            subset=["run_idx", "seed", "model_name"], keep="last"
+        )
+    else:
+        combined_df = new_results_df
+
     summary_path = mc_cfg.logs_folder / "mc_models_summary.csv"
-    results_df.to_csv(summary_path, index=False)
+    combined_df.to_csv(summary_path, index=False)
     print(f"[MC-RUN] Monte Carlo summary saved to '{summary_path}'")
 
     # Print aggregate metrics (mean ± std) across runs in a paper-ready style.
     print("\n[MC-RUN] Aggregate metrics across runs (values in % where applicable):")
     metric_columns = ["test_auc", "test_f1", "test_acc", "tpr_at_1e6"]
-    for model_name in sorted(results_df["model_name"].unique()):
+    for model_name in sorted(combined_df["model_name"].unique()):
         print(f"\n  Model: {model_name}")
-        model_df = results_df[results_df["model_name"] == model_name]
+        model_df = combined_df[combined_df["model_name"] == model_name]
         for col in metric_columns:
             mean_val = 100.0 * model_df[col].mean()
             std_val = 100.0 * model_df[col].std()

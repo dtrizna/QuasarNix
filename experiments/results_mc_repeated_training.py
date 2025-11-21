@@ -12,10 +12,11 @@ from typing import List
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_auc_score, f1_score, accuracy_score
 from nltk.tokenize import wordpunct_tokenize
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 import torch
 from xgboost import XGBClassifier
+from sigma.collection import SigmaCollection
 
 # Ensure project root is on sys.path so that internal modules using `src.*` imports resolve correctly.
 ROOT = Path(__file__).resolve().parent.parent
@@ -37,6 +38,7 @@ from src.models import (
     SimpleMLP,
 )
 from src.lit_utils import PyTorchLightningModel
+from experiments.signatures_sigma import rule_matches_command
 
 
 # Mirror core hyperparameters from mc_repeated_training.py for consistency
@@ -240,6 +242,68 @@ def _evaluate_tabular_model(
     return y_test_scores
 
 
+def _evaluate_oneclass_model(
+    full_name: str,
+    model_name: str,
+    X_test_onehot,
+) -> np.ndarray:
+    """
+    Load a previously trained one-class model (SGDOneClassSVM) and return
+    probability-like scores on the test set.
+
+    We use the signed distance from the decision function, followed by a
+    sigmoid transform, mirroring the logic used during mc_repeated_training.
+    """
+    model_dir = LOGS_FOLDER / full_name
+    if not model_dir.is_dir():
+        raise FileNotFoundError(f"One-class model directory '{model_dir}' not found.")
+
+    pkl_path = model_dir / "model.pkl"
+    if not pkl_path.exists():
+        raise FileNotFoundError(f"No 'model.pkl' found in '{model_dir}'.")
+
+    with open(pkl_path, "rb") as f:
+        model = pickle.load(f)
+
+    decision_scores = model.decision_function(X_test_onehot)
+    score_sign = -1.0 if "baseline" in model_name else 1.0
+    signed_scores = score_sign * decision_scores
+    # Map signed distances to (0, 1) to be consistent with probabilistic scores.
+    y_test_scores = 1.0 / (1.0 + np.exp(-signed_scores))
+    return y_test_scores
+
+#NOTE: "Use signatures_sigma.py instead"
+def _evaluate_sigma_signatures(
+    X_test_cmds: List[str],
+) -> np.ndarray:
+    """
+    Evaluate Sigma-rule signatures on the full test command set.
+
+    This mirrors the core logic from `experiments/signatures_sigma.py` but
+    returns per-example probability-like scores (0 or 1) so that we can reuse
+    the standard metric computation pipeline.
+    """
+    sigma_rule_folder = ROOT / "data" / "signatures"
+    sigma_rule_yamls = [
+        str(p)
+        for p in sigma_rule_folder.iterdir()
+        if p.suffix in (".yaml", ".yml")
+    ]
+    sigma_rule_collection = SigmaCollection.load_ruleset(sigma_rule_yamls)
+
+    y_pred_binary = np.zeros(len(X_test_cmds), dtype=np.int8)
+    for i, command_line in enumerate(X_test_cmds):
+        matched = False
+        for rule in sigma_rule_collection:
+            if rule_matches_command(rule, command_line):
+                matched = True
+                break
+        y_pred_binary[i] = 1 if matched else 0
+
+    # Treat the binary outputs as probabilities in {0, 1}
+    return y_pred_binary.astype(float)
+
+
 def _evaluate_lightning_model(
     full_name: str,
     model_name: str,
@@ -373,6 +437,13 @@ def recompute_mc_summary() -> None:
                     model_name,
                     X_test_tab_loader,
                 )
+            elif model_name.startswith("oc_svm_sgd"):
+                # One-class SGD SVM on one-hot features
+                y_test_scores = _evaluate_oneclass_model(
+                    full_name,
+                    model_name,
+                    X_test_onehot,
+                )
             else:
                 # Sequence models via Lightning on sequence loader
                 y_test_scores = _evaluate_lightning_model(
@@ -446,5 +517,3 @@ def recompute_mc_summary() -> None:
 
 if __name__ == "__main__":
     recompute_mc_summary()
-
-

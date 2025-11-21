@@ -98,3 +98,17 @@
     tpr_at_1e5: 25.14 ± 22.14
     tpr_at_1e6: 17.19 ± 22.59
     elapsed_sec: 425.32 ± 136.66 s
+
+  Model: oc_svm_sgd_baseline
+    test_auc: 89.20 ± 2.10
+    test_f1: 69.28 ± 5.78
+    test_acc: 54.91 ± 10.09
+    tpr_at_1e6: 0.00 ± 0.00
+    elapsed_sec: 0.15 ± 0.02 s
+
+  Model: oc_svm_sgd_malicious
+    test_auc: 99.67 ± 0.09
+    test_f1: 7.13 ± 6.30
+    test_acc: 51.90 ± 1.69
+    tpr_at_1e6: 16.09 ± 5.33
+    elapsed_sec: 0.24 ± 0.02 s

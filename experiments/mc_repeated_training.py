@@ -1,4 +1,5 @@
 import os
+import pickle
 
 # Configure threading / multiprocessing behaviour early to avoid segfaults on some
 # platforms (e.g. Apple Silicon + MPS) without requiring shell-level env vars.
@@ -11,13 +12,14 @@ import sys
 import time
 from pathlib import Path
 from dataclasses import dataclass
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 import numpy as np
 from sklearn.utils import shuffle
-from sklearn.metrics import roc_auc_score, f1_score, accuracy_score
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 from xgboost import XGBClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import SGDOneClassSVM
 from nltk.tokenize import wordpunct_tokenize
 import torch
 
@@ -82,6 +84,9 @@ MODEL_NAMES: List[str] = [
     "cnn",
     "lstm",
     "cnn_lstm",
+    # One-class SGD SVM (trained on baseline-only or malicious-only data)
+    "oc_svm_sgd_baseline",
+    "oc_svm_sgd_malicious",
 ]
 
 
@@ -214,6 +219,21 @@ def _tabular_artifacts_exist(full_name: str, logs_folder: Path) -> bool:
     return False
 
 
+def _oneclass_artifacts_exist(full_name: str, logs_folder: Path) -> bool:
+    """
+    Check whether a one-class model (e.g. SGDOneClassSVM) has already been trained.
+
+    We persist these models as:
+        <logs_folder>/<full_name>/model.pkl
+    """
+    model_dir = logs_folder / full_name
+    if not model_dir.is_dir():
+        return False
+    if (model_dir / "model.pkl").exists():
+        return True
+    return False
+
+
 def _lightning_artifacts_exist(full_name: str, logs_folder: Path) -> bool:
     """
     Check whether a Lightning model (sequence or tabular MLP) has already been trained.
@@ -250,6 +270,9 @@ def _artifacts_exist_for_model(
     if model_name.startswith("_tabular") and "mlp" not in model_name:
         # RF / XGB on one-hot features
         return _tabular_artifacts_exist(full_name, logs_folder)
+    if model_name.startswith("oc_svm_sgd"):
+        # One-class models stored as simple pickled estimators
+        return _oneclass_artifacts_exist(full_name, logs_folder)
     # Lightning-based models (tabular MLP + all sequence models)
     return _lightning_artifacts_exist(full_name, logs_folder)
 
@@ -425,6 +448,10 @@ def monte_carlo_run(mc_cfg: MonteCarloConfig) -> None:
         X_train_onehot = onehot_vectorizer.transform(X_train_run)
         X_test_onehot = onehot_vectorizer.transform(X_test_fixed)
 
+        # One-class views of the data: train on *only* baseline or *only* malicious.
+        X_train_onehot_baseline = onehot_vectorizer.transform(baseline_train_cmds)
+        X_train_onehot_malicious = onehot_vectorizer.transform(malicious_train_cmds)
+
         # Sequence loaders for this run
         X_train_seq_loader = commands_to_loader(
             X_train_run,
@@ -550,6 +577,24 @@ def monte_carlo_run(mc_cfg: MonteCarloConfig) -> None:
             dropout=DROPOUT,
         )
 
+        # One-class SGD SVMs: shared hyperparameters, different training data.
+        oc_svm_sgd_baseline = SGDOneClassSVM(
+            nu=0.9,
+            tol=0.001,
+            random_state=seed,
+            learning_rate="constant",
+            eta0=0.1,
+            max_iter=1000,
+        )
+        oc_svm_sgd_malicious = SGDOneClassSVM(
+            nu=0.9,
+            tol=0.001,
+            random_state=seed,
+            learning_rate="constant",
+            eta0=0.1,
+            max_iter=1000,
+        )
+
         models = {
             "_tabular_rf_onehot": rf_model_onehot,
             "_tabular_xgb_onehot": xgb_model_onehot,
@@ -562,6 +607,8 @@ def monte_carlo_run(mc_cfg: MonteCarloConfig) -> None:
             "cnn": cnn_model,
             "lstm": lstm_model,
             "cnn_lstm": cnn_lstm_model,
+            "oc_svm_sgd_baseline": oc_svm_sgd_baseline,
+            "oc_svm_sgd_malicious": oc_svm_sgd_malicious,
         }
 
         # Train and evaluate all models for this run
@@ -627,6 +674,31 @@ def monte_carlo_run(mc_cfg: MonteCarloConfig) -> None:
                 )
                 elapsed = time.time() - start
                 y_test_scores = trained_model.predict_proba(X_test_onehot)[:, 1]
+            elif model_name.startswith("oc_svm_sgd"):
+                # One-class SGD SVM: train either on baseline-only or malicious-only data.
+                if "baseline" in model_name:
+                    X_train_oneclass = X_train_onehot_baseline
+                    # Baseline is the inlier class -> malicious should get higher scores.
+                    score_sign = -1.0
+                else:
+                    X_train_oneclass = X_train_onehot_malicious
+                    # Malicious is the inlier class -> malicious already has higher scores.
+                    score_sign = 1.0
+
+                model.fit(X_train_oneclass)
+
+                # Persist model as a simple pickle artifact
+                model_dir = mc_cfg.logs_folder / full_name
+                model_dir.mkdir(parents=True, exist_ok=True)
+                with open(model_dir / "model.pkl", "wb") as f:
+                    pickle.dump(model, f)
+
+                elapsed = time.time() - start
+
+                # Use signed distance as continuous anomaly score and squash to (0, 1)
+                decision_scores = model.decision_function(X_test_onehot)
+                signed_scores = score_sign * decision_scores
+                y_test_scores = 1.0 / (1.0 + np.exp(-signed_scores))
             elif model_name.startswith("_tabular") and "mlp" in model_name:
                 # Tabular MLP: Lightning over one-hot loaders
                 _, lightning_model = train_lit_model(

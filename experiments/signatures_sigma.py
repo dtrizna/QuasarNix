@@ -241,7 +241,7 @@ if __name__ == "__main__":
     # ===========================================
     # Load data (use full test split for metrics)
     # ===========================================
-    X_train_cmds, y_train, X_test_cmds, y_test, *_ = load_data(ROOT, seed=33, limit=None)
+    X_train_cmds, y_train, X_test_cmds, y_test, *_ = load_data(ROOT, seed=33, limit=10000)
     y_test = np.asarray(y_test, dtype=np.int8)
     print(f"[+] Test set size: {len(X_test_cmds)} commands")
 

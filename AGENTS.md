@@ -7,3 +7,8 @@ my assistants done analysis and summary of all feedback in @paper_TOPS/decision_
 use local .venv and uv to run code
 
 don't follow TDD paradigm here and skip any tests for this research work
+
+when completing the work, answers to reviewer(s) should follow the following format (~150 words, highly formal academic style):
+<thank reviewer>
+<acknowledge limitation of current publication 1-2 sentences>
+<state what was done 2-4 sentences in list>

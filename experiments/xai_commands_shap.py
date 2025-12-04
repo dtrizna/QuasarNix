@@ -355,8 +355,12 @@ def plot_group_violins(grouped_shap: np.ndarray, group_names: List[str], out_png
     ax.axvline(0, color='black', linewidth=1.5, linestyle='--', alpha=0.7, label='Neutral')
     
     # Labels and title
-    ax.set_xlabel('SHAP Value per Sample\n(← Benign-indicating | Malicious-indicating →)', 
-                 fontsize=12, fontweight='bold')
+    ax.set_xlabel(
+        'Grouped SHAP Value per Sample\n'
+        '(← evidence of benign activity | evidence of malicious activity →)',
+        fontsize=12,
+        fontweight='bold',
+    )
     ax.set_ylabel('Attack Component', fontsize=12, fontweight='bold')
     
     if title:

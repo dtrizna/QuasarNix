@@ -1,0 +1,41 @@
+# Dockerfile for synthetic reverse shell functionality validation
+# Contains all interpreters needed to validate command syntax
+#
+# Build: docker build -f experiments/Dockerfile.validation -t quasarnix-validation .
+# Run:   docker run --rm -v $(pwd):/app quasarnix-validation python experiments/validate_synthetic_functionality.py --num-per-template 100
+
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install all required interpreters and tools
+RUN apt-get update && apt-get install -y \
+    bash \
+    dash \
+    zsh \
+    python3 \
+    python3-pip \
+    perl \
+    ruby \
+    php-cli \
+    lua5.4 \
+    gawk \
+    netcat-openbsd \
+    ncat \
+    socat \
+    telnet \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+WORKDIR /app
+COPY pyproject.toml .
+COPY src/ src/
+RUN pip3 install --no-cache-dir tqdm numpy
+
+# Set working directory
+WORKDIR /app
+
+# Default command
+CMD ["python3", "experiments/validate_synthetic_functionality.py", "--num-per-template", "100", "--output", "experiments/logs_synthetic_validation/docker_validation.json"]
+
+

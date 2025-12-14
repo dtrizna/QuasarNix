@@ -24,8 +24,7 @@ hide reverse shells inside otherwise benign one-liner commands.
 ## Data and Model Availability
 
 - Pre-trained models: https://huggingface.co/dtrizna/QuasarNix
-- Dataset: https://huggingface.co/datasets/dtrizna/quovadis-speakeasy
-- Complementary (EMBER features of the same data): https://huggingface.co/datasets/dtrizna/quovadis-ember
+- Dataset: https://huggingface.co/datasets/dtrizna/QuasarNix
 
 ## Citing
 

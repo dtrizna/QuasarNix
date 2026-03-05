@@ -3,7 +3,7 @@ import re
 import time
 import json
 import random
-import pickle
+import joblib
 from tqdm import tqdm
 from sklearn.utils import shuffle
 from watermark import watermark
@@ -225,14 +225,12 @@ def get_onehot_tokenizer(x_cmds: List[str], tokenizer_type: str) -> OneHotCustom
     oh_pickle = os.path.join(LOGS_FOLDER, f"onehot_vectorizer_{VOCAB_SIZE}_{tokenizer_type}.pkl")
     if os.path.exists(oh_pickle):
         print(f"[*] Loading One-Hot encoder from:\n\t'{oh_pickle}'")
-        with open(oh_pickle, "rb") as f:
-            oh_tokenizer = pickle.load(f)
+        oh_tokenizer = joblib.load(oh_pickle)
     else:
         print("[*] Fitting One-Hot encoder...")
         oh_tokenizer = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
         oh_tokenizer.fit(x_cmds)
-        with open(oh_pickle, "wb") as f:
-            pickle.dump(oh_tokenizer, f)
+        joblib.dump(oh_tokenizer, oh_pickle)
     
     return oh_tokenizer
 

@@ -6,7 +6,7 @@ os.environ.setdefault("JOBLIB_MULTIPROCESSING", "0")
 os.environ.setdefault("OMP_NUM_THREADS", "1")
 
 import sys
-import pickle
+import joblib
 from pathlib import Path
 from typing import List
 
@@ -230,8 +230,7 @@ def _evaluate_tabular_model(
     json_path = model_dir / "model.json"
 
     if pkl_path.exists():
-        with open(pkl_path, "rb") as f:
-            trained_model = pickle.load(f)
+        trained_model = joblib.load(pkl_path)
     elif json_path.exists():
         trained_model = XGBClassifier()
         trained_model.load_model(str(json_path))
@@ -262,8 +261,7 @@ def _evaluate_oneclass_model(
     if not pkl_path.exists():
         raise FileNotFoundError(f"No 'model.pkl' found in '{model_dir}'.")
 
-    with open(pkl_path, "rb") as f:
-        model = pickle.load(f)
+    model = joblib.load(pkl_path)
 
     decision_scores = model.decision_function(X_test_onehot)
     score_sign = -1.0 if "baseline" in model_name else 1.0

@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-import pickle
+import joblib
 import pandas as pd
 import numpy as np
 from sklearn.utils import shuffle
@@ -56,8 +56,7 @@ def training_tabular(model, name, X_train_minhash, X_test_minhash, y_train, y_te
 
     # save trained model to LOGS_FOLDER/name
     os.makedirs(f"{logs_folder}/{name}", exist_ok=True)
-    with open(f"{logs_folder}/{name}/model.pkl", "wb") as f:
-        pickle.dump(model, f)
+    joblib.dump(model, f"{logs_folder}/{name}/model.pkl")
     
     y_test_preds = model.predict_proba(X_test_minhash)[:,1]
     tpr = get_tpr_at_fpr(y_test_preds, y_test)

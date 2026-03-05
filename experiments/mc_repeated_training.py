@@ -1,5 +1,5 @@
 import os
-import pickle
+import joblib
 
 # Configure threading / multiprocessing behaviour early to avoid segfaults on some
 # platforms (e.g. Apple Silicon + MPS) without requiring shell-level env vars.
@@ -690,8 +690,7 @@ def monte_carlo_run(mc_cfg: MonteCarloConfig) -> None:
                 # Persist model as a simple pickle artifact
                 model_dir = mc_cfg.logs_folder / full_name
                 model_dir.mkdir(parents=True, exist_ok=True)
-                with open(model_dir / "model.pkl", "wb") as f:
-                    pickle.dump(model, f)
+                joblib.dump(model, model_dir / "model.pkl")
 
                 elapsed = time.time() - start
 

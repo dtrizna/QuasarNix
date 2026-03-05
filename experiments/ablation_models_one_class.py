@@ -1,7 +1,7 @@
 import os
 import time
 import torch
-import pickle
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.utils import shuffle
@@ -79,11 +79,10 @@ def fit_one_hot(X):
 oh_vectorizer_file = os.path.join(LOGS_FOLDER, f"onehot_vectorizer_{VOCAB_SIZE}_lim_{LIMIT}.pkl")
 if os.path.exists(oh_vectorizer_file):
     print("[*] Loading One-Hot vectorizer...")
-    oh = pickle.load(open(oh_vectorizer_file, "rb"))
+    oh = joblib.load(oh_vectorizer_file)
 else:
     oh = fit_one_hot(X_train_cmds_one_class)
-    with open(oh_vectorizer_file, "wb") as f:
-        pickle.dump(oh, f)
+    joblib.dump(oh, oh_vectorizer_file)
 
 
 print("[*] Transforming train and test sets...")
@@ -108,8 +107,7 @@ def train_and_predict(model, X_train, X_test, y_test, name=""):
     
     # dump model
     model_file = os.path.join(LOGS_FOLDER, f"model_{name}_{VOCAB_SIZE}_lim_{LIMIT}.pkl")
-    with open(model_file, "wb") as f:
-        pickle.dump(model, f)
+    joblib.dump(model, model_file)
 
     # predicting
     model_preds = model.predict(X_test)

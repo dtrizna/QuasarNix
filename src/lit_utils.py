@@ -1,5 +1,6 @@
 import os
-import pickle
+import warnings
+import joblib
 import numpy as np
 from time import time
 from shutil import copyfile
@@ -392,10 +393,17 @@ class LitTrainerWrapper:
 
     def load_torch_model(self, model_file: str = None):
         assert model_file is not None, "Please provide a model file"
-        self.pytorch_model = torch.load(model_file)
-        # NOTE: you have to reset self.lit_model after this
-        #  if lit_model is already initialized, then load state dict directly:
-        # self.lit_model.model.load_state_dict(state_dict)
+        try:
+            state = torch.load(model_file, weights_only=True)
+            self.pytorch_model.load_state_dict(state)
+        except Exception:
+            warnings.warn(
+                f"Could not load '{model_file}' with weights_only=True. "
+                "Falling back to weights_only=False (unsafe deserialization). "
+                "Re-save with save_torch_model() to migrate to safe format.",
+                stacklevel=2,
+            )
+            self.pytorch_model = torch.load(model_file, weights_only=False)
 
 
     def setup_lit_model(self):
@@ -447,7 +455,7 @@ class LitTrainerWrapper:
         y_pred_logits = self.trainer.predict(model=self.lit_model, dataloaders=loader)
         if dump_logits:
             assert isinstance(dump_logits, str), "Please provide a path to dump logits: dump_logits='path/to/logits.pkl'"
-            pickle.dump(y_pred_logits, open(dump_logits, "wb"))
+            joblib.dump(y_pred_logits, dump_logits)
         y_pred_proba = torch.sigmoid(torch.cat(y_pred_logits, dim=0)).numpy()
         y_pred = np.array([1 if x > decision_threshold else 0 for x in y_pred_proba])
         return y_pred_proba if return_proba else y_pred
@@ -483,8 +491,8 @@ class LitTrainerWrapper:
             basename = f"{int(time())}_epoch_{self.trainer.current_epoch}_{os.path.basename(model_file)}"
             model_file = os.path.join(self.log_folder, basename)
         
-        torch.save(self.pytorch_model, model_file)
-        print(f"[!] Saved PyTorch model to {model_file}")
+        torch.save(self.pytorch_model.state_dict(), model_file)
+        print(f"[!] Saved PyTorch model state_dict to {model_file}")
     
 
     def create_dataloader(
@@ -648,5 +656,5 @@ def predict_lit_model(
     y_pred = np.array([1 if x > decision_threshold else 0 for x in y_pred])
     if dump_logits:
         assert isinstance(dump_logits, str), "Please provide a path to dump logits: dump_logits='path/to/logits.pkl'"
-        pickle.dump(y_pred_logits, open(dump_logits, "wb"))
+        joblib.dump(y_pred_logits, dump_logits)
     return y_pred

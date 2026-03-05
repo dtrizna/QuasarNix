@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import json
 import os
-import pickle
 import sys
 import time
 from pathlib import Path

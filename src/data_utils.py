@@ -2,7 +2,7 @@ import os
 import re
 import time
 import json
-import pickle
+import joblib
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -284,16 +284,14 @@ def load_tokenizer(
         oh_file = os.path.join(logs_folder, f"onehot_vocab_{vocab_size}{suffix}.pkl")
         if os.path.exists(oh_file):
             print(f"[!] Loading One-Hot encoder from '{oh_file}'...")
-            with open(oh_file, "rb") as f:
-                tokenizer = pickle.load(f)
+            tokenizer = joblib.load(oh_file)
         else:
             tokenizer = OneHotCustomVectorizer(tokenizer=tokenizer_fn, max_features=vocab_size)
             print("[*] Fitting One-Hot encoder...")
             now = time.time()
             tokenizer.fit(train_cmds)
             print(f"[!] Fitting One-Hot encoder took: {time.time() - now:.2f}s") # ~90s
-            with open(oh_file, "wb") as f:
-                pickle.dump(tokenizer, f)
+            joblib.dump(tokenizer, oh_file)
     else:
         tokenizer = CommandTokenizer(tokenizer_fn=tokenizer_fn, vocab_size=vocab_size, max_len=max_len)
         vocab_file = os.path.join(logs_folder, f"wordpunct_vocab_{vocab_size}{suffix}.json")

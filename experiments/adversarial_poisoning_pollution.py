@@ -1,7 +1,7 @@
 import os
 import time
 import json
-import pickle
+import joblib
 import numpy as np
 from sklearn.utils import shuffle
 from watermark import watermark
@@ -184,8 +184,7 @@ def main(seed):
             if os.path.exists(model_file_poisoned):
                 print(f"[!] Loading original model from '{model_file_poisoned}'")
                 if "xgb" in name:
-                    with open(model_file_poisoned, "rb") as f:
-                        model_poisoned = pickle.load(f)
+                    model_poisoned = joblib.load(model_file_poisoned)
                     X_test = tokenizer.transform(X_test_cmd)
                     trainer_poisoned = None
                 else:

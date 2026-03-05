@@ -1,6 +1,6 @@
 import os
 import time
-import pickle
+import joblib
 import numpy as np
 from watermark import watermark
 from nltk.tokenize import wordpunct_tokenize
@@ -116,12 +116,9 @@ def generate_sets(random_state, log_folder=None):
 
     if log_folder is not None:
         # dump
-        with open(os.path.join(log_folder, "train_cmd_augm.pkl"), "wb") as f:
-            pickle.dump(train_cmd_augmented, f)
-        with open(os.path.join(log_folder, "train_cmd_not_augm.pkl"), "wb") as f:
-            pickle.dump(train_cmd_not_augmented, f)
-        with open(os.path.join(log_folder, "test_cmd.pkl"), "wb") as f:
-            pickle.dump(test_cmd, f)
+        joblib.dump(train_cmd_augmented, os.path.join(log_folder, "train_cmd_augm.pkl"))
+        joblib.dump(train_cmd_not_augmented, os.path.join(log_folder, "train_cmd_not_augm.pkl"))
+        joblib.dump(test_cmd, os.path.join(log_folder, "test_cmd.pkl"))
         np.save(os.path.join(log_folder, "train_y_augm.npy"), train_y_augmented)
         np.save(os.path.join(log_folder, "train_y_not_augm.npy"), train_y_not_augmented)
         np.save(os.path.join(log_folder, "test_y.npy"), test_y)
@@ -156,8 +153,7 @@ def data_prep(name, X_train_cmds, y_train, X_test_cmds, y_test):
     
     # drop oh as pickle object
     oh_file = os.path.join(LOGS_FOLDER, f"{name}_onehot_{VOCAB_SIZE}.pkl")
-    with open(oh_file, "wb") as f:
-        pickle.dump(oh, f)
+    joblib.dump(oh, oh_file)
 
     return X_train_loader, X_test_loader, X_train_onehot, X_test_onehot
 

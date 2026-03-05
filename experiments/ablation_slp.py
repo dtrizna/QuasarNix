@@ -1,7 +1,7 @@
 import os
 import time
 import json
-import pickle
+import joblib
 import numpy as np
 from watermark import watermark
 from nltk.tokenize import wordpunct_tokenize
@@ -99,12 +99,10 @@ if __name__ == "__main__":
 
     slp_tokenizer_path = os.path.join(LOGS_FOLDER, "slp_tokenizer.pkl")
     if os.path.exists(slp_tokenizer_path):
-        with open(slp_tokenizer_path, "rb") as f:
-            slp_tokenizer = pickle.load(f)
+        slp_tokenizer = joblib.load(slp_tokenizer_path)
     else:
         slp_tokenizer, X_train_tokenized, token_counter = train_slp(X_train_cmds)
-        with open(slp_tokenizer_path, "wb") as f:
-            pickle.dump(slp_tokenizer, f)
+        joblib.dump(slp_tokenizer, slp_tokenizer_path)
         with open(X_train_tokenized_path, "w") as f:
             json.dump(X_train_tokenized, f, indent=4)
         with open(f"{LOGS_FOLDER}/token_counter.json", "w") as f:
@@ -112,12 +110,10 @@ if __name__ == "__main__":
 
     slp_encoder_path = os.path.join(LOGS_FOLDER, "slp_encoder.pkl")
     if os.path.exists(slp_encoder_path):
-        with open(slp_encoder_path, "rb") as f:
-            slp_encoder = pickle.load(f)
+        slp_encoder = joblib.load(slp_encoder_path)
     else:
         slp_encoder = ShellEncoder(token_counter=token_counter, top_tokens=VOCAB_SIZE)
-        with open(slp_encoder_path, "wb") as f:
-            pickle.dump(slp_encoder, f)
+        joblib.dump(slp_encoder, slp_encoder_path)
     
     if os.path.exists(X_train_tokenized_path):
         with open(X_train_tokenized_path, "r") as f:

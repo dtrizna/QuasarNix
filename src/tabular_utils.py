@@ -1,6 +1,6 @@
 
 import os
-import pickle
+import joblib
 import numpy as np
 import pandas as pd
 from shutil import copyfile
@@ -35,8 +35,7 @@ def training_tabular(
         # and keep the artifact human-inspectable if needed.
         model.save_model(f"{logs_folder}/{name}/model.json")
     else:
-        with open(f"{logs_folder}/{name}/model.pkl", "wb") as f:
-            pickle.dump(model, f)
+        joblib.dump(model, f"{logs_folder}/{name}/model.pkl")
     if model_file is not None:
         model_saved = [x for x in os.listdir(f"{logs_folder}/{name}") if x.startswith("model")][0]
         model_saved = os.path.join(f"{logs_folder}/{name}", model_saved)

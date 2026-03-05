@@ -1,4 +1,4 @@
-import pickle
+import joblib
 import numpy as np
 from sklearn.metrics import f1_score, accuracy_score, roc_auc_score, roc_curve
 
@@ -31,7 +31,7 @@ def predict(
     y_pred = np.array([1 if x > decision_threshold else 0 for x in y_pred_probs])
     if dump_logits:
         assert isinstance(dump_logits, str), "Please provide a path to dump logits: dump_logits='path/to/logits.pkl'"
-        pickle.dump(y_pred_logits, open(dump_logits, "wb"))
+        joblib.dump(y_pred_logits, dump_logits)
     return y_pred, y_pred_logits.numpy()
 
 

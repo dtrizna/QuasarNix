@@ -2,7 +2,7 @@ import os
 import re
 import time
 import json
-import pickle
+import joblib
 import random
 import numpy as np
 from tqdm import tqdm
@@ -374,16 +374,14 @@ if __name__ == "__main__":
             oh_tokenizer_file_orig = os.path.join(LOGS_FOLDER, f"onehot_tokenizer_{VOCAB_SIZE}_orig.pkl")
             if os.path.exists(oh_tokenizer_file_orig):
                 print(f"[!] Loading One-Hot tokenizer from '{oh_tokenizer_file_orig}'...")
-                with open(oh_tokenizer_file_orig, "rb") as f:
-                    tokenizer_orig = pickle.load(f)
+                tokenizer_orig = joblib.load(oh_tokenizer_file_orig)
             else:
                 tokenizer_orig = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
                 print("[*] Fitting One-Hot encoder...")
                 now = time.time()
                 tokenizer_orig.fit(X_train_cmds)
                 print(f"[!] Fitting One-Hot encoder took: {time.time() - now:.2f}s") # ~90s
-                with open(oh_tokenizer_file_orig, "wb") as f:
-                    pickle.dump(tokenizer_orig, f)
+                joblib.dump(tokenizer_orig, oh_tokenizer_file_orig)
         else:
             # ========== EMBEDDING ==========
             tokenizer_orig = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)
@@ -518,14 +516,12 @@ if __name__ == "__main__":
                 oh_tokenizer_adv_path = os.path.join(LOGS_FOLDER, f"onehot_tokenizer_{VOCAB_SIZE}_adv.pkl")
                 if os.path.exists(oh_tokenizer_adv_path):
                     print(f"[!] Loading One-Hot tokenizer from '{oh_tokenizer_adv_path}'...")
-                    with open(oh_tokenizer_adv_path, "rb") as f:
-                        tokenizer_adv = pickle.load(f)
+                    tokenizer_adv = joblib.load(oh_tokenizer_adv_path)
                 else:
                     print("[*] Fitting One-Hot encoder for adversarial model...")
                     tokenizer_adv = OneHotCustomVectorizer(tokenizer=TOKENIZER, max_features=VOCAB_SIZE)
                     tokenizer_adv.fit(X_train_cmd_adv)
-                    with open(oh_tokenizer_adv_path, "wb") as f:
-                        pickle.dump(tokenizer_adv, f)
+                    joblib.dump(tokenizer_adv, oh_tokenizer_adv_path)
             else:
                 vocab_file_adv = os.path.join(LOGS_FOLDER, f"wordpunct_vocab_{VOCAB_SIZE}_adv.json")
                 tokenizer_adv = CommandTokenizer(tokenizer_fn=TOKENIZER, vocab_size=VOCAB_SIZE, max_len=MAX_LEN)

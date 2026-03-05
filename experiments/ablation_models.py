@@ -1,5 +1,5 @@
 import os
-import pickle
+import joblib
 import time
 import sys
 from pathlib import Path
@@ -83,19 +83,10 @@ if __name__ == "__main__":
         tokenizer.dump_vocab(vocab_file)
         print(f"Vocab size: {len(tokenizer.vocab)}")
 
-    # creating dataloaders
+    # creating dataloaders (reconstructed each run to avoid unsafe deserialization of DataLoader objects)
     print("[*] Creating dataloaders...")
-    X_train_loader_path = os.path.join(LOGS_FOLDER, f"X_train_loader_{VOCAB_SIZE}.pt")
-    X_test_loader_path = os.path.join(LOGS_FOLDER, f"X_test_loader_{VOCAB_SIZE}.pt")
-    if os.path.exists(X_train_loader_path) and os.path.exists(X_test_loader_path):
-        X_train_loader = torch.load(X_train_loader_path, weights_only=False)
-        X_test_loader = torch.load(X_test_loader_path, weights_only=False)
-        print(f"[!] Loaded dataloaders from {X_train_loader_path} and {X_test_loader_path}")
-    else:
-        X_train_loader = commands_to_loader(X_train_cmds, tokenizer, y=y_train, workers=DATALOADER_WORKERS, batch_size=BATCH_SIZE, )
-        torch.save(X_train_loader, X_train_loader_path)
-        X_test_loader = commands_to_loader(X_test_cmds, tokenizer, y=y_test, workers=DATALOADER_WORKERS, batch_size=BATCH_SIZE)
-        torch.save(X_test_loader, X_test_loader_path)
+    X_train_loader = commands_to_loader(X_train_cmds, tokenizer, y=y_train, workers=DATALOADER_WORKERS, batch_size=BATCH_SIZE)
+    X_test_loader = commands_to_loader(X_test_cmds, tokenizer, y=y_test, workers=DATALOADER_WORKERS, batch_size=BATCH_SIZE)
 
     # ========== MIN-HASH TABULAR ENCODING ==========
     # minhash = HashingVectorizer(n_features=VOCAB_SIZE, tokenizer=TOKENIZER, token_pattern=None)
@@ -109,19 +100,15 @@ if __name__ == "__main__":
     X_train_onehot_path = os.path.join(LOGS_FOLDER, f"X_train_onehot_{VOCAB_SIZE}.pkl")
     X_test_onehot_path = os.path.join(LOGS_FOLDER, f"X_test_onehot_{VOCAB_SIZE}.pkl")
     if os.path.exists(X_train_onehot_path) and os.path.exists(X_test_onehot_path):
-        with open(X_train_onehot_path, "rb") as f:
-            X_train_onehot = pickle.load(f)
-        with open(X_test_onehot_path, "rb") as f:
-            X_test_onehot = pickle.load(f)
+        X_train_onehot = joblib.load(X_train_onehot_path)
+        X_test_onehot = joblib.load(X_test_onehot_path)
         print(f"[!] Loaded One-Hot encoded data from {X_train_onehot_path} and {X_test_onehot_path}")
     else:
         print("[*] Fitting One-Hot encoder...")
         X_train_onehot = oh.fit_transform(X_train_cmds)
         X_test_onehot = oh.transform(X_test_cmds)
-        with open(X_train_onehot_path, "wb") as f:
-            pickle.dump(X_train_onehot, f)
-        with open(X_test_onehot_path, "wb") as f:
-            pickle.dump(X_test_onehot, f)
+        joblib.dump(X_train_onehot, X_train_onehot_path)
+        joblib.dump(X_test_onehot, X_test_onehot_path)
 
     # =============================================
     # DEFINING MODELS
